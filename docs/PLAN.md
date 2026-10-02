@@ -114,7 +114,10 @@ GET  /api/holidays?year=&location_id=&canton=&municipality_id=&municipality=
 POST /api/optimize
      {year, locations:[Location], working_days:["MON",…], half_days:{"2027-12-24":0.5},
       vacation_budget: float|null, holidays: {location_id: Holiday[]}}
-     → {per_location: {id: {days: DayInfo[], candidates: [], zero_cost: [], summary}}}
+     → {year, per_location: {id: {days: DayInfo[], holidays: Holiday[], warnings: [],
+                                   candidates: [], zero_cost: [], summary}}}
+     (M3: days + holidays + warnings; candidates/summary filled in M5. Max. 10 locations;
+      unknown fields such as vacation_type → 400.)
 GET  /api/weather?location_id=&lat=&lon=&elevation=&start=&end=
      → {location_id, station:{…}, distance_km, elevation_diff_m, averages:{temp_mean,temp_min,temp_max,precip_mm,sunshine_h},
         methodology, years_used:[…], missing_years:[…], warnings:[], source, source_url, retrieved_at}

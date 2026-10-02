@@ -31,3 +31,15 @@ One line per decision: date — decision — reason. Status: **accepted** (owner
 - 2026-10-02 — accepted — No limit on the number of selected locations — the spec doesn't set one.
 - 2026-10-02 — accepted — Map jumps instead of flying when the tab is hidden or the user prefers reduced motion — `requestAnimationFrame` is paused in background tabs; accessibility.
 - 2026-10-02 — accepted — Frontend logic tests with `node --test` (no npm dependencies); search behaviour lives in a DOM-free `search-controller.js` — SPEC §9 allows a small JS test.
+- 2026-10-02 — accepted — D1 baseline: `holidays` package (canton subdivision, category `public`, German names) is the holiday source for M3 until M4 adds You.com; the full hybrid merge rules (PLAN §7) are still pending for M4 — owner approved the baseline.
+- 2026-10-02 — accepted — Q5: planner state survives a reload via browser `localStorage` (versioned key, validated on load, falls back to defaults if unreadable); no server-side persistence — owner chose "survive"; CLAUDE.md rule 12 (no server filesystem persistence) is unaffected.
+- 2026-10-02 — accepted — M3 uses `POST /api/optimize` (SPEC §5) for the day model, returning `candidates: []` and `summary: null` until M5, plus `holidays` (with provenance) and `warnings` per location — no extra endpoint; the client sends no holidays, so the server uses the D1 baseline.
+- 2026-10-02 — accepted — The display category is derived only in the frontend (`calendar-model.js` `dayCategory()`); the server sends DayInfo attributes only — period selection (M5) happens client-side, so the single derivation function has to run there; covered by node tests.
+- 2026-10-02 — accepted — DayInfo gets `in_planned_year` (boundary months are dimmed); category keys: workday, half_day, weekend ("Wochenende / arbeitsfrei"), holiday, holiday_off, vacation, free_run — SPEC §4 lists the labels but not a half-day or "outside" state.
+- 2026-10-02 — accepted — Holiday jurisdiction: "national" if the `holidays` package lists the day for CH without a canton (Neujahr, Auffahrt, Nationalfeiertag, Weihnachten), otherwise "canton"; baseline confidence "medium" — the package doesn't state jurisdiction.
+- 2026-10-02 — accepted — Default half days 24.12./31.12. are set for both Decembers in view (planned year and previous year); changing the year keeps visible half days and re-adds these defaults — D6 + D8.
+- 2026-10-02 — accepted — Default planned year = current year (first of the D9 options).
+- 2026-10-02 — accepted — Max. 10 locations (UI and server) — bounds request size; the spec sets no number.
+- 2026-10-02 — accepted — `extra="forbid"` on the optimize request: an extra field such as `vacation_type` is rejected with 400 — enforces CLAUDE.md rule 5.
+- 2026-10-02 — accepted — Frontend ignores platform error messages (only snake_case error codes from our API are shown) — Vercel returns English JSON errors with the same shape.
+- 2026-10-02 — accepted — Added a node test that parses every `public/js` module — a duplicate declaration in `api.js` stopped the whole app from loading, and no other test imported that module.

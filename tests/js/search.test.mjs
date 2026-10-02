@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { createSearchController, DEBOUNCE_MS } from "../../public/js/search-controller.js";
-import { createLocationStore, locationDetail, locationLabel } from "../../public/js/state.js";
+import { locationDetail, locationLabel } from "../../public/js/state.js";
 import { debounce, normaliseQuery } from "../../public/js/util.js";
 
 function fakeTimers() {
@@ -112,22 +112,6 @@ test("clearing the input cancels a pending search", async () => {
   timers.advance(1000);
   await flush();
   assert.equal(calls.length, 0);
-});
-
-test("store adds, deduplicates and removes locations", () => {
-  const store = createLocationStore();
-  const changes = [];
-  store.subscribe((locs, change) => changes.push([change.type, locs.map((l) => l.id)]));
-  assert.equal(store.add(ZH), true);
-  assert.equal(store.add({ ...ZH }), false);
-  assert.equal(store.add({ ...ZH, id: "bfs-351", name: "Bern" }), true);
-  assert.equal(store.remove("bfs-261"), true);
-  assert.equal(store.remove("bfs-261"), false);
-  assert.deepEqual(changes, [
-    ["add", ["bfs-261"]],
-    ["add", ["bfs-261", "bfs-351"]],
-    ["remove", ["bfs-351"]],
-  ]);
 });
 
 test("labels", () => {

@@ -25,9 +25,46 @@
   </header>
 
   <aside id="planner" class="glass panel planner" aria-labelledby="planner-title" hidden>
-    <h2 id="planner-title">Deine Orte</h2>
-    <ul id="location-chips" class="chips"></ul>
-    <button id="add-location" type="button" class="btn-secondary">+ Ort hinzufügen</button>
+    <section class="planner-section">
+      <h2 id="planner-title">Deine Orte</h2>
+      <ul id="location-chips" class="chips"></ul>
+      <button id="add-location" type="button" class="btn-secondary">+ Ort hinzufügen</button>
+      <p id="locations-hint" class="hint" role="status" hidden></p>
+    </section>
+
+    <details class="planner-section settings" open>
+      <summary>Einstellungen</summary>
+      <div class="field">
+        <label for="planner-year">Jahr</label>
+        <select id="planner-year"></select>
+      </div>
+      <div class="field">
+        <span class="field-label" id="working-days-label">Arbeitstage</span>
+        <div id="working-days" class="wd-toggles" role="group" aria-labelledby="working-days-label"></div>
+        <p id="working-days-hint" class="hint" role="status" hidden></p>
+      </div>
+      <div class="field">
+        <span class="field-label">Halbe Arbeitstage</span>
+        <ul id="half-days" class="half-days"></ul>
+        <div class="half-day-add">
+          <label for="half-day-input" class="visually-hidden">Datum für halben Arbeitstag</label>
+          <input id="half-day-input" type="date">
+          <button id="half-day-add" type="button" class="btn-secondary">Hinzufügen</button>
+        </div>
+        <p id="half-day-hint" class="hint" role="status" hidden></p>
+      </div>
+    </details>
+
+    <section class="planner-section" aria-labelledby="calendar-title">
+      <h2 id="calendar-title">Kalender</h2>
+      <p id="calendar-status" class="hint" role="status" aria-live="polite"></p>
+      <div id="calendar"></div>
+      <details class="legend-box" open>
+        <summary>Legende</summary>
+        <div id="calendar-legend"></div>
+      </details>
+      <p id="calendar-source" class="source-note"></p>
+    </section>
   </aside>
 
   <div class="glass panel layer-switch" role="group" aria-label="Kartenhintergrund">

@@ -1,0 +1,178 @@
+// Calendar view. `renderMonth` is the ONE render function for the year overview, the
+// month detail and (from M5) period highlighting (CLAUDE.md rule 6).
+import { CATEGORIES, categoryLabel, dayCategory, groupByMonth } from "./calendar-model.js";
+import { formatDateWithWeekday, monthTitle, WEEKDAYS_SHORT, weekdayIndex } from "./format.js";
+
+const el = (tag, className, text) => {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+};
+
+function dayTitle(day, category) {
+  const parts = [formatDateWithWeekday(day.date), categoryLabel(category)];
+  if (day.holiday_names.length) parts.push(day.holiday_names.join(", "));
+  return parts.join(" · ");
+}
+
+/**
+ * Renders one month from DayInfo objects. `detail` only changes how much text each
+ * cell carries; categories, classes and highlighting are identical in both views.
+ */
+export function renderMonth(month, { detail = false } = {}) {
+  const root = el("div", `month ${detail ? "month-detail" : "month-mini"}`);
+  root.append(el(detail ? "h3" : "div", "month-title", monthTitle(month.year, month.month)));
+
+  const grid = el("div", "month-grid");
+  grid.setAttribute("role", "grid");
+  const head = el("div", "month-row month-head");
+  head.setAttribute("role", "row");
+  for (const wd of WEEKDAYS_SHORT) {
+    const h = el("span", "wd", wd);
+    h.setAttribute("role", "columnheader");
+    head.append(h);
+  }
+  grid.append(head);
+
+  let row = el("div", "month-row");
+  row.setAttribute("role", "row");
+  for (let i = 0; i < weekdayIndex(month.days[0].date); i++) row.append(el("span", "day day-empty"));
+  for (const day of month.days) {
+    if (row.children.length === 7) {
+      grid.append(row);
+      row = el("div", "month-row");
+      row.setAttribute("role", "row");
+    }
+    const category = dayCategory(day);
+    const cell = el("span", `day cat-${category}`);
+    cell.setAttribute("role", "gridcell");
+    if (!day.in_planned_year) cell.classList.add("outside");
+    if (day.in_selected_period) cell.classList.add("in-period");
+    cell.dataset.date = day.date;
+    cell.title = dayTitle(day, category);
+    cell.append(el("span", "day-num", String(Number(day.date.slice(8)))));
+    if (detail) {
+      if (day.holiday_names.length) cell.append(el("span", "day-note", day.holiday_names.join(", ")));
+      else if (category === "half_day") cell.append(el("span", "day-note", "½ Tag"));
+    }
+    row.append(cell);
+  }
+  grid.append(row);
+  root.append(grid);
+  return root;
+}
+
+export function renderLegend() {
+  const list = el("ul", "legend");
+  for (const { key, label } of CATEGORIES) {
+    const item = el("li", "legend-item");
+    item.append(el("span", `legend-swatch day cat-${key}`), el("span", "", label));
+    list.append(item);
+  }
+  const outside = el("li", "legend-item");
+  outside.append(el("span", "legend-swatch day cat-workday outside"), el("span", "", "Ausserhalb des Planjahres"));
+  list.append(outside);
+  return list;
+}
+
+function prefersMotion() {
+  return !document.hidden && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+/** FLIP: animate `node` from the rectangle `from` to its current layout position. */
+function flip(node, from, { reverse = false } = {}) {
+  const to = node.getBoundingClientRect();
+  if (!from || !to.width || !to.height) return Promise.resolve();
+  const inverted = `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`;
+  const frames = [{ transform: inverted, opacity: 0.4 }, { transform: "none", opacity: 1 }];
+  node.style.transformOrigin = "top left";
+  const anim = node.animate(reverse ? frames.reverse() : frames, { duration: 320, easing: "cubic-bezier(.2,.7,.2,1)" });
+  return anim.finished.catch(() => {});
+}
+
+/**
+ * Year overview (14 month boxes) with zoom into a month and back.
+ * `container` gets fully managed content.
+ */
+export function createCalendarView(container) {
+  const yearView = el("div", "year-view");
+  const detailView = el("div", "month-view");
+  detailView.hidden = true;
+  const back = el("button", "btn-back", "← Jahresübersicht");
+  back.type = "button";
+  const detailBody = el("div", "month-view-body");
+  detailView.append(back, detailBody);
+  container.replaceChildren(yearView, detailView);
+
+  let months = [];
+  let openKey = null;            // "YYYY-MM" of the zoomed month, kept across re-renders
+
+  const keyOf = (m) => `${m.year}-${String(m.month).padStart(2, "0")}`;
+
+  function renderYear() {
+    yearView.replaceChildren(...months.map((m) => {
+      const box = el("button", "month-box");
+      box.type = "button";
+      box.dataset.month = keyOf(m);
+      box.setAttribute("aria-label", `${monthTitle(m.year, m.month)} vergrössern`);
+      box.append(renderMonth(m));
+      box.addEventListener("click", () => openMonth(keyOf(m), box.getBoundingClientRect()));
+      return box;
+    }));
+  }
+
+  function renderDetail() {
+    const m = months.find((x) => keyOf(x) === openKey);
+    if (!m) return closeMonth({ animate: false });
+    detailBody.replaceChildren(renderMonth(m, { detail: true }));
+  }
+
+  function openMonth(key, fromRect) {
+    openKey = key;
+    renderDetail();
+    yearView.hidden = true;
+    detailView.hidden = false;
+    back.focus({ preventScroll: true });
+    if (prefersMotion()) flip(detailView, fromRect);
+  }
+
+  async function closeMonth({ animate = true } = {}) {
+    const key = openKey;
+    openKey = null;
+    if (detailView.hidden) return;
+    yearView.hidden = false;
+    const box = yearView.querySelector(`[data-month="${key}"]`);
+    if (animate && box && prefersMotion()) {
+      // Shrink the year box out of the detail rectangle for continuity.
+      const detailRect = detailView.getBoundingClientRect();
+      detailView.hidden = true;
+      await flip(box, detailRect);
+    } else {
+      detailView.hidden = true;
+    }
+    box?.focus({ preventScroll: true });
+  }
+
+  back.addEventListener("click", () => closeMonth());
+
+  return {
+    /** Re-render from a fresh day list; an open month detail stays open. */
+    setDays(days) {
+      months = groupByMonth(days);
+      renderYear();
+      if (openKey) renderDetail();
+    },
+    clear() {
+      months = [];
+      openKey = null;
+      yearView.replaceChildren();
+      detailBody.replaceChildren();
+      yearView.hidden = false;
+      detailView.hidden = true;
+    },
+    openMonth: (key) => openMonth(key, yearView.querySelector(`[data-month="${key}"]`)?.getBoundingClientRect()),
+    closeMonth,
+    openMonthKey: () => openKey,
+  };
+}

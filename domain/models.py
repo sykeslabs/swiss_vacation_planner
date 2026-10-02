@@ -1,6 +1,12 @@
 """Domain models. External data is normalised into these before it reaches domain logic."""
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
+from datetime import date
+
+CANTONS = frozenset({
+    "AG", "AI", "AR", "BE", "BL", "BS", "FR", "GE", "GL", "GR", "JU", "LU", "NE",
+    "NW", "OW", "SG", "SH", "SO", "SZ", "TG", "TI", "UR", "VD", "VS", "ZG", "ZH",
+})
 
 
 @dataclass(frozen=True)
@@ -21,3 +27,57 @@ class Location:
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+
+@dataclass(frozen=True)
+class Holiday:
+    date: date
+    name: str
+    type: str                  # "public" (more types once You.com data arrives in M4)
+    jurisdiction: str          # "national" | "canton" | "municipality"
+    canton: str | None
+    municipality: str | None
+    source: str
+    source_url: str
+    source_title: str
+    retrieved_at: str
+    confidence: str            # "high" | "medium" | "low"
+    conflict: str | None = None
+    work_fraction: float = 0.0  # share of the day still worked: 0 = whole day off, 0.5 = afternoon off
+
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        d["date"] = self.date.isoformat()
+        return d
+
+
+@dataclass(frozen=True)
+class DayInfo:
+    """One calendar day. The displayed category is derived from these attributes only
+    (frontend `dayCategory()`), never stored."""
+
+    date: date
+    weekday: str               # "MON" … "SUN"
+    in_planned_year: bool      # False for the boundary months (Dec before, Jan after)
+    is_working_day: bool       # weekday is configured as a working day
+    is_weekend: bool           # Saturday or Sunday
+    is_holiday: bool
+    holiday_names: tuple[str, ...]
+    holiday_on_non_working_day: bool
+    work_fraction: float       # 1, 0.5 or 0: share of a working day that has to be worked
+    is_vacation: bool = False
+    is_free: bool = False
+    in_selected_period: bool = False
+
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        d["date"] = self.date.isoformat()
+        d["holiday_names"] = list(self.holiday_names)
+        return d
+
+
+@dataclass(frozen=True)
+class CalendarConfig:
+    year: int
+    working_days: frozenset[int]                       # ISO weekday numbers 1 (Mon) … 7 (Sun)
+    half_days: dict[date, float] = field(default_factory=dict)

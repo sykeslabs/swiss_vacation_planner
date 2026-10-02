@@ -8,10 +8,13 @@ export class ApiError extends Error {
   }
 }
 
-async function getJson(url, { signal, fallbackMessage }) {
+async function requestJson(url, { signal, fallbackMessage, payload }) {
   let res;
   try {
-    res = await fetch(url, { signal, headers: { Accept: "application/json" } });
+    res = await fetch(url, payload === undefined
+      ? { signal, headers: { Accept: "application/json" } }
+      : { method: "POST", signal, body: JSON.stringify(payload),
+          headers: { Accept: "application/json", "Content-Type": "application/json" } });
   } catch (err) {
     if (err.name === "AbortError") throw err;
     throw new ApiError("Keine Verbindung zum Server. Bitte versuche es erneut.", "network", 0);
@@ -23,15 +26,27 @@ async function getJson(url, { signal, fallbackMessage }) {
     // Non-JSON error page (e.g. a platform 502): fall back to a generic message.
   }
   if (!res.ok || body === null) {
-    throw new ApiError(body?.error?.message ?? fallbackMessage, body?.error?.code ?? "http_error", res.status);
+    // Only our own errors carry snake_case codes and German messages. Platform errors
+    // (e.g. Vercel's {"error":{"code":"500","message":"A server error has occurred"}})
+    // look similar but must not reach the user.
+    const ours = typeof body?.error?.code === "string" && /^[a-z_]+$/.test(body.error.code);
+    throw new ApiError(ours ? body.error.message : fallbackMessage, ours ? body.error.code : "http_error", res.status);
   }
   return body;
 }
 
 export async function fetchLocations(q, { signal } = {}) {
-  const body = await getJson(`/api/locations?q=${encodeURIComponent(q)}`, {
+  const body = await requestJson(`/api/locations?q=${encodeURIComponent(q)}`, {
     signal,
     fallbackMessage: "Die Ortssuche ist im Moment nicht erreichbar. Die Karte kannst du weiter nutzen.",
   });
   return Array.isArray(body.locations) ? body.locations : [];
+}
+
+export async function postOptimize(payload, { signal } = {}) {
+  return requestJson("/api/optimize", {
+    signal,
+    payload,
+    fallbackMessage: "Der Kalender konnte nicht berechnet werden. Bitte versuche es erneut.",
+  });
 }

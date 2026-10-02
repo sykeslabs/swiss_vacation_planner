@@ -103,7 +103,7 @@ export function createSwissMap(el, { onNotice = () => {} } = {}) {
     const narrow = window.innerWidth <= 720;
     return narrow
       ? { paddingTopLeft: [40, 140], paddingBottomRight: [40, Math.round(window.innerHeight * 0.45)] }
-      : { paddingTopLeft: [60, 60], paddingBottomRight: [400, 60] };
+      : { paddingTopLeft: [60, 60], paddingBottomRight: [470, 60] };
   }
 
   // Fly animations run on requestAnimationFrame, which browsers pause in background tabs;
