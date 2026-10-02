@@ -1,0 +1,56 @@
+{
+ "identify_gemeinde_8001": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/MapServer/identify?geometry=8.541608810424805%2C47.372947692871094&geometryType=esriGeometryPoint&sr=4326&layers=all%3Ach.swisstopo.swissboundaries3d-gemeinde-flaeche.fill&tolerance=0&returnGeometry=false&lang=de",
+  "status": 200,
+  "body": {
+   "results": [
+    {
+     "layerBodId": "ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill",
+     "layerName": "Gemeindegrenzen",
+     "featureId": "261",
+     "id": "261",
+     "attributes": {
+      "gemname": "Zürich",
+      "gemflaeche": 9188.0,
+      "gde_hist_id": 13688,
+      "gde_nr": 261,
+      "jahr": 2026,
+      "perimeter": 58651.7229898752,
+      "kanton": "ZH",
+      "objektart": 0,
+      "is_current_jahr": true,
+      "objektart_lookup": "gemeindegebiet",
+      "link_de": "https://www.agvchapp.bfs.admin.ch/de/communes/results?BfsNr=261&EntriesFrom=01.01.1990&EntriesTo=01.01.2026&IncludeUnassignedEntities=True\n\n",
+      "link_fr": "https://www.agvchapp.bfs.admin.ch/fr/communes/results?BfsNr=261&EntriesFrom=01.01.1990&EntriesTo=01.01.2026&IncludeUnassignedEntities=True\n\n",
+      "link_it": "https://www.agvchapp.bfs.admin.ch/it/communes/results?BfsNr=261&EntriesFrom=01.01.1990&EntriesTo=01.01.2026&IncludeUnassignedEntities=True\n\n",
+      "label": "Zürich"
+     }
+    }
+   ]
+  },
+  "retrieved_at": "2026-10-02T19:15:06.770277+00:00",
+  "note": "trimmed: original response had 177 results (one per historical year); only is_current_jahr=true kept"
+ },
+ "plz_feature_4385": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/MapServer/ch.swisstopo-vd.ortschaftenverzeichnis_plz/4385?returnGeometry=false&lang=de",
+  "status": 200,
+  "body": {
+   "feature": {
+    "layerBodId": "ch.swisstopo-vd.ortschaftenverzeichnis_plz",
+    "layerName": "Amtliches Ortschaftenverzeichnis",
+    "featureId": "4385",
+    "id": "4385",
+    "attributes": {
+     "plz": 8001,
+     "zusziff": "00",
+     "langtext": "Zürich",
+     "status": "REAL",
+     "modified": "27.04.2026",
+     "bgdi_created": "01.10.2026",
+     "label": 8001
+    }
+   }
+  },
+  "retrieved_at": "2026-10-02T19:15:06.770316+00:00"
+ }
+}

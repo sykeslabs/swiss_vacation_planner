@@ -23,3 +23,11 @@ One line per decision: date — decision — reason. Status: **accepted** (owner
 - 2026-10-02 — accepted — Python 3.13 (`.python-version`), local `.venv`, `requirements.txt` (runtime) + `requirements-dev.txt` (pytest) — owner chose venv option (a).
 - 2026-10-02 — accepted — Leaflet 1.9.4 from unpkg with SHA-384 SRI; no frontend build step — spec allows vanilla JS; SRI hashes computed from the served files.
 - 2026-10-02 — accepted — Base map `ch.swisstopo.pixelkarte-farbe` / satellite `ch.swisstopo.swissimage` via WMTS EPSG:3857 (JPEG), attribution "© swisstopo", map limited to minZoom 7 and padded Swiss bounds — SPEC §7.
+- 2026-10-02 — accepted — API proposal (PLAN §6): `Location.id` = `bfs-<BFS>` / `bfs-<BFS>-plz-<PLZ>`; later endpoints receive the location fields along with `location_id` — owner approved for M2.
+- 2026-10-02 — accepted — Search routing: a query starting with a digit searches `zipcode` only, any other query searches `gg25` (municipalities) only — live check: the zipcode layer matches digits only ("Wengen" finds no locality), so mixing origins only adds noise.
+- 2026-10-02 — accepted — Postcode results get BFS/canton from one `identify` call each (≤ 8 per search, 4 in parallel, cached 24 h by coordinate); `timeInstant` = current year, with fallback to the previous year — postcode results don't include them; without `timeInstant` the response is 184 KB.
+- 2026-10-02 — accepted — Search results are cached only when every lookup succeeded; if all postcode lookups fail, a 503 is returned instead of "no results" — a temporary outage must not be cached as an empty result for 24 h.
+- 2026-10-02 — accepted — `Location` carries provenance (`source`, `source_url`, `retrieved_at`) in addition to the SPEC §4 fields — CLAUDE.md rule 7.
+- 2026-10-02 — accepted — No limit on the number of selected locations — the spec doesn't set one.
+- 2026-10-02 — accepted — Map jumps instead of flying when the tab is hidden or the user prefers reduced motion — `requestAnimationFrame` is paused in background tabs; accessibility.
+- 2026-10-02 — accepted — Frontend logic tests with `node --test` (no npm dependencies); search behaviour lives in a DOM-free `search-controller.js` — SPEC §9 allows a small JS test.

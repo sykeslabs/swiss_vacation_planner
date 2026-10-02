@@ -56,6 +56,8 @@ Dependencies: `flask`, `requests`, `pydantic` (v2), `holidays` (11 MB, pure Pyth
 
 Normalised `Location.id` = `"bfs-<BFS>"` or `"bfs-<BFS>-plz-<PLZ>"`.
 
+M2 finding: the `zipcode` origin matches digits only, so a village name that isn't a municipality (e.g. "Wengen") is found only by its postcode (3823 → Gemeinde Lauterbrunnen). Text queries therefore search `gg25` only; digit queries search `zipcode` only. GeoAdmin's matching is fuzzy, so nonsense input can return unrelated municipalities.
+
 ### 4.2 You.com (holidays) — `X-API-Key`
 
 | Endpoint | Result | Latency |

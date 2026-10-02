@@ -72,5 +72,54 @@ export function createSwissMap(el, { onNotice = () => {} } = {}) {
   }
   setBaseLayer("map");
 
-  return { map, setBaseLayer, activeBaseLayer: () => active };
+  const markerLayer = L.layerGroup().addTo(map);
+  const markers = new Map();
+
+  /** Sync markers with `locations` (id-keyed); returns nothing. */
+  function setLocations(locations, labelOf) {
+    const ids = new Set(locations.map((l) => l.id));
+    for (const [id, marker] of markers) {
+      if (!ids.has(id)) {
+        markerLayer.removeLayer(marker);
+        markers.delete(id);
+      }
+    }
+    for (const loc of locations) {
+      if (markers.has(loc.id)) continue;
+      const marker = L.circleMarker([loc.latitude, loc.longitude], {
+        radius: 8, weight: 2, color: "#ffffff", fillColor: "#d52b1e", fillOpacity: 0.95,
+      });
+      // Pass a DOM node, not a string: Leaflet inserts strings as HTML.
+      const label = document.createElement("span");
+      label.textContent = labelOf(loc);
+      marker.bindTooltip(label, { permanent: true, direction: "top", offset: [0, -8], className: "loc-label" });
+      marker.addTo(markerLayer);
+      markers.set(loc.id, marker);
+    }
+  }
+
+  // Keep the selected places clear of the planner panel (right side, or bottom sheet on phones).
+  function viewPadding() {
+    const narrow = window.innerWidth <= 720;
+    return narrow
+      ? { paddingTopLeft: [40, 140], paddingBottomRight: [40, Math.round(window.innerHeight * 0.45)] }
+      : { paddingTopLeft: [60, 60], paddingBottomRight: [400, 60] };
+  }
+
+  // Fly animations run on requestAnimationFrame, which browsers pause in background tabs;
+  // jump instead there, and for users who prefer reduced motion.
+  function shouldAnimate() {
+    return !document.hidden && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  }
+
+  function fitLocations(locations) {
+    const bounds = locations.length
+      ? L.latLngBounds(locations.map((l) => [l.latitude, l.longitude]))
+      : L.latLngBounds(SWISS_BOUNDS);
+    const options = locations.length ? { ...viewPadding(), maxZoom: 12 } : {};
+    if (shouldAnimate()) map.flyToBounds(bounds, { ...options, duration: 0.8 });
+    else map.fitBounds(bounds, { ...options, animate: false });
+  }
+
+  return { map, setBaseLayer, activeBaseLayer: () => active, setLocations, fitLocations };
 }

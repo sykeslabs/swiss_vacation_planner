@@ -12,9 +12,23 @@
 <body>
   <div id="map" role="application" aria-label="Karte der Schweiz"></div>
 
-  <header class="glass panel brand">
+  <header class="glass panel search-panel">
     <h1>Ferienplaner Schweiz</h1>
+    <div class="search">
+      <label for="location-search" class="visually-hidden">Ort oder PLZ suchen</label>
+      <input id="location-search" type="search" role="combobox" aria-autocomplete="list"
+             aria-expanded="false" aria-controls="location-results"
+             placeholder="Ort oder PLZ suchen" autocomplete="off" spellcheck="false">
+      <ul id="location-results" class="results" role="listbox" aria-label="Suchergebnisse" hidden></ul>
+      <p id="search-status" class="search-status" role="status" aria-live="polite" hidden></p>
+    </div>
   </header>
+
+  <aside id="planner" class="glass panel planner" aria-labelledby="planner-title" hidden>
+    <h2 id="planner-title">Deine Orte</h2>
+    <ul id="location-chips" class="chips"></ul>
+    <button id="add-location" type="button" class="btn-secondary">+ Ort hinzufügen</button>
+  </aside>
 
   <div class="glass panel layer-switch" role="group" aria-label="Kartenhintergrund">
     <button type="button" class="seg" data-layer="map" aria-pressed="true">Karte</button>

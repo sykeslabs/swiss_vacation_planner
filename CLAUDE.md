@@ -1,10 +1,10 @@
 # CLAUDE.md — Swiss Vacation Planner
 
-Persistent rules for every session in this repo. The full spec is in `docs/SPEC.md`.
+Persistent rules for every session in this repo. The full spec is in `docs/SPEC_V1.md`.
 
 ## How to work
 
-- Work in milestones (defined in `docs/SPEC.md` §3). Do only the current milestone, then **stop and report** using the template in §3. Do not start the next milestone until the owner approves it.
+- Work in milestones (defined in `docs/SPEC_V1.md` §3). Do only the current milestone, then **stop and report** using the template in §3. Do not start the next milestone until the owner approves it.
 - Before you write any code, inspect the existing repo. Adapt to it; never overwrite working code without asking.
 - If an implementation choice changes a requirement, or the spec contradicts itself or reality (for example an API doesn't behave as described), **stop and ask**. Don't pick an option silently.
 - Never claim something works unless you ran it. Label each verification as `unit-tested`, `manually verified (live API)`, or `not verified`.
