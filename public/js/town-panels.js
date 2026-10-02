@@ -1,5 +1,6 @@
-// One movable panel per selected town: title bar (drag handle, remove), status, legend
-// and the town's own calendar. Positions are remembered per town in the browser.
+// One movable panel per selected town: title bar (drag handle, collapse, remove), status,
+// legend and the town's own calendar. Position and collapsed state are remembered per
+// town in the browser.
 import { createCalendarView, renderLegend } from "./calendar-view.js";
 import { bringToFront as raise, makeDraggable } from "./draggable.js";
 import { defaultPosition, PANEL_GAP } from "./panel-layout.js";
@@ -8,8 +9,11 @@ import { locationLabel } from "./state.js";
 export const POSITIONS_KEY = "svp.panels.v2";   // v2: 1000 px panels (v1 positions were for 480 px)
 const NARROW = "(max-width: 720px)";
 const EXPECTED_PANEL_HEIGHT = 470;   // header + legend + 2 rows of 7 months
+export const COLLAPSED_KEY = "svp.panels-collapsed.v1";
 
-export function createTownPanels({ container, storage = null, onRemove, onLayoutChange = () => {}, searchPanel }) {
+export function createTownPanels({
+  container, storage = null, onRemove, onLayoutChange = () => {}, searchPanel, onHolidayClick = () => {},
+}) {
   const panels = new Map();          // id → { el, calendar, status, source, drag }
   let positions = {};
   try {
@@ -18,6 +22,20 @@ export function createTownPanels({ container, storage = null, onRemove, onLayout
     positions = {};
   }
   const narrow = window.matchMedia(NARROW);
+  let collapsed = new Set();
+  try {
+    const saved = JSON.parse(storage?.getItem(COLLAPSED_KEY) ?? "[]");
+    if (Array.isArray(saved)) collapsed = new Set(saved.filter((x) => typeof x === "string"));
+  } catch {
+    collapsed = new Set();
+  }
+  function saveCollapsed() {
+    try {
+      storage?.setItem(COLLAPSED_KEY, JSON.stringify([...collapsed]));
+    } catch {
+      // convenience only
+    }
+  }
 
   function savePositions() {
     try {
@@ -78,7 +96,15 @@ export function createTownPanels({ container, storage = null, onRemove, onLayout
     remove.textContent = "×";
     remove.setAttribute("aria-label", `${locationLabel(loc)} entfernen`);
     remove.addEventListener("click", () => onRemove(loc.id));
-    head.append(title, remove);
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "chip-remove panel-toggle";
+    const bodyId = `town-body-${loc.id}`;
+    toggle.setAttribute("aria-controls", bodyId);
+    const actions = document.createElement("span");
+    actions.className = "head-actions";
+    actions.append(toggle, remove);
+    head.append(title, actions);
 
     const status = document.createElement("p");
     status.className = "hint town-status";
@@ -88,7 +114,7 @@ export function createTownPanels({ container, storage = null, onRemove, onLayout
 
     const legend = document.createElement("details");
     legend.className = "legend-box";
-    legend.open = true;
+    legend.open = false;            // collapsed by default
     const summary = document.createElement("summary");
     summary.textContent = "Legende";
     legend.append(summary, renderLegend());
@@ -98,7 +124,29 @@ export function createTownPanels({ container, storage = null, onRemove, onLayout
     const source = document.createElement("p");
     source.className = "source-note";
 
-    el.append(head, status, legend, calendarEl, source);
+    const body = document.createElement("div");
+    body.className = "town-body";
+    body.id = bodyId;
+    body.append(status, legend, calendarEl, source);
+    el.append(head, body);
+
+    function setCollapsed(on) {
+      body.hidden = on;
+      el.classList.toggle("is-collapsed", on);
+      toggle.textContent = on ? "▸" : "▾";
+      toggle.setAttribute("aria-expanded", String(!on));
+      toggle.setAttribute("aria-label", `${locationLabel(loc)} ${on ? "ausklappen" : "einklappen"}`);
+      toggle.title = on ? "Ausklappen" : "Einklappen";
+    }
+    setCollapsed(collapsed.has(loc.id));
+    toggle.addEventListener("click", () => {
+      const on = !collapsed.has(loc.id);
+      if (on) collapsed.add(loc.id);
+      else collapsed.delete(loc.id);
+      saveCollapsed();
+      setCollapsed(on);
+      onLayoutChange();
+    });
     el.addEventListener("pointerdown", () => bringToFront(loc.id), true);
     el.addEventListener("focusin", () => bringToFront(loc.id));
     container.append(el);
@@ -113,7 +161,14 @@ export function createTownPanels({ container, storage = null, onRemove, onLayout
         onLayoutChange();
       },
     });
-    panels.set(loc.id, { el, calendar: createCalendarView(calendarEl), status, source, drag });
+    const entry = { el, status, source, drag, holidays: [] };
+    entry.calendar = createCalendarView(calendarEl, {
+      onHolidayClick: (day, cell) => onHolidayClick({
+        location: loc, day, from: cell,
+        holidays: entry.holidays.filter((h) => h.date === day.date),
+      }),
+    });
+    panels.set(loc.id, entry);
     bringToFront(loc.id);
   }
 
@@ -133,9 +188,11 @@ export function createTownPanels({ container, storage = null, onRemove, onLayout
           p.el.remove();
           panels.delete(id);
           delete positions[id];
+          collapsed.delete(id);
         }
       }
       savePositions();
+      saveCollapsed();
       locations.forEach((loc, i) => {
         if (!panels.has(loc.id)) {
           create(loc);
@@ -144,9 +201,10 @@ export function createTownPanels({ container, storage = null, onRemove, onLayout
       });
       onLayoutChange();
     },
-    setResult(id, { days, fromMonth, statusText, sourceText }) {
+    setResult(id, { days, holidays = [], fromMonth, statusText, sourceText }) {
       const p = panels.get(id);
       if (!p) return;
+      p.holidays = holidays;
       p.calendar.setDays(days, { fromMonth });
       p.status.textContent = statusText;
       p.source.textContent = sourceText;

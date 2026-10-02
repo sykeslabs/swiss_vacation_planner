@@ -235,3 +235,37 @@ test("map padding covers the panels on the right only", () => {
   assert.equal(rightCoverage([{ left: 588, width: 1000 }, { left: 588, width: 1000 }], vw), 1012);
   assert.equal(rightCoverage([{ left: 20, width: 480 }], vw), 0);   // moved to the left side
 });
+
+// --- holiday background info ------------------------------------------------------------------
+
+import { readFileSync } from "node:fs";
+import { effectLabel, jurisdictionLabel, loadHolidayInfo, lookupHoliday, wikipediaUrl } from "../../public/js/holiday-info.js";
+
+const INFO = JSON.parse(readFileSync(new URL("../../public/data/holiday-info.json", import.meta.url), "utf8"));
+
+test("holiday info lookup with aliases and Wikipedia links", () => {
+  const kf = lookupHoliday(INFO, "Karfreitag");
+  assert.match(kf.text, /Kreuzigung/);
+  assert.equal(kf.url, "https://de.wikipedia.org/wiki/Karfreitag");
+  assert.equal(lookupHoliday(INFO, "Bundesfeiertag").url, lookupHoliday(INFO, "Nationalfeiertag").url);
+  assert.equal(lookupHoliday(INFO, "Unbekannter Tag"), null);
+  assert.equal(lookupHoliday(null, "Karfreitag"), null);
+  assert.equal(wikipediaUrl("Schlacht bei Näfels (1388)"), "https://de.wikipedia.org/wiki/Schlacht_bei_N%C3%A4fels_(1388)");
+});
+
+test("holiday facts in German", () => {
+  assert.equal(jurisdictionLabel({ jurisdiction: "national" }), "Gesamtschweizerischer Feiertag");
+  assert.equal(jurisdictionLabel({ jurisdiction: "canton", canton: "ZH" }), "Kantonaler Feiertag (ZH)");
+  assert.match(effectLabel({ holiday_on_non_working_day: true }), /keinen zusätzlichen freien Tag/);
+  assert.match(effectLabel({ holiday_on_non_working_day: false }), /ohne einen Ferientag/);
+});
+
+test("holiday info loads once and retries after a failure", async () => {
+  let calls = 0;
+  const failing = async () => { calls++; throw new Error("offline"); };
+  assert.equal(await loadHolidayInfo(failing), null);
+  const ok = async () => { calls++; return { ok: true, json: async () => INFO }; };
+  assert.equal((await loadHolidayInfo(ok)).holidays.Karfreitag.wiki, "Karfreitag");
+  await loadHolidayInfo(ok);
+  assert.equal(calls, 2);                       // second successful call served from cache
+});

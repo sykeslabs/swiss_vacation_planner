@@ -31,8 +31,8 @@
   <section id="settings" class="glass panel settings-panel" aria-labelledby="settings-title" hidden>
     <header class="panel-head" tabindex="0" title="Ziehen zum Verschieben"
             aria-label="Jahr und Arbeitstage: Panel verschieben mit Ziehen oder Pfeiltasten">
-      <h2 id="settings-title" class="town-title"><label for="planner-year">Jahr</label></h2>
-      <select id="planner-year"></select>
+      <h2 id="settings-title" class="town-title">Jahr</h2>
+      <div id="planner-year" class="year-badges" role="group" aria-labelledby="settings-title"></div>
     </header>
     <div class="field">
       <span class="field-label" id="working-days-label">Arbeitstage</span>
@@ -58,10 +58,6 @@
       </div>
       <p id="half-day-hint" class="hint" role="status" hidden></p>
     </div>
-    <details class="legend-box" open>
-      <summary>Legende</summary>
-      <div id="settings-legend"></div>
-    </details>
   </section>
 
   <!-- One movable panel per selected town (built in town-panels.js). -->

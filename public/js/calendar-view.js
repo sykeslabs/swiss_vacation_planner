@@ -53,7 +53,14 @@ export function renderMonth(month, { detail = false } = {}) {
     cell.title = dayTitle(day, category);
     cell.append(el("span", "day-num", String(Number(day.date.slice(8)))));
     if (detail) {
-      if (day.holiday_names.length) cell.append(el("span", "day-note", day.holiday_names.join(", ")));
+      if (day.holiday_names.length) {
+        cell.append(el("span", "day-note", day.holiday_names.join(", ")));
+        // Holidays open their background info (see createCalendarView onHolidayClick).
+        cell.dataset.holiday = "true";
+        cell.tabIndex = 0;
+        cell.setAttribute("aria-haspopup", "dialog");
+        cell.title += " · Klicken für Hintergrund";
+      }
       else if (category === "half_day") cell.append(el("span", "day-note", "½ Tag"));
     }
     row.append(cell);
@@ -95,7 +102,7 @@ function flip(node, from, { reverse = false } = {}) {
  * Year overview (14 month boxes) with zoom into a month and back.
  * `container` gets fully managed content.
  */
-export function createCalendarView(container) {
+export function createCalendarView(container, { onHolidayClick = null } = {}) {
   const yearView = el("div", "year-view");
   const detailView = el("div", "month-view");
   detailView.hidden = true;
@@ -155,6 +162,26 @@ export function createCalendarView(container) {
   }
 
   back.addEventListener("click", () => closeMonth());
+
+  // Holiday cells in the month detail: click, Enter or Space opens the background info.
+  function holidayFromEvent(e) {
+    const cell = e.target.closest?.('[data-holiday="true"]');
+    if (!cell || !onHolidayClick) return null;
+    const m = months.find((x) => keyOf(x) === openKey);
+    const day = m?.days.find((d) => d.date === cell.dataset.date);
+    return day ? { day, cell } : null;
+  }
+  detailBody.addEventListener("click", (e) => {
+    const hit = holidayFromEvent(e);
+    if (hit) onHolidayClick(hit.day, hit.cell);
+  });
+  detailBody.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const hit = holidayFromEvent(e);
+    if (!hit) return;
+    e.preventDefault();
+    onHolidayClick(hit.day, hit.cell);
+  });
 
   return {
     /** Re-render from a fresh day list; an open month detail stays open.

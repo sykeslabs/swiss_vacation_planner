@@ -16,6 +16,8 @@
   --map-bg: #dfe6ec;
   --field-bg: rgba(255, 255, 255, 0.7);
   --tip-bg: rgba(255, 255, 255, 0.97);
+  --toggle-on-bg: #475569;
+  --toggle-on-text: #ffffff;
 
   /* Day categories (calendar + legend) */
   --cat-workday-bg: rgba(255, 255, 255, 0.55);
@@ -27,7 +29,8 @@
   --cat-vacation-bg: #1f7a8c;
   --cat-vacation-text: #ffffff;
   --cat-free-run-bg: rgba(31, 122, 140, 0.25);
-  --cat-half-day-bg: linear-gradient(135deg, var(--cat-workday-bg) 50%, var(--cat-weekend-bg) 50%);
+  /* half day: holiday red in the lower-right half, split diagonally */
+  --cat-half-day-bg: linear-gradient(135deg, var(--cat-workday-bg) 50%, var(--cat-holiday-bg) 50%);
   --period-ring: #1f7a8c;
 }
 
@@ -41,6 +44,8 @@
     --map-bg: #1d232c;
     --field-bg: rgba(10, 14, 20, 0.45);
     --tip-bg: rgba(28, 34, 44, 0.97);
+    --toggle-on-bg: #cbd5e1;
+    --toggle-on-text: #1c2430;
     --cat-workday-bg: rgba(255, 255, 255, 0.07);
     --cat-weekend-bg: rgba(150, 165, 185, 0.22);
     --cat-holiday-off-bg: rgba(240, 90, 80, 0.2);
@@ -52,6 +57,9 @@
 }
 
 * { box-sizing: border-box; }
+
+/* The hidden attribute must win over component display rules (e.g. .year-view is a grid). */
+[hidden] { display: none !important; }
 
 html, body {
   margin: 0;
@@ -187,18 +195,27 @@ html, body {
 }
 .settings-panel.is-dragging { box-shadow: 0 14px 44px rgba(20, 30, 45, 0.35); }
 .settings-panel .panel-head { margin: 0 -14px 6px; padding-left: 14px; }
-.settings-panel .panel-head select {
+/* Year badges in the "Jahr" title bar (one per selectable year, side by side) */
+.year-badges { display: flex; gap: 4px; }
+.year-badge {
   font: inherit;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  padding: 4px 10px;
   color: var(--text);
   background: var(--field-bg);
   border: 1px solid var(--glass-border);
-  border-radius: var(--radius-sm);
-  padding: 4px 8px;
+  border-radius: 999px;
   cursor: pointer;
 }
-.settings-panel .town-title label { cursor: inherit; }
+.year-badge:hover { border-color: var(--text-muted); }
+.year-badge[aria-pressed="true"] { background: var(--toggle-on-bg); border-color: var(--toggle-on-bg); color: var(--toggle-on-text); font-weight: 600; }
+.year-badge:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .town-title { margin: 0; font-size: 0.95rem; font-weight: 600; }
+.head-actions { display: inline-flex; align-items: center; gap: 2px; }
+.panel-toggle { font-size: 0.85rem; }
+/* Collapsed town: only the title bar remains */
+.town-panel.is-collapsed { padding-bottom: 0; }
+.town-panel.is-collapsed .town-head { margin-bottom: 0; border-bottom: 0; border-radius: var(--radius); }
 @keyframes panel-in {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: none; }
@@ -312,7 +329,8 @@ html, body {
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
-.wd-toggle[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+/* Selected working days: neutral slate, so red stays reserved for holidays (teal for vacation). */
+.wd-toggle[aria-pressed="true"] { background: var(--toggle-on-bg); border-color: var(--toggle-on-bg); color: var(--toggle-on-text); }
 .wd-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .half-days { list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-direction: column; gap: 3px; }
@@ -356,7 +374,7 @@ html, body {
 }
 .day-empty { visibility: hidden; }
 .cat-workday { background: var(--cat-workday-bg); }
-.cat-half_day { background: var(--cat-half-day-bg); }
+.cat-half_day { background: var(--cat-half-day-bg); font-weight: 600; text-shadow: 0 0 2px var(--field-bg); }
 .cat-weekend { background: var(--cat-weekend-bg); color: var(--text-muted); }
 .cat-holiday { background: var(--cat-holiday-bg); color: var(--cat-holiday-text); font-weight: 600; }
 .cat-holiday_off { background: var(--cat-holiday-off-bg); box-shadow: inset 0 0 0 1px var(--cat-holiday-off-border); }
@@ -379,6 +397,26 @@ html, body {
   font-size: 0.8rem;
   border-radius: 6px;
 }
+.month-detail .day[data-holiday="true"] { cursor: pointer; }
+.month-detail .day[data-holiday="true"]:hover { filter: brightness(1.12); }
+.month-detail .day[data-holiday="true"]:focus-visible { outline: 2px solid var(--text); outline-offset: 1px; }
+
+/* Holiday background panel */
+.holiday-modal {
+  width: min(440px, calc(100vw - 2 * var(--gap)));
+  max-height: calc(100vh - 2 * var(--gap));
+  overflow-y: auto;
+  padding: 0 16px 12px;
+  animation: panel-in 0.25s ease-out;
+}
+.holiday-modal .panel-head { margin: 0 -16px 8px; }
+.holiday-meta { margin: 0 0 8px; }
+.holiday-entry + .holiday-entry { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--glass-border); }
+.holiday-name { margin: 0 0 4px; font-size: 0.9rem; }
+.holiday-facts { margin: 0 0 8px; padding-left: 18px; font-size: 0.82rem; color: var(--text-muted); }
+.holiday-text { margin: 0 0 6px; font-size: 0.88rem; line-height: 1.45; }
+.holiday-link { font-size: 0.82rem; color: var(--text); }
+
 .day-note {
   margin-top: 4px;
   font-size: 0.6rem;

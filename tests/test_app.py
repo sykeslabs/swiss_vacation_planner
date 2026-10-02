@@ -51,10 +51,11 @@ def test_satellite_is_preselected_and_settings_start_collapsed(client):
     assert "hidden>" in settings[:120]
     # always expanded: year, working days and half days aren't inside a collapsible block
     assert "<details" not in settings[:settings.index('id="half-day-hint"')]
-    assert '<label for="planner-year">Jahr</label>' in settings and 'class="panel-head"' in settings
+    assert '>Jahr</h2>' in settings and 'class="year-badges"' in settings and "<select" not in settings
+    assert 'class="panel-head"' in settings
     assert settings.index('id="planner-year"') < settings.index('id="working-days"') < settings.index('id="half-days"')
     assert 'role="tooltip"' in settings and "halben Arbeitstag" in settings
-    assert 'id="settings-legend"' in settings
+    assert "Legende" not in settings                     # legend only in the town panels
     # Town panels (with legend above each calendar) are built in JS; no "+ Ort hinzufügen" button
     assert 'id="town-panels"' in html and "add-location" not in html
 

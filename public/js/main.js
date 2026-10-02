@@ -1,6 +1,6 @@
 import { fetchLocations, postOptimize } from "./api.js";
 import { bringToFront, makeDraggable, storedPosition, storePosition } from "./draggable.js";
-import { renderLegend } from "./calendar-view.js";
+import { createHolidayModal } from "./holiday-modal.js";
 import { createSwissMap } from "./map.js";
 import { PANEL_GAP, PANEL_WIDTH, rightCoverage } from "./panel-layout.js";
 import { createSettingsPanel } from "./planner.js";
@@ -73,7 +73,6 @@ createSearchBox({
 
 const settingsRoot = $("settings");
 const settings = createSettingsPanel({ root: settingsRoot, store });
-$("settings-legend").append(renderLegend());
 
 // The "Jahr" panel (shared settings) moves like the town panels and remembers its spot.
 const SETTINGS_POSITION_KEY = "svp.settings-panel.v1";
@@ -98,11 +97,15 @@ function placeSettings() {
 window.addEventListener("resize", placeSettings);
 narrowScreen.addEventListener?.("change", placeSettings);
 
+const holidayModal = createHolidayModal();
+
 townPanels = createTownPanels({
   container: $("town-panels"),
   storage,
   searchPanel: document.querySelector(".search-panel"),
   onRemove: (id) => store.removeLocation(id),
+  onHolidayClick: ({ location, day, holidays, from }) =>
+    holidayModal.open({ day, holidays, from, town: `${locationLabel(location)} (${location.canton})` }),
 });
 
 // --- calendars ------------------------------------------------------------------------------
@@ -120,6 +123,7 @@ function renderCalendars() {
     const h = result.holidays?.[0];
     townPanels.setResult(loc.id, {
       days: result.days,
+      holidays: result.holidays ?? [],
       fromMonth: firstVisibleMonth(state.year),
       statusText: [String(state.year), ...warnings].join(" · "),
       sourceText: h ? `Quelle Feiertage: ${h.source_title} · Kanton ${loc.canton}` : "",

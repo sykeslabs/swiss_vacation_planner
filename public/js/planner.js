@@ -9,7 +9,7 @@ const WEEKDAY_NAMES = { MON: "Montag", TUE: "Dienstag", WED: "Mittwoch", THU: "D
 
 export function createSettingsPanel({ root, store }) {
   const $ = (id) => root.querySelector(`#${id}`);
-  const yearSelect = $("planner-year");
+  const yearGroup = $("planner-year");
   const weekdayBox = $("working-days");
   const workingHint = $("working-days-hint");
   const halfList = $("half-days");
@@ -18,12 +18,15 @@ export function createSettingsPanel({ root, store }) {
   const halfHint = $("half-day-hint");
 
   for (const y of selectableYears()) {
-    const opt = document.createElement("option");
-    opt.value = String(y);
-    opt.textContent = String(y);
-    yearSelect.append(opt);
+    const badge = document.createElement("button");
+    badge.type = "button";
+    badge.className = "year-badge";
+    badge.dataset.year = String(y);
+    badge.textContent = String(y);
+    badge.addEventListener("click", () => store.setYear(y));
+    yearGroup.append(badge);
   }
-  yearSelect.addEventListener("change", () => store.setYear(Number(yearSelect.value)));
+  const yearBadges = [...yearGroup.querySelectorAll(".year-badge")];
 
   const weekdayButtons = WEEKDAY_CODES.map((code) => {
     const b = document.createElement("button");
@@ -61,7 +64,7 @@ export function createSettingsPanel({ root, store }) {
   });
 
   function renderConfig(state) {
-    yearSelect.value = String(state.year);
+    for (const b of yearBadges) b.setAttribute("aria-pressed", String(Number(b.dataset.year) === state.year));
     for (const b of weekdayButtons) b.setAttribute("aria-pressed", String(state.workingDays.includes(b.dataset.code)));
     const { start, end } = calendarWindow(state.year);
     halfInput.min = start;
