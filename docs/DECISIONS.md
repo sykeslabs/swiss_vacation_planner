@@ -76,3 +76,17 @@ One line per decision: date — decision — reason. Status: **accepted** (owner
 - 2026-10-02 — accepted — Holiday model gains `enabled`, `corroborated_by` (URLs), `note`; FoundHoliday for parsed rows; optional holiday id = "YYYY-MM-DD|Name"; enabled ids are part of the saved planner state.
 - 2026-10-02 — accepted — "Jahr" panel can be collapsed to its title bar (year badges stay usable), state remembered (`svp.settings-collapsed.v1`) — owner request.
 - 2026-10-02 — accepted — python-dotenv in requirements-dev so `flask run` loads `.env` (YDC_API_KEY) locally; not a runtime dependency (Vercel provides env vars).
+- 2026-10-02 — accepted — Q1: periods that cost 0 vacation days are listed separately ("Ohne Ferientag") only if they are ≥ 3 consecutive free days — owner approved.
+- 2026-10-02 — accepted — Q2 / headline: best period = highest free days per vacation day (ties: more free days); with a budget only periods within the budget count — owner approved.
+- 2026-10-02 — accepted — D4 confirmed: a candidate costs 1–10 vacation days and spans at most 21 calendar days — owner approved.
+- 2026-10-02 — accepted — D3: input "Ferientage pro Jahr" (empty = no limit) in the "Jahr" panel, added in M5 — owner approved.
+- 2026-10-02 — accepted — Optimizer candidate = vacation block with a free day directly before AND after it (bridge, D4 "start and end next to a non-working day"); a lone Friday before a weekend is therefore not a candidate — otherwise every weekend would appear 52 times.
+- 2026-10-02 — accepted — Cost bound 0 < cost ≤ 10 (a single half day counts) instead of "1–10" — D4's lower bound only meant to separate zero-cost periods, which have their own list.
+- 2026-10-02 — accepted — No vacation day before today (the optimizer gets `today` as input; stays pure) — consistent with hiding past months for the current year (open Q4).
+- 2026-10-02 — accepted — Budget compares the vacation days charged to the planned year (D8 split); the candidate list shows only periods within the budget; summary.best = most efficient within budget (ties: more free days, earlier).
+- 2026-10-02 — accepted — Summary panel "Wie viele Ferientage holst du {Jahr} raus?" (left below the search; movable, collapsible): per town "N Feiertage, davon M an Arbeitstagen" + best period; clicking selects it in the town panel — owner request.
+- 2026-10-02 — accepted — Period selection is client-side (applySelection on the day model → same single renderer, both views); periods sortable by Datum/Effizienz; "Ohne Ferientag" list; selection box with dates, cost, vacation dates, anchor holidays, year split.
+- 2026-10-02 — accepted — Layout: map switch bottom left, "Jahr" panel top right, town panels open to its left — owner request; saved positions moved to new keys (settings v2, panels v3).
+- 2026-10-02 — accepted — Movable panels never reach below the window (max-height from their top edge; they scroll inside).
+- 2026-10-02 — accepted — Shared floating-panel helper for the "Jahr" and summary panels (drag, remembered position, collapse).
+- 2026-10-02 — proposed — Owner reported Baden AG: Mariä Empfängnis 08.12.2026 wrongly a holiday. Confirmed: the `holidays` package applies AG's Catholic holidays canton-wide, but feiertagskalender.ch marks them "nur teilweise gültig" (Mariä Empfängnis 11.6 %) and the municipality page "Gemeinde Baden" doesn't list them. Fix needs an owner decision (changes D1 "never auto-resolve").

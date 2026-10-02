@@ -37,3 +37,27 @@ export function groupByMonth(days) {
   }
   return months;
 }
+
+/**
+ * Days with a selected period applied: days of the free run get in_selected_period,
+ * the candidate's vacation days become is_vacation. Returns new objects (pure).
+ */
+export function applySelection(days, candidate) {
+  if (!candidate) return days;
+  const vacation = new Set(candidate.vacation_dates);
+  return days.map((d) => (d.date >= candidate.start && d.date <= candidate.end
+    ? { ...d, in_selected_period: true, is_vacation: vacation.has(d.date), is_free: true }
+    : d));
+}
+
+/** "½", "1", "4½" */
+export function formatDays(n) {
+  const whole = Math.floor(n);
+  const half = n - whole >= 0.5;
+  return half ? `${whole || ""}½` : String(whole);
+}
+
+/** "1 Ferientag", "½ Ferientag", "4½ Ferientage" */
+export function vacationDaysLabel(n) {
+  return `${formatDays(n)} ${n > 1 ? "Ferientage" : "Ferientag"}`;
+}

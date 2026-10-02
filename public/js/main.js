@@ -1,10 +1,13 @@
 import { fetchHolidays, fetchLocations, postOptimize } from "./api.js";
-import { bringToFront, makeDraggable, storedPosition, storePosition } from "./draggable.js";
+import { applySelection } from "./calendar-model.js";
+import { candidateKey } from "./candidate-list.js";
+import { makeFloatingPanel } from "./floating-panel.js";
 import { createHolidayModal } from "./holiday-modal.js";
 import { createSwissMap } from "./map.js";
 import { PANEL_GAP, PANEL_WIDTH, rightCoverage } from "./panel-layout.js";
 import { createSettingsPanel } from "./planner.js";
 import { createSearchBox } from "./search.js";
+import { renderSummary } from "./summary-panel.js";
 import { createPlannerStore, firstVisibleMonth, locationLabel, MAX_LOCATIONS, optimizePayload } from "./state.js";
 import { createTownPanels } from "./town-panels.js";
 import { debounce } from "./util.js";
@@ -32,8 +35,12 @@ try {
 let townPanels = null;
 const swissMap = createSwissMap($("map"), {
   onNotice: showNotice,
-  // Before the first panel is visible, reserve room for one panel.
-  getRightCoverage: () => rightCoverage(townPanels?.rects() ?? [], window.innerWidth) || PANEL_WIDTH + PANEL_GAP,
+  // Before the first panel is visible, reserve room for one panel (and the "Jahr" panel).
+  getRightCoverage: () => {
+    const rects = [...(townPanels?.rects() ?? [])];
+    if (!settingsRoot.hidden) rects.push(settingsRoot.getBoundingClientRect());
+    return rightCoverage(rects, window.innerWidth) || PANEL_WIDTH + PANEL_GAP;
+  },
 });
 
 const segButtons = document.querySelectorAll(".layer-switch .seg");
@@ -74,56 +81,35 @@ createSearchBox({
 const settingsRoot = $("settings");
 const settings = createSettingsPanel({ root: settingsRoot, store });
 
-// The "Jahr" panel (shared settings) moves like the town panels and remembers its spot.
-const SETTINGS_POSITION_KEY = "svp.settings-panel.v1";
-const narrowScreen = window.matchMedia("(max-width: 720px)");
-const settingsDrag = makeDraggable(settingsRoot, settingsRoot.querySelector(".panel-head"), {
-  enabled: () => !narrowScreen.matches,
-  onStart: () => bringToFront(settingsRoot),
-  onEnd: (pos) => storePosition(storage, SETTINGS_POSITION_KEY, pos),
+// "Jahr" panel (shared settings): top right, movable, collapsible, remembered.
+const settingsPanel = makeFloatingPanel({
+  root: settingsRoot,
+  head: settingsRoot.querySelector(".panel-head"),
+  toggle: $("settings-toggle"),
+  body: $("settings-body"),
+  storage,
+  positionKey: "svp.settings-panel.v2",        // v2: default moved to the top right
+  collapsedKey: "svp.settings-collapsed.v1",
+  toggleLabel: "Arbeitstage",
+  defaultPosition: (rect) => ({ left: window.innerWidth - PANEL_GAP - rect.width, top: PANEL_GAP }),
 });
-settingsRoot.addEventListener("pointerdown", () => bringToFront(settingsRoot), true);
-settingsRoot.addEventListener("focusin", () => bringToFront(settingsRoot));
-function placeSettings() {
-  if (settingsRoot.hidden) return;
-  if (narrowScreen.matches) {
-    settingsRoot.style.left = settingsRoot.style.top = "";
-    return;
-  }
-  const below = document.querySelector(".search-panel").getBoundingClientRect();
-  const pos = storedPosition(storage, SETTINGS_POSITION_KEY) ?? { left: below.left, top: below.bottom + PANEL_GAP };
-  settingsDrag.place(pos.left, pos.top);
-}
-window.addEventListener("resize", placeSettings);
 
-// Collapse the "Jahr" panel to its title bar (year badges stay usable); remembered.
-const SETTINGS_COLLAPSED_KEY = "svp.settings-collapsed.v1";
-const settingsToggle = $("settings-toggle");
-function setSettingsCollapsed(on) {
-  $("settings-body").hidden = on;
-  settingsRoot.classList.toggle("is-collapsed", on);
-  settingsToggle.textContent = on ? "▸" : "▾";
-  settingsToggle.setAttribute("aria-expanded", String(!on));
-  settingsToggle.setAttribute("aria-label", on ? "Arbeitstage ausklappen" : "Arbeitstage einklappen");
-  settingsToggle.title = on ? "Ausklappen" : "Einklappen";
-}
-let collapsedAtStart = false;
-try {
-  collapsedAtStart = storage?.getItem(SETTINGS_COLLAPSED_KEY) === "1";
-} catch {
-  // storage blocked: start expanded
-}
-setSettingsCollapsed(collapsedAtStart);
-settingsToggle.addEventListener("click", () => {
-  const on = !settingsRoot.classList.contains("is-collapsed");
-  setSettingsCollapsed(on);
-  try {
-    storage?.setItem(SETTINGS_COLLAPSED_KEY, on ? "1" : "0");
-  } catch {
-    // convenience only
-  }
+// Summary panel: left, below the search; movable, collapsible, remembered.
+const summaryRoot = $("summary");
+const summaryPanel = makeFloatingPanel({
+  root: summaryRoot,
+  head: summaryRoot.querySelector(".panel-head"),
+  toggle: $("summary-toggle"),
+  body: $("summary-body"),
+  storage,
+  positionKey: "svp.summary-panel.v1",
+  collapsedKey: "svp.summary-collapsed.v1",
+  toggleLabel: "Übersicht",
+  defaultPosition: () => {
+    const below = document.querySelector(".search-panel").getBoundingClientRect();
+    return { left: below.left, top: below.bottom + PANEL_GAP };
+  },
 });
-narrowScreen.addEventListener?.("change", placeSettings);
 
 const holidayModal = createHolidayModal();
 
@@ -131,6 +117,8 @@ townPanels = createTownPanels({
   container: $("town-panels"),
   storage,
   searchPanel: document.querySelector(".search-panel"),
+  // Town panels open to the left of the "Jahr" panel (top right).
+  rightBoundary: () => (settingsRoot.hidden ? window.innerWidth : Math.round(settingsRoot.getBoundingClientRect().left)),
   onRemove: (id) => store.removeLocation(id),
   onHolidayClick: ({ location, day, holidays, from }) => holidayModal.open({
     day, from, town: `${locationLabel(location)} (${location.canton})`,
@@ -190,6 +178,20 @@ function ensureHolidays(state) {
 
 let latest = null;          // last successful /api/optimize response
 let inflight = null;
+const selected = new Map();       // location_id → candidate key "start|end"
+const sortModes = new Map();      // location_id → "date" | "efficiency"
+
+function findCandidate(result, key) {
+  if (!result || !key) return null;
+  return [...result.candidates, ...(result.summary?.best ? [result.summary.best] : [])]
+    .find((c) => candidateKey(c) === key) ?? null;
+}
+
+function selectCandidate(locationId, candidate) {
+  if (candidate) selected.set(locationId, candidateKey(candidate));
+  else selected.delete(locationId);
+  renderCalendars();
+}
 
 function renderCalendars() {
   const state = store.get();
@@ -197,16 +199,37 @@ function renderCalendars() {
   for (const loc of state.locations) {
     const result = latest.per_location[loc.id];
     if (!result) continue;
+    // keep a selection only while that exact period still exists
+    const chosen = findCandidate(result, selected.get(loc.id));
+    if (!chosen) selected.delete(loc.id);
     const warnings = (result.warnings ?? []).map((w) => w.message);
     const h = result.holidays?.[0];
     townPanels.setResult(loc.id, {
-      days: result.days,
+      days: applySelection(result.days, chosen),
       holidays: result.holidays ?? [],
       fromMonth: firstVisibleMonth(state.year),
       statusText: [String(state.year), ...warnings].join(" · "),
       sourceText: h ? `Quelle Feiertage: ${h.source_title} · Kanton ${loc.canton}` : "",
     });
+    townPanels.setCandidates(loc.id, result, {
+      year: state.year,
+      selectedKey: selected.get(loc.id) ?? null,
+      sortMode: sortModes.get(loc.id) ?? "date",
+      onSelect: (c) => selectCandidate(loc.id, c),
+      onSort: (mode) => {
+        sortModes.set(loc.id, mode);
+        renderCalendars();
+      },
+    });
   }
+  renderSummary(summaryRoot, {
+    year: state.year,
+    rows: state.locations.map((loc) => ({ location: loc, summary: latest.per_location[loc.id]?.summary ?? null })),
+    onPick: (loc, best) => {
+      selectCandidate(loc.id, best);
+      townPanels.bringToFront(loc.id);
+    },
+  });
 }
 
 async function recalculate() {
@@ -233,9 +256,13 @@ function renderChrome(state) {
   const hasTowns = state.locations.length > 0;
   searchInput.placeholder = hasTowns ? PLACEHOLDER_ADD : PLACEHOLDER_SEARCH;
   searchLabel.textContent = hasTowns ? PLACEHOLDER_ADD : PLACEHOLDER_SEARCH;
-  const wasHidden = settingsRoot.hidden;
-  settingsRoot.hidden = !hasTowns;
-  if (wasHidden && hasTowns) placeSettings();
+  if (hasTowns) {
+    settingsPanel.show();
+    summaryPanel.show();
+  } else {
+    settingsPanel.hide();
+    summaryPanel.hide();
+  }
   settings.render(state);
 }
 

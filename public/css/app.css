@@ -198,6 +198,58 @@ html, body {
 .settings-panel.is-collapsed { padding-bottom: 0; }
 .settings-panel.is-collapsed .panel-head { margin-bottom: 0; border-bottom: 0; border-radius: var(--radius); }
 
+/* Summary panel */
+.summary-panel {
+  width: min(360px, calc(100vw - 2 * var(--gap)));
+  max-height: calc(100vh - 2 * var(--gap) - 24px);
+  overflow-y: auto;
+  padding: 0 14px 10px;
+  animation: panel-in 0.35s ease-out;
+}
+.summary-panel .panel-head { margin: 0 -14px 6px; padding-left: 14px; }
+.summary-panel .summary-title { font-size: 0.88rem; }
+.summary-panel.is-collapsed { padding-bottom: 0; }
+.summary-panel.is-collapsed .panel-head { margin-bottom: 0; border-bottom: 0; border-radius: var(--radius); }
+.summary-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.summary-row + .summary-row { border-top: 1px solid var(--glass-border); padding-top: 8px; }
+.summary-town { margin: 0; font-size: 0.85rem; font-weight: 600; }
+.summary-holidays { margin: 2px 0 4px; font-size: 0.8rem; color: var(--text-muted); }
+
+/* Periods ("So setzt du deine Ferientage clever ein") */
+.tips-box > summary { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); margin: 6px 0 4px; }
+.sort-bar { display: flex; align-items: center; gap: 4px; margin: 4px 0 6px; }
+.sort-bar .field-label { margin: 0 4px 0 0; }
+.candidates {
+  list-style: none; margin: 0 0 6px; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 4px;
+  max-height: 220px; overflow-y: auto;
+}
+.candidate-btn {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  color: var(--text);
+  background: var(--field-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 6px 9px;
+  cursor: pointer;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.candidate-btn:hover { border-color: var(--text-muted); }
+.candidate-btn[aria-pressed="true"] { border-color: var(--period-ring); box-shadow: inset 0 0 0 1px var(--period-ring); }
+.candidate-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.candidate-title { font-size: 0.84rem; font-weight: 600; }
+.candidate-meta { font-size: 0.74rem; color: var(--text-muted); }
+.summary-best { margin-top: 2px; }
+.selected-period {
+  margin: 4px 0 8px; padding: 8px 10px;
+  border: 1px solid var(--period-ring); border-radius: var(--radius-sm);
+  background: var(--field-bg);
+}
+.selected-title { margin: 0 0 4px; font-weight: 600; font-size: 0.9rem; }
+.zero-cost { margin: 2px 0 6px; padding-left: 18px; font-size: 0.8rem; color: var(--text-muted); }
+
 /* "Feiertage" section of a town panel */
 .holidays-box > summary { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); margin: 6px 0 4px; }
 .holiday-summary { margin: 0 0 4px; }
@@ -468,9 +520,10 @@ html, body {
 .leaflet-tooltip.loc-label::before { display: none; }
 
 /* Segmented control */
+/* Base map switch: bottom left (Leaflet attribution and zoom sit bottom right) */
 .layer-switch {
-  top: var(--gap);
-  right: var(--gap);
+  bottom: var(--gap);
+  left: var(--gap);
   display: flex;
   gap: 4px;
   padding: 4px;
@@ -528,7 +581,16 @@ html, body {
   :root { --gap: 8px; }
   .search-panel { right: var(--gap); width: auto; }
   .search-panel h1 { font-size: 0.9rem; }
-  .layer-switch { top: calc(var(--gap) + 92px); }
+  .layer-switch { top: calc(var(--gap) + 92px); bottom: auto; left: auto; right: var(--gap); }
+  .summary-panel {
+    top: auto;
+    left: var(--gap);
+    right: var(--gap);
+    bottom: calc(45vh + var(--gap) + 28px);
+    width: auto;
+    max-height: 18vh;
+  }
+  .summary-panel .panel-head { cursor: default; touch-action: auto; position: static; }
   .settings-panel {
     top: calc(var(--gap) + 92px);
     left: var(--gap);

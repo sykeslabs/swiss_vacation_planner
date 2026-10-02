@@ -2,18 +2,20 @@
 // legend and the town's own calendar. Position and collapsed state are remembered per
 // town in the browser.
 import { createCalendarView, renderLegend } from "./calendar-view.js";
+import { renderCandidates } from "./candidate-list.js";
 import { bringToFront as raise, makeDraggable } from "./draggable.js";
 import { renderHolidaySection } from "./holiday-list.js";
 import { defaultPosition, PANEL_GAP } from "./panel-layout.js";
 import { locationLabel } from "./state.js";
 
-export const POSITIONS_KEY = "svp.panels.v2";   // v2: 1000 px panels (v1 positions were for 480 px)
+export const POSITIONS_KEY = "svp.panels.v3";   // v3: panels start left of the "Jahr" panel
 const NARROW = "(max-width: 720px)";
 const EXPECTED_PANEL_HEIGHT = 470;   // header + legend + 2 rows of 7 months
 export const COLLAPSED_KEY = "svp.panels-collapsed.v1";
 
 export function createTownPanels({
   container, storage = null, onRemove, onLayoutChange = () => {}, searchPanel, onHolidayClick = () => {},
+  rightBoundary = () => window.innerWidth,
 }) {
   const panels = new Map();          // id → { el, calendar, status, source, drag }
   let positions = {};
@@ -66,9 +68,9 @@ export function createTownPanels({
     const previous = prevRect && { left: prevRect.left, top: prevRect.top,
       height: Math.max(prevRect.height, EXPECTED_PANEL_HEIGHT) };
     const pos = saved ?? defaultPosition(index, {
-      viewportWidth: window.innerWidth,
+      viewportWidth: rightBoundary(),
       viewportHeight: window.innerHeight,
-      top: PANEL_GAP + 52,
+      top: PANEL_GAP,
       minLeft: searchRect ? Math.round(searchRect.right + PANEL_GAP) : PANEL_GAP,
       previous,
     });
@@ -122,6 +124,15 @@ export function createTownPanels({
     holidaysBox.append(holidaysSummary, holidaysBody);
     renderHolidaySection(holidaysBody, null, { isEnabled: () => false, onToggle: () => {} });
 
+    const tipsBox = document.createElement("details");
+    tipsBox.className = "legend-box tips-box";
+    tipsBox.open = true;
+    const tipsSummary = document.createElement("summary");
+    tipsSummary.textContent = "So setzt du deine Ferientage clever ein";
+    const tipsBody = document.createElement("div");
+    tipsBox.append(tipsSummary, tipsBody);
+    renderCandidates(tipsBody, null, {});
+
     const legend = document.createElement("details");
     legend.className = "legend-box";
     legend.open = false;            // collapsed by default
@@ -137,7 +148,7 @@ export function createTownPanels({
     const body = document.createElement("div");
     body.className = "town-body";
     body.id = bodyId;
-    body.append(status, holidaysBox, legend, calendarEl, source);
+    body.append(status, holidaysBox, tipsBox, legend, calendarEl, source);
     el.append(head, body);
 
     function setCollapsed(on) {
@@ -171,7 +182,7 @@ export function createTownPanels({
         onLayoutChange();
       },
     });
-    const entry = { el, status, source, drag, holidays: [], holidaysBody };
+    const entry = { el, status, source, drag, holidays: [], holidaysBody, tipsBody };
     entry.calendar = createCalendarView(calendarEl, {
       onHolidayClick: (day, cell) => onHolidayClick({
         location: loc, day, from: cell,
@@ -218,6 +229,11 @@ export function createTownPanels({
       p.calendar.setDays(days, { fromMonth });
       p.status.textContent = statusText;
       p.source.textContent = sourceText;
+    },
+    /** Optimizer periods for the town; see candidate-list.js for the options. */
+    setCandidates(id, result, options) {
+      const p = panels.get(id);
+      if (p) renderCandidates(p.tipsBody, result, options);
     },
     /** Web-check result for the town (GET /api/holidays) with its on/off switches. */
     setHolidayData(id, data, { isEnabled, onToggle }) {

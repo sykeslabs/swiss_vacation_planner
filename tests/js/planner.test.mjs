@@ -313,3 +313,67 @@ test("holiday summary and confidence texts", () => {
   assert.match(confidenceLabel({ confidence: "medium" }), /Referenzkalender/);
   assert.match(confidenceLabel({ confidence: "low", enabled: false }), /selbst aktivieren/);
 });
+
+// --- M5: selected period ----------------------------------------------------------------------
+
+import { applySelection, formatDays, vacationDaysLabel } from "../../public/js/calendar-model.js";
+
+test("selected period marks vacation days and free run, other days unchanged", () => {
+  const mk = (date, extra = {}) => ({ ...base, date, ...extra });
+  const days = [mk("2027-05-05"), mk("2027-05-06", { is_holiday: true, work_fraction: 0, is_free: true }),
+    mk("2027-05-07"), mk("2027-05-08", { is_working_day: false, work_fraction: 0, is_free: true }),
+    mk("2027-05-09", { is_working_day: false, work_fraction: 0, is_free: true }), mk("2027-05-10")];
+  const cand = { start: "2027-05-06", end: "2027-05-09", vacation_dates: ["2027-05-07"] };
+  const out = applySelection(days, cand);
+  assert.deepEqual(out.map(dayCategory), ["workday", "holiday", "vacation", "free_run", "free_run", "workday"]);
+  assert.equal(days[2].is_vacation, false);              // input not mutated
+  assert.equal(applySelection(days, null), days);
+});
+
+test("vacation day labels", () => {
+  assert.equal(formatDays(0.5), "½");
+  assert.equal(formatDays(4.5), "4½");
+  assert.equal(vacationDaysLabel(1), "1 Ferientag");
+  assert.equal(vacationDaysLabel(0.5), "½ Ferientag");
+  assert.equal(vacationDaysLabel(4), "4 Ferientage");
+});
+
+import { candidateTitle, sortCandidates, yearSplit } from "../../public/js/candidate-list.js";
+import { holidayCountLabel } from "../../public/js/summary-panel.js";
+
+const C1 = { start: "2027-05-06", end: "2027-05-09", days_free: 4, vacation_days_required: 1, efficiency: 4,
+  anchor_holidays: ["Auffahrt"], vacation_days_by_year: { 2027: 1 }, vacation_dates: ["2027-05-07"] };
+const C2 = { start: "2027-03-20", end: "2027-03-29", days_free: 10, vacation_days_required: 4, efficiency: 2.5,
+  anchor_holidays: ["Karfreitag", "Ostermontag"], vacation_days_by_year: { 2027: 4 }, vacation_dates: [] };
+const C3 = { start: "2026-12-25", end: "2027-01-10", days_free: 17, vacation_days_required: 8.5, efficiency: 2,
+  anchor_holidays: [], vacation_days_by_year: { 2026: 3.5, 2027: 5 }, vacation_dates: [] };
+
+test("period title in the SPEC §7 format", () => {
+  assert.equal(candidateTitle(C1), "1 Ferientag → 4 Tage frei · 6.–9. Mai 2027");
+  assert.equal(candidateTitle(C3), "8½ Ferientage → 17 Tage frei · 25. Dezember 2026 – 10. Januar 2027");
+});
+
+test("sort by date or efficiency; year split only across years", () => {
+  assert.deepEqual(sortCandidates([C1, C2, C3], "date").map((c) => c.start), ["2026-12-25", "2027-03-20", "2027-05-06"]);
+  assert.deepEqual(sortCandidates([C3, C2, C1], "efficiency").map((c) => c.efficiency), [4, 2.5, 2]);
+  assert.equal(yearSplit(C1), "");
+  assert.equal(yearSplit(C3), "Davon 3½ Ferientage im 2026, 5 Ferientage im 2027");
+});
+
+test("summary holiday count", () => {
+  assert.equal(holidayCountLabel({ holidays_total: 9, holidays_on_working_days: 5 }), "9 Feiertage, davon 5 an Arbeitstagen");
+  assert.equal(holidayCountLabel({ holidays_total: 1, holidays_on_working_days: 0 }), "1 Feiertag, davon 0 an Arbeitstagen");
+});
+
+test("budget is part of the state and the payload", () => {
+  const store = createPlannerStore({ today: TODAY });
+  store.addLocation(ZH);
+  assert.equal(optimizePayload(store.get()).vacation_budget, null);
+  assert.equal(store.setBudget("12.3"), true);
+  assert.equal(store.get().budget, 12.5);                 // rounded to half days
+  assert.equal(optimizePayload(store.get()).vacation_budget, 12.5);
+  assert.equal(store.setBudget("-1"), false);
+  assert.equal(store.setBudget("abc"), false);
+  assert.equal(store.setBudget(""), true);
+  assert.equal(store.get().budget, null);
+});

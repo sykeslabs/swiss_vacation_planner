@@ -4,6 +4,8 @@ import { clampPosition } from "./panel-layout.js";
 
 const KEY_STEP = 16;
 const KEY_STEP_LARGE = 64;
+const MIN_PANEL_HEIGHT = 160;
+const BOTTOM_MARGIN = 28;      // keeps the attribution line free
 
 // One stacking order for all movable panels (above the fixed panels at z-index 1000).
 let topZ = 1100;
@@ -44,6 +46,8 @@ export function makeDraggable(el, handle, {
     const pos = clampPosition({ left, top }, viewport());
     el.style.left = `${pos.left}px`;
     el.style.top = `${pos.top}px`;
+    // Never reach below the window: the panel scrolls inside instead.
+    el.style.maxHeight = `${Math.max(MIN_PANEL_HEIGHT, window.innerHeight - pos.top - BOTTOM_MARGIN)}px`;
     onMove(pos);
     return pos;
   }

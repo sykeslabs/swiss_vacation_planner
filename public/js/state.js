@@ -52,7 +52,7 @@ function isValidLocation(loc) {
 
 export function defaultState(today = new Date()) {
   const year = selectableYears(today)[0];
-  return { year, workingDays: [...DEFAULT_WORKING_DAYS], halfDays: defaultHalfDays(year), locations: [], enabledHolidays: {} };
+  return { year, workingDays: [...DEFAULT_WORKING_DAYS], halfDays: defaultHalfDays(year), locations: [], enabledHolidays: {}, budget: null };
 }
 
 /** Validates persisted data; anything unreadable falls back to defaults field by field. */
@@ -97,6 +97,8 @@ export function restoreState(raw, today = new Date()) {
     halfDays,
     locations,
     enabledHolidays,
+    budget: typeof data.budget === "number" && data.budget >= 0 && data.budget <= 366
+      ? Math.round(data.budget * 2) / 2 : null,
   };
 }
 
@@ -182,6 +184,15 @@ export function createPlannerStore({ storage = null, today = new Date() } = {}) 
       return true;
     },
 
+    /** Vacation days per year (D3); null = no limit. Returns false for invalid input. */
+    setBudget(value) {
+      const budget = value === null || value === "" ? null : Math.round(Number(value) * 2) / 2;
+      if (budget !== null && !(budget >= 0 && budget <= 366)) return false;
+      if (budget === state.budget) return true;
+      commit({ ...state, budget }, { type: "config" });
+      return true;
+    },
+
     /** Switch an optional (web-only) holiday on or off for one location. */
     toggleHoliday(locationId, key) {
       if (!state.locations.some((l) => l.id === locationId)) return false;
@@ -238,7 +249,7 @@ export function optimizePayload(state, holidayLists = {}) {
     locations: state.locations,
     working_days: state.workingDays,
     half_days: state.halfDays,
-    vacation_budget: null,
+    vacation_budget: state.budget ?? null,
   };
   if (Object.keys(extra).length) payload.extra_holidays = extra;
   return payload;

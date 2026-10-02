@@ -32,7 +32,13 @@ def test_returns_days_per_location(client):
     zh = data["per_location"]["bfs-261"]
     assert zh["days"][0]["date"] == f"{YEAR - 1}-12-01"
     assert zh["days"][-1]["date"] == f"{YEAR + 1}-01-31"
-    assert zh["candidates"] == [] and zh["summary"] is None
+    assert zh["candidates"] and zh["summary"]["candidates_count"] >= len(zh["candidates"])
+    c = zh["candidates"][0]
+    assert set(c) == {"location_id", "start", "end", "days_free", "vacation_days_required", "efficiency",
+                      "anchor_holidays", "vacation_days_by_year", "vacation_dates"}
+    assert zh["candidates"] == sorted(zh["candidates"], key=lambda c: (c["start"], c["end"]))
+    assert all(z["days_free"] >= 3 for z in zh["zero_cost"])
+    assert {"holidays_total", "holidays_on_working_days", "best", "budget"} <= set(zh["summary"])
     assert zh["warnings"] == []          # holiday warnings come from GET /api/holidays
     assert {h["source"] for h in zh["holidays"]} == {"Referenzkalender (Python-Paket holidays)"}
     day = next(d for d in zh["days"] if d["date"] == f"{YEAR}-12-24")
@@ -119,3 +125,13 @@ def test_enabled_optional_holiday_frees_the_day(client):
     assert extra["confidence"] == "low" and extra["source"] == "Websuche (You.com)"
     without = post(client, payload()).get_json()["per_location"]["bfs-261"]
     assert not next(x for x in without["days"] if x["date"] == d.isoformat())["is_holiday"]
+
+
+def test_budget_limits_list_and_best(client):
+    free = post(client, payload()).get_json()["per_location"]["bfs-261"]
+    one = post(client, payload(vacation_budget=1)).get_json()["per_location"]["bfs-261"]
+    assert len(one["candidates"]) < len(free["candidates"])
+    assert all(c["vacation_days_by_year"].get(str(YEAR), 0) <= 1 for c in one["candidates"])
+    assert one["summary"]["budget"] == 1
+    best = one["summary"]["best"]
+    assert best is None or best["vacation_days_by_year"].get(str(YEAR), 0) <= 1

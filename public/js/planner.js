@@ -16,6 +16,13 @@ export function createSettingsPanel({ root, store }) {
   const halfInput = $("half-day-input");
   const halfAdd = $("half-day-add");
   const halfHint = $("half-day-hint");
+  const budgetInput = $("planner-budget");
+  const budgetHint = $("budget-hint");
+  budgetInput.addEventListener("change", () => {
+    const ok = store.setBudget(budgetInput.value.trim());
+    budgetHint.hidden = ok;
+    if (!ok) budgetHint.textContent = "Bitte eine Zahl zwischen 0 und 366 eingeben (halbe Tage erlaubt).";
+  });
 
   for (const y of selectableYears()) {
     const badge = document.createElement("button");
@@ -64,6 +71,7 @@ export function createSettingsPanel({ root, store }) {
   });
 
   function renderConfig(state) {
+    if (document.activeElement !== budgetInput) budgetInput.value = state.budget ?? "";
     for (const b of yearBadges) b.setAttribute("aria-pressed", String(Number(b.dataset.year) === state.year));
     for (const b of weekdayButtons) b.setAttribute("aria-pressed", String(state.workingDays.includes(b.dataset.code)));
     const { start, end } = calendarWindow(state.year);
