@@ -10,7 +10,6 @@ export function makeFloatingPanel({
 }) {
   const narrow = window.matchMedia(NARROW);
   const drag = makeDraggable(root, head, {
-    enabled: () => !narrow.matches,
     onStart: () => bringToFront(root),
     onEnd: (pos) => storePosition(storage, positionKey, pos),
   });
@@ -19,11 +18,8 @@ export function makeFloatingPanel({
 
   function place() {
     if (root.hidden) return;
-    if (narrow.matches) {
-      root.style.left = root.style.top = "";
-      return;
-    }
-    const pos = storedPosition(storage, positionKey) ?? defaultPosition(root.getBoundingClientRect());
+    const pos = storedPosition(storage, positionKey)
+      ?? defaultPosition(root.getBoundingClientRect(), { narrow: narrow.matches });
     drag.place(pos.left, pos.top);
   }
   window.addEventListener("resize", place);

@@ -51,6 +51,9 @@ class LocationIn(BaseModel):
         return Location(**data)
 
 
+HolidayKey = Annotated[str, Field(pattern=r"^\d{4}-\d{2}-\d{2}\|.{1,100}$")]
+
+
 class ExtraHolidayIn(BaseModel):
     """An optional (web-only) holiday the user enabled for one location."""
     model_config = ConfigDict(extra="forbid")
@@ -70,6 +73,9 @@ class OptimizeIn(BaseModel):
     half_days: dict[date, float] = Field(default_factory=dict)
     vacation_budget: Annotated[float, Field(ge=0, le=366)] | None = None
     extra_holidays: dict[str, Annotated[list[ExtraHolidayIn], Field(max_length=MAX_EXTRA_HOLIDAYS)]] =         Field(default_factory=dict)
+    # Baseline holidays the user switched off (disputed ones): {location_id: ["YYYY-MM-DD|Name"]}
+    disabled_holidays: dict[str, Annotated[list[HolidayKey], Field(max_length=MAX_EXTRA_HOLIDAYS)]] = Field(
+        default_factory=dict)
 
 
 # User-facing messages per field (Swiss Standard German).
@@ -80,6 +86,7 @@ _FIELD_MESSAGES = {
     "half_days": "Ungültige halbe Arbeitstage.",
     "vacation_budget": "Ungültige Anzahl Ferientage.",
     "extra_holidays": "Ungültige zusätzliche Feiertage.",
+    "disabled_holidays": "Ungültige ausgeschaltete Feiertage.",
 }
 
 
@@ -118,6 +125,8 @@ def parse_optimize(payload) -> OptimizeIn:
     for loc_id, extras in req.extra_holidays.items():
         if loc_id not in ids or any(not start <= x.date <= end for x in extras):
             _fail("invalid_extra_holidays", _FIELD_MESSAGES["extra_holidays"])
+    if any(loc_id not in ids for loc_id in req.disabled_holidays):
+        _fail("invalid_disabled_holidays", _FIELD_MESSAGES["disabled_holidays"])
     towns = {loc.to_domain().town_key() for loc in req.locations}
     if len({loc.id for loc in req.locations}) != len(req.locations) or len(towns) != len(req.locations):
         _fail("invalid_locations", "Jeder Ort darf nur einmal vorkommen.")

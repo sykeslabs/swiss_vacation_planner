@@ -16,7 +16,7 @@ export function dayCategory(day) {
   if (day.is_holiday && day.work_fraction === 0) {
     return day.holiday_on_non_working_day ? "holiday_off" : "holiday";
   }
-  if (!day.is_working_day) return day.in_selected_period ? "free_run" : "weekend";
+  if (!day.is_working_day) return day.in_selected_period || day.plan_key ? "free_run" : "weekend";
   if (day.work_fraction > 0 && day.work_fraction < 1) return "half_day";
   return "workday";
 }
@@ -38,16 +38,29 @@ export function groupByMonth(days) {
   return months;
 }
 
+export const periodKey = (c) => `${c.start}|${c.end}`;
+
 /**
- * Days with a selected period applied: days of the free run get in_selected_period,
- * the candidate's vacation days become is_vacation. Returns new objects (pure).
+ * Days with the recommended plan applied (pure, returns new objects):
+ * - every day of a recommended period gets `plan_key` (its period), its vacation days
+ *   become is_vacation (turquoise "Ferientag"), its free days "Frei am Stück";
+ * - the days of the selected period (`selectedKey`) also get in_selected_period (ring).
  */
-export function applySelection(days, candidate) {
-  if (!candidate) return days;
-  const vacation = new Set(candidate.vacation_dates);
-  return days.map((d) => (d.date >= candidate.start && d.date <= candidate.end
-    ? { ...d, in_selected_period: true, is_vacation: vacation.has(d.date), is_free: true }
-    : d));
+export function applyPlan(days, plan = [], selectedKey = null) {
+  if (!plan.length) return days;
+  const byDate = new Map();
+  for (const c of plan) {
+    const vacation = new Set(c.vacation_dates);
+    for (const d of days) {
+      if (d.date >= c.start && d.date <= c.end) byDate.set(d.date, { key: periodKey(c), vacation: vacation.has(d.date) });
+    }
+  }
+  return days.map((d) => {
+    const hit = byDate.get(d.date);
+    if (!hit) return d;
+    return { ...d, plan_key: hit.key, is_vacation: hit.vacation, is_free: true,
+      in_selected_period: hit.key === selectedKey };
+  });
 }
 
 /** "½", "1", "4½" */

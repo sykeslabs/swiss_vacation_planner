@@ -51,6 +51,15 @@ export function renderMonth(month, { detail = false } = {}) {
     if (day.in_selected_period) cell.classList.add("in-period");
     cell.dataset.date = day.date;
     cell.title = dayTitle(day, category);
+    if (day.plan_key) {
+      // Part of a recommended period: clicking opens the period details (both views).
+      cell.dataset.plan = day.plan_key;
+      cell.title += " · Empfehlung: klicken für Details";
+      if (detail) {
+        cell.tabIndex = 0;
+        cell.setAttribute("aria-haspopup", "dialog");
+      }
+    }
     cell.append(el("span", "day-num", String(Number(day.date.slice(8)))));
     if (detail) {
       if (day.holiday_names.length) {
@@ -102,7 +111,7 @@ function flip(node, from, { reverse = false } = {}) {
  * Year overview (14 month boxes) with zoom into a month and back.
  * `container` gets fully managed content.
  */
-export function createCalendarView(container, { onHolidayClick = null } = {}) {
+export function createCalendarView(container, { onHolidayClick = null, onPeriodClick = null } = {}) {
   const yearView = el("div", "year-view");
   const detailView = el("div", "month-view");
   detailView.hidden = true;
@@ -124,7 +133,14 @@ export function createCalendarView(container, { onHolidayClick = null } = {}) {
       box.dataset.month = keyOf(m);
       box.setAttribute("aria-label", `${monthTitle(m.year, m.month)} vergrössern`);
       box.append(renderMonth(m));
-      box.addEventListener("click", () => openMonth(keyOf(m), box.getBoundingClientRect()));
+      box.addEventListener("click", (e) => {
+        const planCell = e.target.closest?.("[data-plan]");
+        if (planCell && onPeriodClick) {
+          onPeriodClick(planCell.dataset.plan, planCell);
+          return;                    // a recommended day opens its period, not the zoom
+        }
+        openMonth(keyOf(m), box.getBoundingClientRect());
+      });
       return box;
     }));
   }
@@ -171,25 +187,34 @@ export function createCalendarView(container, { onHolidayClick = null } = {}) {
     const day = m?.days.find((d) => d.date === cell.dataset.date);
     return day ? { day, cell } : null;
   }
-  detailBody.addEventListener("click", (e) => {
+  // Holidays open their background; other days of a recommended period open the period.
+  function activate(e) {
     const hit = holidayFromEvent(e);
-    if (hit) onHolidayClick(hit.day, hit.cell);
-  });
+    if (hit) {
+      onHolidayClick(hit.day, hit.cell);
+      return true;
+    }
+    const planCell = e.target.closest?.("[data-plan]");
+    if (planCell && onPeriodClick) {
+      onPeriodClick(planCell.dataset.plan, planCell);
+      return true;
+    }
+    return false;
+  }
+  detailBody.addEventListener("click", activate);
   detailBody.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter" && e.key !== " ") return;
-    const hit = holidayFromEvent(e);
-    if (!hit) return;
-    e.preventDefault();
-    onHolidayClick(hit.day, hit.cell);
+    if ((e.key === "Enter" || e.key === " ") && activate(e)) e.preventDefault();
   });
 
   return {
     /** Re-render from a fresh day list; an open month detail stays open.
      * `fromMonth` ("YYYY-MM") hides earlier months (current-year planning). */
+    /** Returns the number of months shown (used to size the panel). */
     setDays(days, { fromMonth = null } = {}) {
       months = groupByMonth(days).filter((m) => !fromMonth || keyOf(m) >= fromMonth);
       renderYear();
       if (openKey) renderDetail();
+      return months.length;
     },
     clear() {
       months = [];

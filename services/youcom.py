@@ -99,6 +99,20 @@ def page_matches(title: str, year: int, municipality: str, canton: str) -> bool:
     return str(year) in t and any(n in t for n in names)
 
 
+def page_scope(title: str, municipality: str) -> str:
+    """Which area a page covers, from titles like 'Feiertage Gemeinde Baden 2026',
+    'Feiertage Bezirk Baden 2026', 'Feiertage Kanton Aargau 2026'."""
+    t = (title or "").casefold()
+    m = municipality.casefold()
+    if any(f"{w} {m}" in t for w in ("gemeinde", "stadt")):
+        return "municipality"
+    if any(w in t for w in ("bezirk", "verwaltungskreis", "region", "wahlkreis", "amt ")):
+        return "region"
+    if "kanton" in t:
+        return "canton"
+    return "other"
+
+
 def parse_row(line: str) -> tuple[date, str, str, float | None] | None:
     """(date, name, kind, share %) of one markdown table row, or None."""
     m = _ROW.match(line.strip())
@@ -144,6 +158,7 @@ def parse_pages(pages: list[dict], *, year: int, municipality: str, canton: str,
         if not page_matches(page["title"], year, municipality, canton):
             continue
         legal_page = "gesetzliche feiertage" in page["title"].casefold()
+        scope = page_scope(page["title"], municipality)
         for line in page["markdown"].splitlines():
             row = parse_row(line)
             if not row:
@@ -153,8 +168,10 @@ def parse_pages(pages: list[dict], *, year: int, municipality: str, canton: str,
                 continue
             if kind == "unclassified" and legal_page:
                 kind = "legal"       # "(Gesetzliche Feiertage)" pages list legal holidays only
-            found = FoundHoliday(day, name, kind, share, page["url"], page["title"], retrieved_at)
-            key = (day, name.casefold())
+            found = FoundHoliday(day, name, kind, share, page["url"], page["title"], retrieved_at, scope)
+            # Rows of a municipality page are kept separately: they decide whether a
+            # baseline holiday applies in our municipality (see merge_holidays).
+            key = (day, name.casefold(), scope == "municipality")
             if key not in best or rank[kind] > rank[best[key].kind]:
                 best[key] = found
     return sorted(best.values(), key=lambda f: (f.date, f.name))

@@ -60,6 +60,7 @@ class Holiday:
     enabled: bool = True        # False: shown, but not used by the optimizer until the user enables it
     corroborated_by: tuple[str, ...] = ()   # URLs of web pages that confirm this holiday
     note: str | None = None     # short German explanation (e.g. why it's optional)
+    disputed: bool = False      # baseline holiday the web search contradicts (stays on; user may switch it off)
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -84,6 +85,7 @@ class FoundHoliday:
     source_url: str
     source_title: str
     retrieved_at: str
+    page_scope: str = "other"   # "municipality" | "region" | "canton" | "other" (from the page title)
 
 
 @dataclass(frozen=True)

@@ -137,17 +137,33 @@ def merge_holidays(baseline: list[Holiday], found: list[FoundHoliday], *, year: 
     for f in rows:
         by_date.setdefault(f.date, []).append(f)
 
+    municipality_rows = [f for f in rows if f.page_scope == "municipality"]
     merged = []
     for h in in_year:
-        same_day = [f for f in by_date.get(h.date, []) if f.kind in ("legal", "half", "unclassified")]
+        day_rows = by_date.get(h.date, [])
+        same_day = [f for f in day_rows if f.kind in ("legal", "half", "unclassified")]
         same_name_elsewhere = [f for f in rows if f.kind in ("legal", "half")
                                and name_key(f.name) == name_key(h.name) and f.date != h.date]
-        if same_day:
+        legal_here = [f for f in municipality_rows if f.date == h.date and f.kind in ("legal", "half")]
+        partial = [f for f in day_rows if f.kind == "partial" and f.page_scope != "municipality"]
+        doubts = []
+        if municipality_rows and not legal_here:
+            doubts.append(f"Auf der Seite der Gemeinde {municipality} nicht als Feiertag aufgeführt.")
+        if partial and not legal_here and not [f for f in same_day if f.kind != "unclassified"]:
+            share = max((f.share_percent for f in partial if f.share_percent is not None), default=None)
+            doubts.append("Laut Websuche nur in Teilen der Region gültig"
+                          + (f" ({share:g} % der Bevölkerung)." if share is not None else "."))
+        if doubts:
+            # Flag only (owner decision 2026-10-02): stays on with medium confidence; the
+            # user may switch it off. Pages that list it on that day are still shown.
+            merged.append(replace(h, conflict=" ".join(doubts), disputed=True,
+                                  corroborated_by=tuple(sorted({f.source_url for f in same_day}))))
+        elif same_day:
             urls = tuple(sorted({f.source_url for f in same_day}))
             merged.append(replace(h, confidence="high", corroborated_by=urls))
         elif same_name_elsewhere:
             other = min(f.date for f in same_name_elsewhere)
-            merged.append(replace(h, conflict=f"Websuche nennt ein anderes Datum: {other:%d.%m.%Y}"))
+            merged.append(replace(h, conflict=f"Websuche nennt ein anderes Datum: {other:%d.%m.%Y}", disputed=True))
         else:
             merged.append(h)
 

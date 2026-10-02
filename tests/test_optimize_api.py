@@ -135,3 +135,19 @@ def test_budget_limits_list_and_best(client):
     assert one["summary"]["budget"] == 1
     best = one["summary"]["best"]
     assert best is None or best["vacation_days_by_year"].get(str(YEAR), 0) <= 1
+
+
+def test_switched_off_baseline_holiday_is_a_working_day_again(client):
+    plain = post(client, payload()).get_json()["per_location"]["bfs-261"]
+    hol = next(h for h in plain["holidays"] if h["date"].startswith(str(YEAR)) and h["name"] == "Karfreitag")
+    key = f"{hol['date']}|{hol['name']}"
+    off = post(client, payload(disabled_holidays={"bfs-261": [key]})).get_json()["per_location"]["bfs-261"]
+    day = next(d for d in off["days"] if d["date"] == hol["date"])
+    assert not day["is_holiday"] and day["is_working_day"]
+    assert all(h["name"] != "Karfreitag" or not h["date"].startswith(str(YEAR)) for h in off["holidays"])
+
+
+@pytest.mark.parametrize("value", [{"bfs-999": ["2027-01-01|X"]}, {"bfs-261": ["nope"]}])
+def test_invalid_disabled_holidays(client, value):
+    res = post(client, payload(disabled_holidays=value))
+    assert res.status_code == 400

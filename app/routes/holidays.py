@@ -87,6 +87,7 @@ def holidays():
                              "message": f"Bei {len(conflicts)} Feiertag(en) widersprechen sich die Quellen."})
 
     confirmed = sum(1 for h in merged if h.confidence == "high")
+    disputed = sum(1 for h in merged if h.disputed)
     optional = sum(1 for h in merged if not h.enabled)
     titles = {}
     for h in merged:
@@ -99,6 +100,7 @@ def holidays():
         "location_id": q.location_id,
         "holidays": [{**h.to_dict(), "key": holiday_key(h)} for h in merged],
         "warnings": warnings,
-        "summary": {"confirmed": confirmed, "optional": optional, "checked": found is not None},
+        "summary": {"confirmed": confirmed, "optional": optional, "disputed": disputed,
+                    "checked": found is not None},
         "sources": [{"url": u, "title": t} for u, t in sources],
     })

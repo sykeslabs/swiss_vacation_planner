@@ -16,6 +16,7 @@ export function defaultPosition(index, {
   viewportWidth, viewportHeight = Infinity, top, minLeft, previous = null,
   width = PANEL_WIDTH, gap = PANEL_GAP,
 }) {
+  width = Math.round(width);
   const sideBySide = viewportWidth - gap - (index + 1) * width - index * gap;
   if (sideBySide >= minLeft) return { left: sideBySide, top };
   const right = Math.max(0, Math.min(viewportWidth - gap - width, viewportWidth - width));

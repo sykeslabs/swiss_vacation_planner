@@ -24,6 +24,7 @@ from domain.models import DayInfo
 MAX_COST = 10.0
 MAX_SPAN_DAYS = 21
 MIN_ZERO_COST_DAYS = 3
+PLAN_MIN_EFFICIENCY = 2.5      # without a budget, the plan takes periods at least this efficient
 
 
 @dataclass(frozen=True)
@@ -175,10 +176,38 @@ def within_budget(c: VacationCandidate, *, year: int, budget: float | None) -> b
     return budget is None or c.vacation_days_by_year.get(year, 0.0) <= budget
 
 
+def _overlaps(a: VacationCandidate, b: VacationCandidate) -> bool:
+    return a.start <= b.end and b.start <= a.end
+
+
+def recommend_plan(candidates: list[VacationCandidate], *, year: int,
+                   budget: float | None) -> list[VacationCandidate]:
+    """The periods the optimizer recommends (owner decision 2026-10-02): greedily the most
+    efficient non-overlapping periods (ties: more free days, earlier). With a budget, add
+    periods while the planned-year vacation days still fit; without one, take every period
+    with at least PLAN_MIN_EFFICIENCY free days per vacation day. Chronological order."""
+    ranked = sorted(candidates, key=lambda c: (-c.efficiency, -c.days_free, c.start))
+    plan: list[VacationCandidate] = []
+    used = 0.0
+    for c in ranked:
+        if any(_overlaps(c, p) for p in plan):
+            continue
+        cost = c.vacation_days_by_year.get(year, 0.0)
+        if budget is None:
+            if c.efficiency < PLAN_MIN_EFFICIENCY:
+                continue
+        elif used + cost > budget:
+            continue
+        plan.append(c)
+        used += cost
+    return sorted(plan, key=lambda c: c.start)
+
+
 def summarize(days: list[DayInfo], candidates: list[VacationCandidate], *, year: int,
               budget: float | None) -> dict:
     in_year = [d for d in days if d.date.year == year]
     best = best_candidate(candidates, year=year, budget=budget)
+    plan = recommend_plan(candidates, year=year, budget=budget)
     return {
         "year": year,
         "holidays_total": sum(1 for d in in_year if d.is_holiday),
@@ -186,4 +215,7 @@ def summarize(days: list[DayInfo], candidates: list[VacationCandidate], *, year:
         "budget": budget,
         "candidates_count": len(candidates),
         "best": best.to_dict() if best else None,
+        "plan": [c.to_dict() for c in plan],
+        "plan_vacation_days": sum(c.vacation_days_by_year.get(year, 0.0) for c in plan),
+        "plan_days_free": sum(c.days_free for c in plan),
     }

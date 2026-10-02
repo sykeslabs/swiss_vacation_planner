@@ -259,3 +259,37 @@ def test_invalid_query(client, monkeypatch, over, code):
     monkeypatch.setattr(youcom, "fetch_pages", lambda q: pytest.fail("must not call"))
     res = client.get("/api/holidays", query_string=query(**over))
     assert res.status_code == 400 and res.get_json()["error"]["code"] == code
+
+
+# --- Baden (AG): municipality page vs. canton-wide baseline (owner report, "flag only") -----------
+
+def baden_merged():
+    data = json.loads((FIXTURES / "youcom_baden_ag_2026.json").read_text(encoding="utf-8"))
+    found = youcom.parse_pages(data["pages"], year=2026, municipality="Baden", canton="AG", retrieved_at="t")
+    return found, by_name(merge_holidays(baseline_holidays("AG", [2026], "t"), found, year=2026, canton="AG",
+                                         municipality="Baden"))
+
+
+def test_page_scope_from_title():
+    assert youcom.page_scope("Feiertage Gemeinde Baden 2026 (Ereignisse und Feiertage)", "Baden") == "municipality"
+    assert youcom.page_scope("Feiertage Stadt Bern 2027", "Bern") == "municipality"
+    assert youcom.page_scope("Feiertage Bezirk Baden 2026", "Baden") == "region"
+    assert youcom.page_scope("Feiertage Kanton Zürich 2027 (Gesetzliche Feiertage)", "Zürich") == "canton"
+    assert youcom.page_scope("Feiertage 2026 und 2027 in Aargau - Ferienwiki", "Baden") == "other"
+
+
+def test_baden_catholic_holidays_are_flagged_not_removed():
+    found, merged = baden_merged()
+    assert any(f.page_scope == "municipality" for f in found)
+    for name in ("Mariä Empfängnis", "Mariä Himmelfahrt", "Allerheiligen", "Berchtoldstag"):
+        h = merged[name]
+        assert h.disputed and h.enabled and h.confidence == "medium"       # flag only: stays on
+        assert "Gemeinde Baden" in h.conflict
+    assert "11.6 %" in merged["Mariä Empfängnis"].conflict
+    assert merged["Fronleichnam"].confidence == "high" and not merged["Fronleichnam"].disputed
+    assert merged["Karfreitag"].confidence == "high" and not merged["Karfreitag"].disputed
+
+
+def test_no_municipality_page_no_flags():
+    merged = by_name(merged_for("youcom_zuerich_2027.json", "Zürich", "ZH"))
+    assert not any(h.disputed for h in merged.values())

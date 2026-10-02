@@ -5,6 +5,7 @@ import { parseIso, toIso } from "./format.js";
 export const WEEKDAY_CODES = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 export const DEFAULT_WORKING_DAYS = ["MON", "TUE", "WED", "THU", "FRI"];
 export const MAX_LOCATIONS = 10;
+export const DEFAULT_BUDGET = 25;       // "Ferientage pro Jahr" until the user sets their own
 export const STORAGE_KEY = "svp.planner.v1";
 const STORAGE_VERSION = 1;
 const LOCATION_FIELDS = ["id", "name", "municipality", "municipality_id", "canton", "latitude", "longitude"];
@@ -52,7 +53,8 @@ function isValidLocation(loc) {
 
 export function defaultState(today = new Date()) {
   const year = selectableYears(today)[0];
-  return { year, workingDays: [...DEFAULT_WORKING_DAYS], halfDays: defaultHalfDays(year), locations: [], enabledHolidays: {}, budget: null };
+  return { year, workingDays: [...DEFAULT_WORKING_DAYS], halfDays: defaultHalfDays(year), locations: [], enabledHolidays: {}, disabledHolidays: {},
+    budget: DEFAULT_BUDGET, budgetSet: false };
 }
 
 /** Validates persisted data; anything unreadable falls back to defaults field by field. */
@@ -79,17 +81,23 @@ export function restoreState(raw, today = new Date()) {
   const locations = (Array.isArray(data.locations) ? data.locations : [])
     .filter((l) => isValidLocation(l) && !seen.has(townKey(l)) && seen.add(townKey(l)))
     .slice(0, MAX_LOCATIONS);
-  // Optional holidays the user enabled: { location_id: ["YYYY-MM-DD|Name", …] }
-  const enabledHolidays = {};
-  if (data.enabledHolidays && typeof data.enabledHolidays === "object") {
+  // Holiday switches per location: { location_id: ["YYYY-MM-DD|Name", …] }
+  // enabledHolidays: optional (web-only) holidays switched on; disabledHolidays: disputed
+  // reference holidays switched off.
+  const keysPerLocation = (raw) => {
+    const out = {};
+    if (!raw || typeof raw !== "object") return out;
     for (const loc of locations) {
-      const keys = data.enabledHolidays[loc.id];
+      const keys = raw[loc.id];
       if (Array.isArray(keys)) {
         const valid = keys.filter((k) => typeof k === "string" && /^\d{4}-\d{2}-\d{2}\|.{1,100}$/.test(k));
-        if (valid.length) enabledHolidays[loc.id] = [...new Set(valid)];
+        if (valid.length) out[loc.id] = [...new Set(valid)];
       }
     }
-  }
+    return out;
+  };
+  const enabledHolidays = keysPerLocation(data.enabledHolidays);
+  const disabledHolidays = keysPerLocation(data.disabledHolidays);
 
   return {
     year,
@@ -97,8 +105,13 @@ export function restoreState(raw, today = new Date()) {
     halfDays,
     locations,
     enabledHolidays,
-    budget: typeof data.budget === "number" && data.budget >= 0 && data.budget <= 366
-      ? Math.round(data.budget * 2) / 2 : null,
+    disabledHolidays,
+    // The user's own value (also "kein Limit" = null) is kept once they set one;
+    // otherwise the default applies (also for states saved before the default existed).
+    ...(data.budgetSet === true
+      ? { budget: typeof data.budget === "number" && data.budget >= 0 && data.budget <= 366
+          ? Math.round(data.budget * 2) / 2 : null, budgetSet: true }
+      : { budget: DEFAULT_BUDGET, budgetSet: false }),
   };
 }
 
@@ -148,7 +161,8 @@ export function createPlannerStore({ storage = null, today = new Date() } = {}) 
       if (!location) return false;
       const locations = state.locations.filter((l) => l.id !== id);
       const { [id]: _, ...enabledHolidays } = state.enabledHolidays;
-      commit({ ...state, locations, enabledHolidays }, { type: "remove", location });
+      const { [id]: __, ...disabledHolidays } = state.disabledHolidays ?? {};
+      commit({ ...state, locations, enabledHolidays, disabledHolidays }, { type: "remove", location });
       return true;
     },
 
@@ -188,8 +202,8 @@ export function createPlannerStore({ storage = null, today = new Date() } = {}) 
     setBudget(value) {
       const budget = value === null || value === "" ? null : Math.round(Number(value) * 2) / 2;
       if (budget !== null && !(budget >= 0 && budget <= 366)) return false;
-      if (budget === state.budget) return true;
-      commit({ ...state, budget }, { type: "config" });
+      if (budget === state.budget && state.budgetSet) return true;
+      commit({ ...state, budget, budgetSet: true }, { type: "config" });
       return true;
     },
 
@@ -205,6 +219,19 @@ export function createPlannerStore({ storage = null, today = new Date() } = {}) 
       return true;
     },
     isHolidayEnabled: (locationId, key) => (state.enabledHolidays[locationId] ?? []).includes(key),
+
+    /** Switch a disputed reference holiday off (or back on) for one location. */
+    toggleDisputedHoliday(locationId, key) {
+      if (!state.locations.some((l) => l.id === locationId)) return false;
+      const current = new Set(state.disabledHolidays?.[locationId] ?? []);
+      if (current.has(key)) current.delete(key);
+      else current.add(key);
+      const disabledHolidays = { ...(state.disabledHolidays ?? {}), [locationId]: [...current].sort() };
+      if (!current.size) delete disabledHolidays[locationId];
+      commit({ ...state, disabledHolidays }, { type: "config" });
+      return true;
+    },
+    isHolidaySwitchedOff: (locationId, key) => (state.disabledHolidays?.[locationId] ?? []).includes(key),
 
     subscribe(fn) {
       listeners.add(fn);
@@ -252,5 +279,13 @@ export function optimizePayload(state, holidayLists = {}) {
     vacation_budget: state.budget ?? null,
   };
   if (Object.keys(extra).length) payload.extra_holidays = extra;
+  // Disputed reference holidays the user switched off (only those in the fetched list).
+  const off = {};
+  for (const loc of state.locations) {
+    const switched = new Set(state.disabledHolidays?.[loc.id] ?? []);
+    const keys = (holidayLists[loc.id] ?? []).filter((h) => h.disputed && switched.has(h.key)).map((h) => h.key);
+    if (keys.length) off[loc.id] = keys;
+  }
+  if (Object.keys(off).length) payload.disabled_holidays = off;
   return payload;
 }

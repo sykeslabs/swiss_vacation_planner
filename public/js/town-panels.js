@@ -2,7 +2,7 @@
 // legend and the town's own calendar. Position and collapsed state are remembered per
 // town in the browser.
 import { createCalendarView, renderLegend } from "./calendar-view.js";
-import { renderCandidates } from "./candidate-list.js";
+import { holidayCountText, planSummary } from "./candidate-list.js";
 import { bringToFront as raise, makeDraggable } from "./draggable.js";
 import { renderHolidaySection } from "./holiday-list.js";
 import { defaultPosition, PANEL_GAP } from "./panel-layout.js";
@@ -11,11 +11,12 @@ import { locationLabel } from "./state.js";
 export const POSITIONS_KEY = "svp.panels.v3";   // v3: panels start left of the "Jahr" panel
 const NARROW = "(max-width: 720px)";
 const EXPECTED_PANEL_HEIGHT = 470;   // header + legend + 2 rows of 7 months
+const MONTHS_PER_ROW = 7;
 export const COLLAPSED_KEY = "svp.panels-collapsed.v1";
 
 export function createTownPanels({
   container, storage = null, onRemove, onLayoutChange = () => {}, searchPanel, onHolidayClick = () => {},
-  rightBoundary = () => window.innerWidth,
+  rightBoundary = () => window.innerWidth, onPeriodClick = () => {},
 }) {
   const panels = new Map();          // id → { el, calendar, status, source, drag }
   let positions = {};
@@ -56,11 +57,13 @@ export function createTownPanels({
   function place(id, index) {
     const p = panels.get(id);
     if (!p) return;
-    if (narrow.matches) {
-      p.el.style.left = p.el.style.top = "";
+    const saved = positions[id];
+    if (narrow.matches && !saved) {
+      // Phones: panels start in the lower part of the screen, slightly cascaded.
+      const top = Math.round(window.innerHeight * 0.45) + index * 28;
+      p.drag.place(PANEL_GAP + index * 12, top);
       return;
     }
-    const saved = positions[id];
     const searchRect = searchPanel?.getBoundingClientRect();
     // The previous panel's calendar may not be loaded yet, so assume at least its full height.
     const prevEl = [...panels.values()][index - 1]?.el;
@@ -73,6 +76,7 @@ export function createTownPanels({
       top: PANEL_GAP,
       minLeft: searchRect ? Math.round(searchRect.right + PANEL_GAP) : PANEL_GAP,
       previous,
+      width: p.el.offsetWidth || undefined,
     });
     p.drag.place(pos.left, pos.top);
   }
@@ -93,6 +97,9 @@ export function createTownPanels({
     title.id = titleId;
     title.className = "town-title";
     title.textContent = `${locationLabel(loc)} (${loc.canton})`;
+    const count = document.createElement("span");
+    count.className = "town-count";            // "· 9 Feiertage" (set with each result)
+    title.append(count);
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "chip-remove";
@@ -129,9 +136,10 @@ export function createTownPanels({
     tipsBox.open = true;
     const tipsSummary = document.createElement("summary");
     tipsSummary.textContent = "So setzt du deine Ferientage clever ein";
-    const tipsBody = document.createElement("div");
+    const tipsBody = document.createElement("p");
+    tipsBody.className = "hint plan-summary";
+    tipsBody.textContent = "Empfehlung wird berechnet …";
     tipsBox.append(tipsSummary, tipsBody);
-    renderCandidates(tipsBody, null, {});
 
     const legend = document.createElement("details");
     legend.className = "legend-box";
@@ -173,7 +181,6 @@ export function createTownPanels({
     container.append(el);
 
     const drag = makeDraggable(el, head, {
-      enabled: () => !narrow.matches,
       onStart: () => bringToFront(loc.id),
       onMove: () => onLayoutChange(),
       onEnd: (pos) => {
@@ -182,12 +189,13 @@ export function createTownPanels({
         onLayoutChange();
       },
     });
-    const entry = { el, status, source, drag, holidays: [], holidaysBody, tipsBody };
+    const entry = { el, status, source, drag, holidays: [], holidaysBody, tipsBody, count };
     entry.calendar = createCalendarView(calendarEl, {
       onHolidayClick: (day, cell) => onHolidayClick({
         location: loc, day, from: cell,
         holidays: entry.holidays.filter((h) => h.date === day.date),
       }),
+      onPeriodClick: (key, cell) => onPeriodClick({ location: loc, key, from: cell }),
     });
     panels.set(loc.id, entry);
     bringToFront(loc.id);
@@ -226,19 +234,34 @@ export function createTownPanels({
       const p = panels.get(id);
       if (!p) return;
       p.holidays = holidays;
-      p.calendar.setDays(days, { fromMonth });
+      const months = p.calendar.setDays(days, { fromMonth });
+      // Width follows the months shown (up to 7 per row), e.g. Oct–Jan → 4 columns.
+      const cols = String(Math.max(1, Math.min(MONTHS_PER_ROW, months)));
+      if (p.el.style.getPropertyValue("--month-cols") !== cols) {
+        p.el.style.setProperty("--month-cols", cols);
+        if (!positions[id]) {
+          // not moved by the user: keep it right-aligned next to the "Jahr" panel
+          place(id, [...panels.keys()].indexOf(id));
+        } else {
+          p.drag.place(positions[id].left, positions[id].top);   // re-clamp to the window
+        }
+        onLayoutChange();
+      }
       p.status.textContent = statusText;
       p.source.textContent = sourceText;
     },
-    /** Optimizer periods for the town; see candidate-list.js for the options. */
-    setCandidates(id, result, options) {
+    /** One line about the recommended plan (the turquoise days in the calendar), and the
+     * number of public holidays of the planned year next to the town name. */
+    setPlan(id, summary) {
       const p = panels.get(id);
-      if (p) renderCandidates(p.tipsBody, result, options);
+      if (!p) return;
+      p.tipsBody.textContent = `${planSummary(summary)}. Klicke auf einen türkisen Tag für Details.`;
+      p.count.textContent = summary ? ` · ${holidayCountText(summary.holidays_total)}` : "";
     },
     /** Web-check result for the town (GET /api/holidays) with its on/off switches. */
-    setHolidayData(id, data, { isEnabled, onToggle }) {
+    setHolidayData(id, data, switches) {
       const p = panels.get(id);
-      if (p) renderHolidaySection(p.holidaysBody, data, { isEnabled, onToggle });
+      if (p) renderHolidaySection(p.holidaysBody, data, switches);
     },
     setStatus(id, text) {
       const p = panels.get(id);
@@ -249,7 +272,7 @@ export function createTownPanels({
     hide: () => { container.hidden = true; },
     isShown: () => !container.hidden,
     /** Screen rectangles of the panels (for keeping map markers clear of them). */
-    rects: () => (container.hidden || narrow.matches ? [] : [...panels.values()].map((p) => p.el.getBoundingClientRect())),
+    rects: () => (container.hidden ? [] : [...panels.values()].map((p) => p.el.getBoundingClientRect())),
     isNarrow: () => narrow.matches,
   };
 }

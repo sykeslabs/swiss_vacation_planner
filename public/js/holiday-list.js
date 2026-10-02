@@ -22,42 +22,62 @@ export function holidaySummary(data) {
   if (!data) return "Feiertage werden geprüft …";
   if (!data.summary?.checked) return data.warnings?.[0]?.message ?? "Es gilt der kantonale Referenzkalender.";
   const parts = [`${data.summary.confirmed} Feiertage durch die Websuche bestätigt`];
+  if (data.summary.disputed) parts.push(`${data.summary.disputed} umstritten`);
   if (data.summary.optional) parts.push(`${data.summary.optional} optionale lokale Feiertage`);
   return parts.join(" · ");
 }
 
-/** Renders the section body into `root`. `isEnabled(key)`, `onToggle(key)`. */
-export function renderHolidaySection(root, data, { isEnabled, onToggle }) {
+function switchRow(id, labelText, note, checked, onChange, sourceUrl) {
+  const li = el("li", "optional-holiday");
+  const box = document.createElement("input");
+  box.type = "checkbox";
+  box.id = id;
+  box.checked = checked;
+  box.addEventListener("change", onChange);
+  const label = el("label", "", labelText);
+  label.htmlFor = id;
+  li.append(box, label, el("span", "optional-note", note ?? ""));
+  if (sourceUrl) {
+    const src = el("a", "optional-source", `Quelle: ${hostOf(sourceUrl)} ↗`);
+    src.href = sourceUrl;
+    src.target = "_blank";
+    src.rel = "noopener noreferrer";
+    li.append(src);
+  }
+  return li;
+}
+
+/**
+ * Renders the section body into `root`. Optional holidays: `isEnabled(key)`, `onToggle(key)`;
+ * disputed reference holidays: `isSwitchedOff(key)`, `onToggleDisputed(key)`.
+ */
+export function renderHolidaySection(root, data, {
+  isEnabled, onToggle, isSwitchedOff = () => false, onToggleDisputed = () => {},
+}) {
   const nodes = [el("p", "hint holiday-summary", holidaySummary(data))];
   if (data) {
     for (const w of data.warnings ?? []) {
       if (w.message !== nodes[0].textContent) nodes.push(el("p", "hint holiday-warning", `⚠ ${w.message}`));
     }
+    const rowId = (prefix, key) => `${prefix}-${data.location_id}-${key}`.replace(/[^\w-]/g, "_");
+    const disputed = (data.holidays ?? []).filter((h) => h.disputed);
+    if (disputed.length) {
+      const list = el("ul", "optional-holidays");
+      for (const h of disputed) {
+        list.append(switchRow(rowId("dis", h.key), `${formatDateWithWeekday(h.date)} – ${h.name}`, `⚠ ${h.conflict}`,
+          !isSwitchedOff(h.key), () => onToggleDisputed(h.key), null));
+      }
+      nodes.push(el("p", "field-label", "Umstrittene Feiertage (gelten, bis du sie ausschaltest):"), list);
+    }
     const optional = (data.holidays ?? []).filter((h) => h.enabled === false);
     if (optional.length) {
       const list = el("ul", "optional-holidays");
       for (const h of optional) {
-        const li = el("li", "optional-holiday");
-        const id = `opt-${data.location_id}-${h.key}`.replace(/[^\w-]/g, "_");
-        const box = document.createElement("input");
-        box.type = "checkbox";
-        box.id = id;
-        box.checked = isEnabled(h.key);
-        box.addEventListener("change", () => onToggle(h.key));
-        const label = el("label", "", `${formatDateWithWeekday(h.date)} – ${h.name}`);
-        label.htmlFor = id;
-        const note = el("span", "optional-note", h.note ?? "");
-        const src = el("a", "optional-source", `Quelle: ${hostOf(h.source_url)} ↗`);
-        src.href = h.source_url;
-        src.target = "_blank";
-        src.rel = "noopener noreferrer";
-        li.append(box, label, note, src);
-        list.append(li);
+        list.append(switchRow(rowId("opt", h.key), `${formatDateWithWeekday(h.date)} – ${h.name}`, h.note,
+          isEnabled(h.key), () => onToggle(h.key), h.source_url));
       }
       nodes.push(el("p", "field-label", "Optionale Feiertage (zählen erst, wenn du sie aktivierst):"), list);
     }
-    const conflicts = (data.holidays ?? []).filter((h) => h.enabled !== false && h.conflict);
-    for (const h of conflicts) nodes.push(el("p", "hint holiday-warning", `⚠ ${h.name}: ${h.conflict}`));
   }
   root.replaceChildren(...nodes);
 }

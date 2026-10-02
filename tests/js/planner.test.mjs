@@ -316,18 +316,25 @@ test("holiday summary and confidence texts", () => {
 
 // --- M5: selected period ----------------------------------------------------------------------
 
-import { applySelection, formatDays, vacationDaysLabel } from "../../public/js/calendar-model.js";
+import { applyPlan, formatDays, periodKey, vacationDaysLabel } from "../../public/js/calendar-model.js";
 
-test("selected period marks vacation days and free run, other days unchanged", () => {
+test("recommended plan: vacation days turquoise, free days 'Frei am Stück', selection ring", () => {
   const mk = (date, extra = {}) => ({ ...base, date, ...extra });
+  const free = { is_working_day: false, work_fraction: 0, is_free: true };
   const days = [mk("2027-05-05"), mk("2027-05-06", { is_holiday: true, work_fraction: 0, is_free: true }),
-    mk("2027-05-07"), mk("2027-05-08", { is_working_day: false, work_fraction: 0, is_free: true }),
-    mk("2027-05-09", { is_working_day: false, work_fraction: 0, is_free: true }), mk("2027-05-10")];
-  const cand = { start: "2027-05-06", end: "2027-05-09", vacation_dates: ["2027-05-07"] };
-  const out = applySelection(days, cand);
-  assert.deepEqual(out.map(dayCategory), ["workday", "holiday", "vacation", "free_run", "free_run", "workday"]);
+    mk("2027-05-07"), mk("2027-05-08", free), mk("2027-05-09", free), mk("2027-05-10"),
+    mk("2027-05-14"), mk("2027-05-15", free), mk("2027-05-16", free)];
+  const auffahrt = { start: "2027-05-06", end: "2027-05-09", vacation_dates: ["2027-05-07"] };
+  const other = { start: "2027-05-14", end: "2027-05-16", vacation_dates: ["2027-05-14"] };
+  const out = applyPlan(days, [auffahrt, other], periodKey(auffahrt));
+  assert.deepEqual(out.map(dayCategory), ["workday", "holiday", "vacation", "free_run", "free_run", "workday",
+    "vacation", "free_run", "free_run"]);
+  assert.deepEqual(out.map((d) => d.in_selected_period), [false, true, true, true, true, false, false, false, false]);
+  assert.equal(out[2].plan_key, "2027-05-06|2027-05-09");
+  assert.equal(out[6].plan_key, "2027-05-14|2027-05-16");
+  assert.equal(out[0].plan_key, undefined);
   assert.equal(days[2].is_vacation, false);              // input not mutated
-  assert.equal(applySelection(days, null), days);
+  assert.equal(applyPlan(days, []), days);
 });
 
 test("vacation day labels", () => {
@@ -338,8 +345,7 @@ test("vacation day labels", () => {
   assert.equal(vacationDaysLabel(4), "4 Ferientage");
 });
 
-import { candidateTitle, sortCandidates, yearSplit } from "../../public/js/candidate-list.js";
-import { holidayCountLabel } from "../../public/js/summary-panel.js";
+import { candidateTitle, holidayCountText, yearSplit } from "../../public/js/candidate-list.js";
 
 const C1 = { start: "2027-05-06", end: "2027-05-09", days_free: 4, vacation_days_required: 1, efficiency: 4,
   anchor_holidays: ["Auffahrt"], vacation_days_by_year: { 2027: 1 }, vacation_dates: ["2027-05-07"] };
@@ -353,22 +359,15 @@ test("period title in the SPEC §7 format", () => {
   assert.equal(candidateTitle(C3), "8½ Ferientage → 17 Tage frei · 25. Dezember 2026 – 10. Januar 2027");
 });
 
-test("sort by date or efficiency; year split only across years", () => {
-  assert.deepEqual(sortCandidates([C1, C2, C3], "date").map((c) => c.start), ["2026-12-25", "2027-03-20", "2027-05-06"]);
-  assert.deepEqual(sortCandidates([C3, C2, C1], "efficiency").map((c) => c.efficiency), [4, 2.5, 2]);
+test("year split only across years", () => {
   assert.equal(yearSplit(C1), "");
   assert.equal(yearSplit(C3), "Davon 3½ Ferientage im 2026, 5 Ferientage im 2027");
-});
-
-test("summary holiday count", () => {
-  assert.equal(holidayCountLabel({ holidays_total: 9, holidays_on_working_days: 5 }), "9 Feiertage, davon 5 an Arbeitstagen");
-  assert.equal(holidayCountLabel({ holidays_total: 1, holidays_on_working_days: 0 }), "1 Feiertag, davon 0 an Arbeitstagen");
 });
 
 test("budget is part of the state and the payload", () => {
   const store = createPlannerStore({ today: TODAY });
   store.addLocation(ZH);
-  assert.equal(optimizePayload(store.get()).vacation_budget, null);
+  assert.equal(optimizePayload(store.get()).vacation_budget, 25);       // default
   assert.equal(store.setBudget("12.3"), true);
   assert.equal(store.get().budget, 12.5);                 // rounded to half days
   assert.equal(optimizePayload(store.get()).vacation_budget, 12.5);
@@ -376,4 +375,23 @@ test("budget is part of the state and the payload", () => {
   assert.equal(store.setBudget("abc"), false);
   assert.equal(store.setBudget(""), true);
   assert.equal(store.get().budget, null);
+});
+
+test("budget default 25 until the user sets one; own value (also no limit) survives reload", () => {
+  const storage = memoryStorage();
+  assert.equal(createPlannerStore({ storage, today: TODAY }).get().budget, 25);
+  // state saved before the default existed (budget null, no flag) → default
+  const old = JSON.stringify({ v: 1, year: 2026, locations: [], budget: null });
+  assert.equal(restoreState(old, TODAY).budget, 25);
+  const a = createPlannerStore({ storage, today: TODAY });
+  a.setBudget("");                                          // user chooses "kein Limit"
+  assert.equal(createPlannerStore({ storage, today: TODAY }).get().budget, null);
+  a.setBudget("20");
+  assert.equal(createPlannerStore({ storage, today: TODAY }).get().budget, 20);
+});
+
+test("holiday count next to the town name", () => {
+  assert.equal(holidayCountText(9), "9 Feiertage");
+  assert.equal(holidayCountText(1), "1 Feiertag");
+  assert.equal(holidayCountText(0), "0 Feiertage");
 });

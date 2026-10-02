@@ -10,7 +10,7 @@ from flask import Blueprint, jsonify, request
 
 from app.validation import parse_optimize
 from domain.calendar import build_days, window_years
-from domain.holidays import WEB_SOURCE, baseline_holidays
+from domain.holidays import WEB_SOURCE, baseline_holidays, holiday_key
 from domain.models import CalendarConfig, Holiday
 from domain.vacation_optimizer import find_candidates, summarize, within_budget, zero_cost_runs
 from domain.working_days import parse_working_days
@@ -33,7 +33,9 @@ def optimize():
     per_location = {}
     for loc_in in req.locations:
         loc = loc_in.to_domain()
-        holidays = baseline_holidays(loc.canton, window_years(req.year), retrieved_at)
+        switched_off = set(req.disabled_holidays.get(loc.id, []))
+        holidays = [h for h in baseline_holidays(loc.canton, window_years(req.year), retrieved_at)
+                    if holiday_key(h) not in switched_off]
         holidays += [Holiday(
             date=x.date, name=x.name, type="local", jurisdiction="municipality",
             canton=loc.canton, municipality=loc.municipality, source=WEB_SOURCE, source_url="",

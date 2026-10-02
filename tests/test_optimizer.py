@@ -9,7 +9,8 @@ from domain.calendar import build_days, default_half_days, window_years
 from domain.holidays import baseline_holidays
 from domain.models import CalendarConfig, Holiday
 from domain.vacation_optimizer import (
-    MAX_COST, MAX_SPAN_DAYS, best_candidate, find_candidates, summarize, zero_cost_runs,
+    MAX_COST, MAX_SPAN_DAYS, PLAN_MIN_EFFICIENCY, best_candidate, find_candidates, recommend_plan, summarize,
+    zero_cost_runs,
 )
 from domain.working_days import DEFAULT_WORKING_DAYS, parse_working_days
 
@@ -191,3 +192,43 @@ def test_locations_with_different_holidays_differ():
         days = build_days(CalendarConfig(YEAR, DEFAULT_WORKING_DAYS, {}), hs)
         return {(c.start, c.end) for c in cands(days)}
     assert best_for("ZH") != best_for("AI")        # e.g. Fronleichnam bridge only in AI
+
+
+
+# --- recommended plan (owner decision: greedy within budget) -----------------------------------
+
+def zh_candidates():
+    hs = baseline_holidays("ZH", window_years(YEAR), "t")
+    days = build_days(CalendarConfig(YEAR, DEFAULT_WORKING_DAYS, default_half_days(YEAR)), hs)
+    return cands(days)
+
+
+def test_plan_without_budget_takes_efficient_non_overlapping_periods():
+    plan = recommend_plan(zh_candidates(), year=YEAR, budget=None)
+    assert plan and all(c.efficiency >= PLAN_MIN_EFFICIENCY for c in plan)
+    for a, b in zip(plan, plan[1:]):
+        assert a.end < b.start                                # chronological, no overlap
+    assert any("Auffahrt" in c.anchor_holidays for c in plan)
+
+
+@pytest.mark.parametrize("budget", [0, 1, 4, 10, 25])
+def test_plan_respects_budget(budget):
+    plan = recommend_plan(zh_candidates(), year=YEAR, budget=budget)
+    assert sum(c.vacation_days_by_year.get(YEAR, 0) for c in plan) <= budget
+    for a, b in zip(plan, plan[1:]):
+        assert a.end < b.start
+
+
+def test_plan_starts_with_the_best_period():
+    cs = zh_candidates()
+    best = best_candidate(cs, year=YEAR, budget=None)
+    assert best in recommend_plan(cs, year=YEAR, budget=None)
+    assert recommend_plan(cs, year=YEAR, budget=1) == [best]
+
+
+def test_summary_contains_plan_totals():
+    hs = baseline_holidays("ZH", window_years(YEAR), "t")
+    days = build_days(CalendarConfig(YEAR, DEFAULT_WORKING_DAYS, {}), hs)
+    s = summarize(days, cands(days), year=YEAR, budget=10)
+    assert s["plan_vacation_days"] <= 10
+    assert s["plan_days_free"] == sum(c["days_free"] for c in s["plan"])

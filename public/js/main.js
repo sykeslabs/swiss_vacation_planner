@@ -1,13 +1,12 @@
 import { fetchHolidays, fetchLocations, postOptimize } from "./api.js";
-import { applySelection } from "./calendar-model.js";
-import { candidateKey } from "./candidate-list.js";
+import { applyPlan, periodKey } from "./calendar-model.js";
 import { makeFloatingPanel } from "./floating-panel.js";
 import { createHolidayModal } from "./holiday-modal.js";
 import { createSwissMap } from "./map.js";
+import { createPeriodModal } from "./period-modal.js";
 import { PANEL_GAP, PANEL_WIDTH, rightCoverage } from "./panel-layout.js";
 import { createSettingsPanel } from "./planner.js";
 import { createSearchBox } from "./search.js";
-import { renderSummary } from "./summary-panel.js";
 import { createPlannerStore, firstVisibleMonth, locationLabel, MAX_LOCATIONS, optimizePayload } from "./state.js";
 import { createTownPanels } from "./town-panels.js";
 import { debounce } from "./util.js";
@@ -91,24 +90,9 @@ const settingsPanel = makeFloatingPanel({
   positionKey: "svp.settings-panel.v2",        // v2: default moved to the top right
   collapsedKey: "svp.settings-collapsed.v1",
   toggleLabel: "Arbeitstage",
-  defaultPosition: (rect) => ({ left: window.innerWidth - PANEL_GAP - rect.width, top: PANEL_GAP }),
-});
-
-// Summary panel: left, below the search; movable, collapsible, remembered.
-const summaryRoot = $("summary");
-const summaryPanel = makeFloatingPanel({
-  root: summaryRoot,
-  head: summaryRoot.querySelector(".panel-head"),
-  toggle: $("summary-toggle"),
-  body: $("summary-body"),
-  storage,
-  positionKey: "svp.summary-panel.v1",
-  collapsedKey: "svp.summary-collapsed.v1",
-  toggleLabel: "Übersicht",
-  defaultPosition: () => {
-    const below = document.querySelector(".search-panel").getBoundingClientRect();
-    return { left: below.left, top: below.bottom + PANEL_GAP };
-  },
+  defaultPosition: (rect, { narrow }) => (narrow
+    ? { left: PANEL_GAP, top: document.querySelector(".search-panel").getBoundingClientRect().bottom + PANEL_GAP }
+    : { left: window.innerWidth - PANEL_GAP - rect.width, top: PANEL_GAP }),
 });
 
 const holidayModal = createHolidayModal();
@@ -120,6 +104,7 @@ townPanels = createTownPanels({
   // Town panels open to the left of the "Jahr" panel (top right).
   rightBoundary: () => (settingsRoot.hidden ? window.innerWidth : Math.round(settingsRoot.getBoundingClientRect().left)),
   onRemove: (id) => store.removeLocation(id),
+  onPeriodClick: ({ location, key, from }) => openPeriod(location, key, from),
   onHolidayClick: ({ location, day, holidays, from }) => holidayModal.open({
     day, from, town: `${locationLabel(location)} (${location.canton})`,
     holidays: holidays.map((h) => withWebInfo(location.id, h)),
@@ -148,6 +133,8 @@ function renderHolidaySections(state) {
     townPanels.setHolidayData(loc.id, holidayData.get(dataKey(loc.id, state.year)) ?? null, {
       isEnabled: (key) => store.isHolidayEnabled(loc.id, key),
       onToggle: (key) => store.toggleHoliday(loc.id, key),
+      isSwitchedOff: (key) => store.isHolidaySwitchedOff(loc.id, key),
+      onToggleDisputed: (key) => store.toggleDisputedHoliday(loc.id, key),
     });
   }
 }
@@ -178,19 +165,31 @@ function ensureHolidays(state) {
 
 let latest = null;          // last successful /api/optimize response
 let inflight = null;
-const selected = new Map();       // location_id → candidate key "start|end"
-const sortModes = new Map();      // location_id → "date" | "efficiency"
+const selected = new Map();       // location_id → key "start|end" of the selected period
 
-function findCandidate(result, key) {
+function findPeriod(result, key) {
   if (!result || !key) return null;
-  return [...result.candidates, ...(result.summary?.best ? [result.summary.best] : [])]
-    .find((c) => candidateKey(c) === key) ?? null;
+  return [...(result.summary?.plan ?? []), ...(result.summary?.best ? [result.summary.best] : []), ...result.candidates]
+    .find((c) => periodKey(c) === key) ?? null;
 }
 
-function selectCandidate(locationId, candidate) {
-  if (candidate) selected.set(locationId, candidateKey(candidate));
-  else selected.delete(locationId);
+const periodModal = createPeriodModal({
+  onClose: (was) => {
+    if (was) selected.delete(was.locationId);
+    renderCalendars();
+  },
+});
+
+/** Select a period (key) of a town, highlight it and open its details panel. */
+function openPeriod(location, key, from = null) {
+  const result = latest?.per_location[location.id];
+  const period = findPeriod(result, key);
+  if (!period) return;
+  for (const other of [...selected.keys()]) if (other !== location.id) selected.delete(other);
+  selected.set(location.id, key);
   renderCalendars();
+  periodModal.open({ period, locationId: location.id, from,
+    town: `${locationLabel(location)} (${location.canton})` });
 }
 
 function renderCalendars() {
@@ -200,36 +199,22 @@ function renderCalendars() {
     const result = latest.per_location[loc.id];
     if (!result) continue;
     // keep a selection only while that exact period still exists
-    const chosen = findCandidate(result, selected.get(loc.id));
+    const chosen = findPeriod(result, selected.get(loc.id));
     if (!chosen) selected.delete(loc.id);
+    // a selected period outside the plan (e.g. the best one) is highlighted too
+    const plan = result.summary?.plan ?? [];
+    const shown = chosen && !plan.some((c) => periodKey(c) === periodKey(chosen)) ? [...plan, chosen] : plan;
     const warnings = (result.warnings ?? []).map((w) => w.message);
     const h = result.holidays?.[0];
     townPanels.setResult(loc.id, {
-      days: applySelection(result.days, chosen),
+      days: applyPlan(result.days, shown, chosen ? periodKey(chosen) : null),
       holidays: result.holidays ?? [],
       fromMonth: firstVisibleMonth(state.year),
       statusText: [String(state.year), ...warnings].join(" · "),
       sourceText: h ? `Quelle Feiertage: ${h.source_title} · Kanton ${loc.canton}` : "",
     });
-    townPanels.setCandidates(loc.id, result, {
-      year: state.year,
-      selectedKey: selected.get(loc.id) ?? null,
-      sortMode: sortModes.get(loc.id) ?? "date",
-      onSelect: (c) => selectCandidate(loc.id, c),
-      onSort: (mode) => {
-        sortModes.set(loc.id, mode);
-        renderCalendars();
-      },
-    });
+    townPanels.setPlan(loc.id, result.summary);
   }
-  renderSummary(summaryRoot, {
-    year: state.year,
-    rows: state.locations.map((loc) => ({ location: loc, summary: latest.per_location[loc.id]?.summary ?? null })),
-    onPick: (loc, best) => {
-      selectCandidate(loc.id, best);
-      townPanels.bringToFront(loc.id);
-    },
-  });
 }
 
 async function recalculate() {
@@ -256,13 +241,8 @@ function renderChrome(state) {
   const hasTowns = state.locations.length > 0;
   searchInput.placeholder = hasTowns ? PLACEHOLDER_ADD : PLACEHOLDER_SEARCH;
   searchLabel.textContent = hasTowns ? PLACEHOLDER_ADD : PLACEHOLDER_SEARCH;
-  if (hasTowns) {
-    settingsPanel.show();
-    summaryPanel.show();
-  } else {
-    settingsPanel.hide();
-    summaryPanel.hide();
-  }
+  if (hasTowns) settingsPanel.show();
+  else settingsPanel.hide();
   settings.render(state);
 }
 
