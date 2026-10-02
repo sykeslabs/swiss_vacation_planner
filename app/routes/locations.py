@@ -30,3 +30,22 @@ def search():
         raise ApiError(503, "geoadmin_unavailable",
                        "Die Ortssuche ist im Moment nicht erreichbar. Die Karte kannst du weiter nutzen.")
     return jsonify({"locations": [loc.to_dict() for loc in locations]})
+
+
+@bp.get("/api/locations/at")
+def at_point():
+    """The place at a map point (click on the map), or {"location": null}."""
+    try:
+        lat = float(request.args.get("lat", ""))
+        lon = float(request.args.get("lon", ""))
+    except ValueError:
+        raise ApiError(400, "invalid_point", "Ungültiger Punkt.")
+    if not (45.5 <= lat <= 48.0 and 5.8 <= lon <= 10.6):
+        return jsonify({"location": None})
+    try:
+        loc = geoadmin.locate(lat, lon)
+    except UpstreamError as exc:
+        log.warning("Reverse lookup failed: %s", exc)
+        raise ApiError(503, "geoadmin_unavailable",
+                       "Der Ort konnte gerade nicht bestimmt werden. Die Suche oben funktioniert weiterhin.")
+    return jsonify({"location": loc.to_dict() if loc else None})

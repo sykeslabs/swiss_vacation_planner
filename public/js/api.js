@@ -65,3 +65,13 @@ export async function fetchHolidays(location, year, { signal } = {}) {
     fallbackMessage: "Die Feiertage konnten nicht geprüft werden. Es gilt der kantonale Referenzkalender.",
   });
 }
+
+/** GET /api/locations/at: the place at a map point (or null). */
+export async function fetchLocationAt(lat, lon, { signal } = {}) {
+  const q = new URLSearchParams({ lat: lat.toFixed(5), lon: lon.toFixed(5) });
+  const body = await requestJson(`/api/locations/at?${q}`, {
+    signal,
+    fallbackMessage: "Der Ort konnte gerade nicht bestimmt werden. Die Suche oben funktioniert weiterhin.",
+  });
+  return body.location ?? null;
+}

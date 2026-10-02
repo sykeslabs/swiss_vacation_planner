@@ -252,11 +252,15 @@ export function formatPostcodes(postcodes) {
   return `${list[0]}–${list.at(-1)} (${list.length})`;
 }
 
-/** Secondary line in search results. */
+/** Secondary line in search results ("ZH · PLZ 8001–8143 (25)"; for a postcode result
+ * the municipality only when it differs from the place: "Lauterbrunnen · BE"). */
 export function locationDetail(location) {
-  if (location.postcode) return `PLZ · Gemeinde ${location.municipality} · ${location.canton}`;
+  if (location.postcode) {
+    return location.municipality && location.municipality !== location.name
+      ? `${location.municipality} · ${location.canton}` : location.canton;
+  }
   const plz = formatPostcodes(location.postcodes);
-  return `Gemeinde · ${location.canton}${plz ? ` · PLZ ${plz}` : ""}`;
+  return `${location.canton}${plz ? ` · PLZ ${plz}` : ""}`;
 }
 
 /**

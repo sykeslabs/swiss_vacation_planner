@@ -70,8 +70,12 @@ def _is_free(day: DayInfo) -> bool:
 
 
 def _anchors(days: list[DayInfo]) -> tuple[str, ...]:
+    """Holidays that save vacation: only those on a configured working day (a holiday on a
+    Sunday frees nothing — owner report 2026-10-03, Allerheiligen 1.11.2026)."""
     names = []
     for d in days:
+        if not (d.is_holiday and d.is_working_day):
+            continue
         for n in d.holiday_names:
             if n not in names:
                 names.append(n)
@@ -182,11 +186,14 @@ def _overlaps(a: VacationCandidate, b: VacationCandidate) -> bool:
 
 def recommend_plan(candidates: list[VacationCandidate], *, year: int,
                    budget: float | None) -> list[VacationCandidate]:
-    """The periods the optimizer recommends (owner decision 2026-10-02): greedily the most
-    efficient non-overlapping periods (ties: more free days, earlier). With a budget, add
-    periods while the planned-year vacation days still fit; without one, take every period
-    with at least PLAN_MIN_EFFICIENCY free days per vacation day. Chronological order."""
-    ranked = sorted(candidates, key=lambda c: (-c.efficiency, -c.days_free, c.start))
+    """The periods the optimizer recommends (owner decisions 2026-10-02/03): only periods in
+    which at least one holiday falls on a working day (an ordinary week is never
+    recommended), greedily the most efficient non-overlapping ones (ties: more free days,
+    earlier). With a budget, add periods while the planned-year vacation days still fit;
+    without one, take every such period with at least PLAN_MIN_EFFICIENCY free days per
+    vacation day. Chronological order; the budget may stay partly unused."""
+    ranked = sorted((c for c in candidates if c.anchor_holidays),
+                    key=lambda c: (-c.efficiency, -c.days_free, c.start))
     plan: list[VacationCandidate] = []
     used = 0.0
     for c in ranked:
@@ -217,5 +224,7 @@ def summarize(days: list[DayInfo], candidates: list[VacationCandidate], *, year:
         "best": best.to_dict() if best else None,
         "plan": [c.to_dict() for c in plan],
         "plan_vacation_days": sum(c.vacation_days_by_year.get(year, 0.0) for c in plan),
+        "budget_left": (budget - sum(c.vacation_days_by_year.get(year, 0.0) for c in plan))
+                       if budget is not None else None,
         "plan_days_free": sum(c.days_free for c in plan),
     }

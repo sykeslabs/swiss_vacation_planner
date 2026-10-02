@@ -197,8 +197,8 @@ test("postcodes in the search result line", () => {
   assert.equal(formatPostcodes(["3822", "3823", "3824"]), "3822, 3823, 3824");
   assert.equal(formatPostcodes(["8001", "8002", "8003", "8143"]), "8001–8143 (4)");
   assert.equal(formatPostcodes(undefined), "");
-  assert.equal(locationDetail({ ...ZH, postcodes: ["8001", "8002"] }), "Gemeinde · ZH · PLZ 8001, 8002");
-  assert.equal(locationDetail({ ...ZH, postcodes: [] }), "Gemeinde · ZH");
+  assert.equal(locationDetail({ ...ZH, postcodes: ["8001", "8002"] }), "ZH · PLZ 8001, 8002");
+  assert.equal(locationDetail({ ...ZH, postcodes: [] }), "ZH");
 });
 
 // --- movable town panels --------------------------------------------------------------------
@@ -345,7 +345,7 @@ test("vacation day labels", () => {
   assert.equal(vacationDaysLabel(4), "4 Ferientage");
 });
 
-import { candidateTitle, holidayCountText, yearSplit } from "../../public/js/candidate-list.js";
+import { candidateTitle, holidayCountText, planSummary, yearSplit } from "../../public/js/candidate-list.js";
 
 const C1 = { start: "2027-05-06", end: "2027-05-09", days_free: 4, vacation_days_required: 1, efficiency: 4,
   anchor_holidays: ["Auffahrt"], vacation_days_by_year: { 2027: 1 }, vacation_dates: ["2027-05-07"] };
@@ -394,4 +394,15 @@ test("holiday count next to the town name", () => {
   assert.equal(holidayCountText(9), "9 Feiertage");
   assert.equal(holidayCountText(1), "1 Feiertag");
   assert.equal(holidayCountText(0), "0 Feiertage");
+});
+
+test("plan line with the budget that is left", () => {
+  const plan = [{ start: "2027-05-06", end: "2027-05-09" }, { start: "2027-03-20", end: "2027-03-29" }];
+  assert.equal(planSummary({ plan, plan_vacation_days: 5, plan_days_free: 14, budget: 25, budget_left: 20 }),
+    "Empfehlung: 2 Perioden · 5 Ferientage → 14 Tage frei · 20 Ferientage frei verteilbar");
+  assert.equal(planSummary({ plan, plan_vacation_days: 5, plan_days_free: 14, budget: null, budget_left: null }),
+    "Empfehlung: 2 Perioden · 5 Ferientage → 14 Tage frei");
+  assert.equal(planSummary({ plan: [], budget: 0, budget_left: 0 }), "Keine passende Periode innerhalb deines Budgets (0 Ferientage).");
+  assert.equal(vacationDaysLabel(0), "0 Ferientage");
+  assert.equal(vacationDaysLabel(1.5), "1½ Ferientage");
 });

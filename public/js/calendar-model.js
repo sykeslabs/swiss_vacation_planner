@@ -70,7 +70,7 @@ export function formatDays(n) {
   return half ? `${whole || ""}½` : String(whole);
 }
 
-/** "1 Ferientag", "½ Ferientag", "4½ Ferientage" */
+/** "1 Ferientag", "½ Ferientag", "0 Ferientage", "4½ Ferientage" */
 export function vacationDaysLabel(n) {
-  return `${formatDays(n)} ${n > 1 ? "Ferientage" : "Ferientag"}`;
+  return `${formatDays(n)} ${n > 0 && n <= 1 ? "Ferientag" : "Ferientage"}`;
 }

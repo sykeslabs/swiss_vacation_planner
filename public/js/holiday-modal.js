@@ -37,7 +37,9 @@ export function createHolidayModal({ parent = document.body } = {}) {
   root.addEventListener("pointerdown", () => bringToFront(root), true);
 
   let returnFocus = null;
+  let ownerId = null;               // town the open panel belongs to
   function hide() {
+    ownerId = null;
     root.hidden = true;
     returnFocus?.focus?.({ preventScroll: true });
     returnFocus = null;
@@ -87,8 +89,9 @@ export function createHolidayModal({ parent = document.body } = {}) {
 
   return {
     /** `holidays`: Holiday objects of that date; `day`: its DayInfo; `town`: label. */
-    async open({ day, holidays, town, from }) {
+    async open({ day, holidays, town, from, locationId = null }) {
       returnFocus = from ?? null;
+      ownerId = locationId;
       const info = await loadHolidayInfo();
       title.textContent = holidays.map((h) => h.name).join(" · ") || "Feiertag";
       const meta = el("p", "hint holiday-meta", `${formatDateWithWeekday(day.date)} · ${town}`);
@@ -108,5 +111,12 @@ export function createHolidayModal({ parent = document.body } = {}) {
     },
     close: hide,
     isOpen: () => !root.hidden,
+    /** Close if the panel belongs to this town (e.g. when the town is removed). */
+    closeFor(locationId) {
+      if (!root.hidden && ownerId === locationId) {
+        returnFocus = null;
+        hide();
+      }
+    },
   };
 }

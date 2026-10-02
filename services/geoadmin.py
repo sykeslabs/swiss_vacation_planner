@@ -284,3 +284,56 @@ def search_locations(query: str) -> list[Location]:
     if not lookup_failed:
         _search_cache.set(cache_key, result)
     return result
+
+
+# --- reverse lookup: "which place is at this map point?" (click on the map) ---------------------
+
+PLZ_LAYER = "ch.swisstopo-vd.ortschaftenverzeichnis_plz"
+_locate_cache = TTLCache(CACHE_TTL_S, max_items=2048)
+
+
+def parse_plz_identify(body: dict) -> tuple[str, str] | None:
+    """(postcode, locality) of the first locality polygon in an identify response."""
+    for r in (body or {}).get("results") or []:
+        a = r.get("attributes") or {}
+        plz, place = a.get("plz"), a.get("langtext")
+        if plz and place and str(plz).isdigit():
+            return f"{int(plz):04d}", str(place)
+    return None
+
+
+def locate(lat: float, lon: float) -> Location | None:
+    """The place at a map point, as the same Location a search would return: the
+    municipality if the locality carries its name (Baden), otherwise the postcode
+    locality (3823 Wengen in Lauterbrunnen). None outside Switzerland or on a lake.
+    Raises UpstreamError."""
+    key = (round(lat, 4), round(lon, 4))
+    cached = _locate_cache.get(key)
+    if cached is not None:
+        return cached or None
+    muni = _identify_municipality(lat, lon)
+    if not muni:
+        _locate_cache.set(key, False)
+        return None
+    bfs, municipality, canton = muni
+    plz_body = http.get_json(SERVICE, IDENTIFY_URL, {
+        "geometry": f"{lon},{lat}", "geometryType": "esriGeometryPoint", "sr": "4326",
+        "layers": f"all:{PLZ_LAYER}", "tolerance": "0", "returnGeometry": "false", "lang": "de",
+    })
+    plz = parse_plz_identify(plz_body)
+    found = None
+    if plz is None or plz[1].casefold() == municipality.casefold():
+        found = next((l for l in search_locations(municipality)
+                      if l.municipality_id == bfs and l.postcode is None), None)
+    if found is None and plz is not None:
+        found = next((l for l in search_locations(plz[0])
+                      if l.municipality_id == bfs and l.name.casefold() == plz[1].casefold()), None) \
+            or next((l for l in search_locations(plz[0]) if l.municipality_id == bfs), None)
+    if found is None:
+        # Fallback: the municipality at the clicked point (no settlement point known).
+        found = Location(id=f"bfs-{bfs}", name=municipality, postcode=None, municipality=municipality,
+                         municipality_id=bfs, canton=canton, latitude=lat, longitude=lon, source=SOURCE,
+                         source_url=IDENTIFY_URL, retrieved_at=_now_iso(),
+                         postcodes=tuple(postcodes_by_bfs().get(str(bfs), ())))
+    _locate_cache.set(key, found)
+    return found

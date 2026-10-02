@@ -1,0 +1,48 @@
+{
+ "baden": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/MapServer/identify?geometry=8.3032%2C47.4759&geometryType=esriGeometryPoint&sr=4326&layers=all%3Ach.swisstopo-vd.ortschaftenverzeichnis_plz&tolerance=0&returnGeometry=false&lang=de",
+  "retrieved_at": "2026-10-02T22:05:46+00:00",
+  "body": {
+   "results": [
+    {
+     "layerBodId": "ch.swisstopo-vd.ortschaftenverzeichnis_plz",
+     "layerName": "Amtliches Ortschaftenverzeichnis",
+     "featureId": "3043",
+     "id": "3043",
+     "attributes": {
+      "plz": 5400,
+      "zusziff": "00",
+      "langtext": "Baden",
+      "status": "REAL",
+      "modified": "10.09.2024",
+      "bgdi_created": "01.10.2026",
+      "label": 5400
+     }
+    }
+   ]
+  }
+ },
+ "wengen": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/MapServer/identify?geometry=7.922%2C46.6085&geometryType=esriGeometryPoint&sr=4326&layers=all%3Ach.swisstopo-vd.ortschaftenverzeichnis_plz&tolerance=0&returnGeometry=false&lang=de",
+  "retrieved_at": "2026-10-02T22:05:46+00:00",
+  "body": {
+   "results": [
+    {
+     "layerBodId": "ch.swisstopo-vd.ortschaftenverzeichnis_plz",
+     "layerName": "Amtliches Ortschaftenverzeichnis",
+     "featureId": "2248",
+     "id": "2248",
+     "attributes": {
+      "plz": 3823,
+      "zusziff": "00",
+      "langtext": "Wengen",
+      "status": "REAL",
+      "modified": "18.04.2018",
+      "bgdi_created": "01.10.2026",
+      "label": 3823
+     }
+    }
+   ]
+  }
+ }
+}

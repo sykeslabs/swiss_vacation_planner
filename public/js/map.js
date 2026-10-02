@@ -80,7 +80,7 @@ function satelliteLayer(watcher) {
  * Create the map in `el`. Returns { map, setBaseLayer(key), activeBaseLayer() }.
  * `onNotice(text|null)` shows or clears a non-blocking message.
  */
-export function createSwissMap(el, { onNotice = () => {}, getRightCoverage = () => 0 } = {}) {
+export function createSwissMap(el, { onNotice = () => {}, getRightCoverage = () => 0, onMapClick = null } = {}) {
   const swiss = L.latLngBounds(SWISS_BOUNDS);
   const map = L.map(el, {
     zoomControl: false,
@@ -140,6 +140,7 @@ export function createSwissMap(el, { onNotice = () => {}, getRightCoverage = () 
       if (markers.has(loc.id)) continue;
       const marker = L.circleMarker([loc.latitude, loc.longitude], {
         radius: 8, weight: 2, color: "#ffffff", fillColor: "#d52b1e", fillOpacity: 0.95,
+        bubblingMouseEvents: false,          // a click on a marker is not a "pick a place" click
       });
       // Pass a DOM node, not a string: Leaflet inserts strings as HTML.
       const label = document.createElement("span");
@@ -177,5 +178,14 @@ export function createSwissMap(el, { onNotice = () => {}, getRightCoverage = () 
     else map.fitBounds(bounds, { ...options, animate: false });
   }
 
-  return { map, setBaseLayer, activeBaseLayer: () => active, setLocations, fitLocations };
+  // Picking a place on the map: Leaflet fires "click" only without a drag, so panning
+  // and zooming stay unaffected.
+  const popup = L.popup({ className: "pick-popup", autoPan: true, maxWidth: 280, closeButton: true });
+  if (onMapClick) map.on("click", (e) => onMapClick(e.latlng));
+  function showPopup(latlng, node) {
+    popup.setLatLng(latlng).setContent(node).openOn(map);   // node, not an HTML string
+  }
+  const closePopup = () => map.closePopup(popup);
+
+  return { map, setBaseLayer, activeBaseLayer: () => active, setLocations, fitLocations, showPopup, closePopup };
 }

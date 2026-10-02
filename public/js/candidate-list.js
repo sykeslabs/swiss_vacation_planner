@@ -22,11 +22,12 @@ export function planSummary(summary) {
   const plan = summary?.plan ?? [];
   if (!plan.length) {
     return summary?.budget != null
-      ? `Mit ${vacationDaysLabel(summary.budget)} gibt es keine passende Periode.`
+      ? `Keine passende Periode innerhalb deines Budgets (${vacationDaysLabel(summary.budget)}).`
       : "Keine Empfehlung für dieses Jahr.";
   }
   const periods = plan.length === 1 ? "1 Periode" : `${plan.length} Perioden`;
-  return `Empfehlung: ${periods} · ${vacationDaysLabel(summary.plan_vacation_days)} → ${summary.plan_days_free} Tage frei`;
+  const left = summary.budget_left > 0 ? ` · ${vacationDaysLabel(summary.budget_left)} frei verteilbar` : "";
+  return `Empfehlung: ${periods} · ${vacationDaysLabel(summary.plan_vacation_days)} → ${summary.plan_days_free} Tage frei${left}`;
 }
 
 /** "1 Feiertag", "9 Feiertage" */

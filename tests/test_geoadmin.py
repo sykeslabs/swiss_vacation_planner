@@ -289,3 +289,80 @@ def test_same_town_key():
     other_village = Location(id="bfs-4021-plz-5300", name="Turgi", postcode="5300", **common)
     assert town.town_key() == via_plz.town_key()
     assert town.town_key() != other_village.town_key()
+
+
+# --- reverse lookup: click on the map (owner request 2026-10-03) ---------------------------------
+
+PLZ_ID = json.loads((FIXTURES / "geoadmin_identify_plz.json").read_text(encoding="utf-8"))
+
+
+def muni_identify(bfs, name, canton):
+    return {"results": [{"attributes": {"gde_nr": bfs, "gemname": name, "kanton": canton, "is_current_jahr": True}}]}
+
+
+class PointApi:
+    """identify (municipality / postcode layer) + search, routed by parameters."""
+
+    def __init__(self, muni, plz, searches):
+        self.muni, self.plz, self.searches, self.calls = muni, plz, searches, []
+
+    def __call__(self, service, url, params=None, **kw):
+        self.calls.append((url, dict(params or {})))
+        if url == geoadmin.IDENTIFY_URL:
+            return self.plz if geoadmin.PLZ_LAYER in params["layers"] else self.muni
+        key = (params["searchText"], params["origins"])
+        return self.searches.get(key, {"results": []})
+
+
+@pytest.fixture
+def point_api(monkeypatch):
+    geoadmin._locate_cache.clear()
+    def install(api):
+        monkeypatch.setattr(http, "get_json", api)
+        return api
+    return install
+
+
+def test_click_on_a_town_gives_the_municipality(point_api):
+    point_api(PointApi(muni_identify(4021, "Baden", "AG"), PLZ_ID["baden"]["body"], {
+        ("Baden", "gg25"): GAZ["Baden|gg25"]["body"], ("Baden", "gazetteer"): GAZ["Baden|gazetteer"]["body"]}))
+    loc = geoadmin.locate(47.4759, 8.3032)
+    assert loc.id == "bfs-4021" and loc.postcode is None and "5400" in loc.postcodes
+    assert (round(loc.latitude, 4), round(loc.longitude, 4)) == (47.4759, 8.3032)      # settlement point
+
+
+def test_click_on_a_village_gives_the_postcode_locality(point_api):
+    wengen_search = {"results": [{"attrs": {"origin": "zipcode", "label": "<b>3823 - Wengen</b>",
+                                            "lat": 46.6085, "lon": 7.9220}}]}
+    point_api(PointApi(muni_identify(584, "Lauterbrunnen", "BE"), PLZ_ID["wengen"]["body"],
+                       {("3823", "zipcode"): wengen_search}))
+    loc = geoadmin.locate(46.6085, 7.9220)
+    assert loc.id == "bfs-584-plz-3823" and loc.name == "Wengen" and loc.municipality == "Lauterbrunnen"
+
+
+def test_click_on_a_lake_or_abroad_gives_nothing(point_api):
+    api = point_api(PointApi({"results": []}, {"results": []}, {}))
+    assert geoadmin.locate(47.25, 8.65) is None
+    assert geoadmin.locate(47.25, 8.65) is None
+    assert len(api.calls) <= 2                                    # cached
+
+
+def test_reverse_lookup_falls_back_to_the_clicked_point(point_api):
+    point_api(PointApi(muni_identify(4021, "Baden", "AG"), {"results": []}, {}))
+    loc = geoadmin.locate(47.47, 8.30)
+    assert loc.id == "bfs-4021" and loc.latitude == 47.47 and loc.canton == "AG"
+
+
+def test_api_at_point(client, monkeypatch):
+    from domain.models import Location
+    baden = Location(id="bfs-4021", name="Baden", postcode=None, municipality="Baden", municipality_id=4021,
+                     canton="AG", latitude=47.4759, longitude=8.3032, source="s", source_url="u", retrieved_at="t")
+    monkeypatch.setattr(geoadmin, "locate", lambda lat, lon: baden)
+    assert client.get("/api/locations/at?lat=47.47&lon=8.30").get_json()["location"]["id"] == "bfs-4021"
+    assert client.get("/api/locations/at?lat=52.5&lon=13.4").get_json() == {"location": None}   # Berlin
+    assert client.get("/api/locations/at?lat=x&lon=8").status_code == 400
+    def down(lat, lon):
+        raise http.UpstreamError("geoadmin", "ReadTimeout")
+    monkeypatch.setattr(geoadmin, "locate", down)
+    res = client.get("/api/locations/at?lat=47.47&lon=8.30")
+    assert res.status_code == 503 and "ReadTimeout" not in res.get_data(as_text=True)

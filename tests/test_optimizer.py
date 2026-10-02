@@ -232,3 +232,38 @@ def test_summary_contains_plan_totals():
     s = summarize(days, cands(days), year=YEAR, budget=10)
     assert s["plan_vacation_days"] <= 10
     assert s["plan_days_free"] == sum(c["days_free"] for c in s["plan"])
+
+
+
+# --- owner report 2026-10-03: an ordinary week was recommended ("Dank: Allerheiligen" on a Sunday)
+
+def test_anchors_are_only_holidays_on_working_days():
+    sun = date(2027, 10, 31)                       # holiday on a Sunday
+    thu = date(2027, 5, 6)
+    days = days_for([hol(sun, "Sonntagsfeiertag"), hol(thu, "Donnerstagsfeiertag")])
+    names = {n for c in cands(days) for n in c.anchor_holidays}
+    assert "Donnerstagsfeiertag" in names and "Sonntagsfeiertag" not in names
+
+
+@pytest.mark.parametrize("budget", [None, 10, 25, 40])
+def test_plan_never_contains_an_ordinary_week(budget):
+    plan = recommend_plan(zh_candidates(), year=YEAR, budget=budget)
+    assert plan and all(c.anchor_holidays for c in plan)
+    by_date = {}
+    hs = baseline_holidays("ZH", window_years(YEAR), "t")
+    for d in build_days(CalendarConfig(YEAR, DEFAULT_WORKING_DAYS, default_half_days(YEAR)), hs):
+        by_date[d.date] = d
+    for c in plan:                                  # every period contains a holiday on a working day
+        d, hit = c.start, False
+        while d <= c.end:
+            hit |= by_date[d].is_holiday and by_date[d].is_working_day
+            d += timedelta(days=1)
+        assert hit
+
+
+def test_unused_budget_is_reported():
+    hs = baseline_holidays("ZH", window_years(YEAR), "t")
+    days = build_days(CalendarConfig(YEAR, DEFAULT_WORKING_DAYS, {}), hs)
+    s = summarize(days, cands(days), year=YEAR, budget=40)
+    assert s["budget_left"] == 40 - s["plan_vacation_days"] and s["budget_left"] > 0
+    assert summarize(days, cands(days), year=YEAR, budget=None)["budget_left"] is None

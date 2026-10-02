@@ -1,4 +1,4 @@
-import { fetchHolidays, fetchLocations, postOptimize } from "./api.js";
+import { fetchHolidays, fetchLocationAt, fetchLocations, postOptimize } from "./api.js";
 import { applyPlan, periodKey } from "./calendar-model.js";
 import { makeFloatingPanel } from "./floating-panel.js";
 import { createHolidayModal } from "./holiday-modal.js";
@@ -7,7 +7,9 @@ import { createPeriodModal } from "./period-modal.js";
 import { PANEL_GAP, PANEL_WIDTH, rightCoverage } from "./panel-layout.js";
 import { createSettingsPanel } from "./planner.js";
 import { createSearchBox } from "./search.js";
-import { createPlannerStore, firstVisibleMonth, locationLabel, MAX_LOCATIONS, optimizePayload } from "./state.js";
+import {
+  createPlannerStore, firstVisibleMonth, locationDetail, locationLabel, MAX_LOCATIONS, optimizePayload,
+} from "./state.js";
 import { createTownPanels } from "./town-panels.js";
 import { debounce } from "./util.js";
 
@@ -34,6 +36,7 @@ try {
 let townPanels = null;
 const swissMap = createSwissMap($("map"), {
   onNotice: showNotice,
+  onMapClick: (latlng) => pickOnMap(latlng),
   // Before the first panel is visible, reserve room for one panel (and the "Jahr" panel).
   getRightCoverage: () => {
     const rects = [...(townPanels?.rects() ?? [])];
@@ -57,25 +60,75 @@ const store = createPlannerStore({ storage });
 const searchInput = $("location-search");
 const searchLabel = $("location-search-label");
 const searchStatus = $("search-status");
+function addTown(location) {
+  const result = store.addLocation(location);
+  if (result === "full") {
+    searchStatus.textContent = `Du kannst höchstens ${MAX_LOCATIONS} Orte vergleichen.`;
+    searchStatus.hidden = false;
+  }
+  if (result === "duplicate") {
+    const existing = store.findSameTown(location);
+    townPanels.bringToFront(existing.id);
+    swissMap.fitLocations([existing]);
+  }
+  return result;
+}
+
 createSearchBox({
   input: searchInput,
   list: $("location-results"),
   status: searchStatus,
   fetchLocations,
   isSelected: (location) => store.findSameTown(location) !== null,
-  onSelect(location) {
-    const result = store.addLocation(location);
-    if (result === "full") {
-      searchStatus.textContent = `Du kannst höchstens ${MAX_LOCATIONS} Orte vergleichen.`;
-      searchStatus.hidden = false;
-    }
-    if (result === "duplicate") {
-      const existing = store.findSameTown(location);
-      townPanels.bringToFront(existing.id);
-      swissMap.fitLocations([existing]);
-    }
-  },
+  onSelect: addTown,
 });
+
+// Pick a place by clicking the map (e.g. on a town label): small panel with "hinzufügen".
+let pickRequest = null;
+function pickNode(lines, button = null) {
+  const box = document.createElement("div");
+  box.className = "pick";
+  for (const [cls, text] of lines) {
+    const p = document.createElement("p");
+    p.className = cls;
+    p.textContent = text;
+    box.append(p);
+  }
+  if (button) box.append(button);
+  return box;
+}
+async function pickOnMap(latlng) {
+  pickRequest?.abort();
+  const ctrl = new AbortController();
+  pickRequest = ctrl;
+  swissMap.showPopup(latlng, pickNode([["hint", "Ort wird bestimmt …"]]));
+  try {
+    const loc = await fetchLocationAt(latlng.lat, latlng.lng, { signal: ctrl.signal });
+    if (ctrl.signal.aborted) return;
+    if (!loc) {
+      swissMap.showPopup(latlng, pickNode([["hint", "Hier liegt kein Schweizer Ort (z. B. ein See oder das Ausland)."]]));
+      return;
+    }
+    const existing = store.findSameTown(loc);
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn-secondary pick-add";
+    b.textContent = existing ? "Anzeigen" : "+ Ort hinzufügen";
+    b.addEventListener("click", () => {
+      swissMap.closePopup();
+      addTown(loc);
+    });
+    swissMap.showPopup(latlng, pickNode([
+      ["pick-title", `${locationLabel(loc)} (${loc.canton})`],
+      ["hint", locationDetail(loc) + (existing ? " · bereits hinzugefügt" : "")],
+    ], b));
+  } catch (err) {
+    if (err.name === "AbortError") return;
+    swissMap.showPopup(latlng, pickNode([["hint", err.message]]));
+  } finally {
+    if (pickRequest === ctrl) pickRequest = null;
+  }
+}
 
 const settingsRoot = $("settings");
 const settings = createSettingsPanel({ root: settingsRoot, store });
@@ -106,7 +159,7 @@ townPanels = createTownPanels({
   onRemove: (id) => store.removeLocation(id),
   onPeriodClick: ({ location, key, from }) => openPeriod(location, key, from),
   onHolidayClick: ({ location, day, holidays, from }) => holidayModal.open({
-    day, from, town: `${locationLabel(location)} (${location.canton})`,
+    day, from, town: `${locationLabel(location)} (${location.canton})`, locationId: location.id,
     holidays: holidays.map((h) => withWebInfo(location.id, h)),
   }),
 });
@@ -248,6 +301,12 @@ function renderChrome(state) {
 
 let openTimer = null;
 store.subscribe((state, change) => {
+  if (change.type === "remove") {
+    // Removing a town closes the info panels that belong to it.
+    holidayModal.closeFor(change.location.id);
+    periodModal.closeFor(change.location.id);
+    selected.delete(change.location.id);
+  }
   renderChrome(state);
   townPanels.sync(state.locations);
   ensureHolidays(state);

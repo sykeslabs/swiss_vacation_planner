@@ -86,5 +86,12 @@ export function createPeriodModal({ parent = document.body, onClose = () => {} }
     },
     close: hide,
     current: () => current,
+    /** Close if the panel shows a period of this town (e.g. when the town is removed). */
+    closeFor(locationId) {
+      if (current?.locationId === locationId) {
+        returnFocus = null;
+        hide();
+      }
+    },
   };
 }

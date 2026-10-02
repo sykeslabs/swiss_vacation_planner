@@ -118,8 +118,9 @@ test("labels", () => {
   const plz = { ...ZH, id: "bfs-261-plz-8001", postcode: "8001" };
   assert.equal(locationLabel(ZH), "Zürich");
   assert.equal(locationLabel(plz), "8001 Zürich");
-  assert.equal(locationDetail(ZH), "Gemeinde · ZH");
-  assert.equal(locationDetail(plz), "PLZ · Gemeinde Zürich · ZH");
+  assert.equal(locationDetail(ZH), "ZH");
+  assert.equal(locationDetail(plz), "ZH");
+  assert.equal(locationDetail({ ...plz, name: "Wengen", municipality: "Lauterbrunnen", canton: "BE" }), "Lauterbrunnen · BE");
 });
 
 test("util", () => {
