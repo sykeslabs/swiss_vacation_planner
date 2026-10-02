@@ -1,0 +1,6 @@
+# Source: https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_d_historical.csv (excerpt: header, first row, last 3 rows; full file 6.46 MB, 59170 rows), retrieved 2026-10-02
+station_abbr;reference_timestamp;tre200d0;tre200dx;tre200dn;tre005d0;tre005dx;tre005dn;ure200d0;pva200d0;prestad0;pp0qffd0;ppz850d0;ppz700d0;pp0qnhd0;fkl010d0;fkl010d1;fu3010d0;fu3010d1;fkl010d3;fu3010d3;wcc006d0;rre150d0;rka150d0;htoautd0;gre000d0;oli000d0;olo000d0;osr000d0;ods000d0;sre000d0;sremaxdv;erefaod0;xcd000d0;dkl010d0;xno000d0;xno012d0;rreetsd0;tso005d0;tso010d0;tso020d0
+SMA;01.01.1864 00:00;-0.8;;;;;;94.3;5.5;951.1;;;;;2.4;;8.6;;;;;6.3;;;;;;;;;;;;;;;;;;
+SMA;29.12.2025 00:00;-1.7;-0.4;-3.1;-1.3;2.7;-3.1;86.3;4.6;956.2;1025;;;1021.8;0.9;3.8;3.2;13.7;3.6;13;0;0;0;0;27;291;;;;71;16;0.3;0;225;21.7;13.7;-0.1;;;
+SMA;30.12.2025 00:00;-1.6;1.3;-3.8;-1.8;3.3;-5.6;72;3.9;958;1027;;;1023.8;1.6;7.1;5.8;25.6;6.8;24.5;0;0;0;0;38;272;;;;49;11;0.4;0;36;21.6;13.6;-0.1;;;
+SMA;31.12.2025 00:00;-3.6;-0.3;-6.2;-5;1.3;-8.2;70.7;3.3;957.7;1027.1;;;1023.4;1.8;6.2;6.5;22.3;6;21.6;0;0;0;0;72;210;;;;456;100;0.3;0;45;23.6;15.6;-0.4;;;

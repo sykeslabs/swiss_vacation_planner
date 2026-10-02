@@ -1,0 +1,68 @@
+{
+ "url": "https://ydc-index.io/v1/search?query=gesetzliche+Feiertage+Kanton+Appenzell+Innerrhoden+2027&count=5&country=CH&language=de",
+ "status": 200,
+ "retrieved_at": "2026-10-02T19:16:02.266385+00:00",
+ "body": {
+  "results": {
+   "web": [
+    {
+     "url": "https://feiertagskalender.ch/?ft_id=52&geo=266&hl=de&jahr=2027&klasse=3",
+     "title": "Feiertage Kanton Appenzell Innerrhoden 2027 (Gesetzliche Feiertage)",
+     "description": "Die Datenquelle mit Feiertagen und Schulferien, seit 2003",
+     "favicon_url": "https://you.com/favicon?domain=feiertagskalender.ch&size=128",
+     "snippets": [
+      "Länder Schweiz Kanton Appenzell Innerrhoden · bitte Region wählen · Appenzell Gonten · Oberegg Schlatt-Haslen · Schwende-Rüte · 2027 · Feiertage · Schulferien · Kalender · 2020 · 2021 · 2022 · 2023 · 2024 · 2025 · 2026 · 2027 · 2028 · 2029 · 2030 ·",
+      "recherchiert und publiziert Feiertage und Schulferien seit 2003."
+     ]
+    },
+    {
+     "url": "https://www.schulferien.org/schweiz/feiertage/appenzell-innerrhoden/",
+     "title": "Feiertage Appenzell Innerrhoden, Schweiz 2026, 2027, 2028",
+     "description": "Feiertage Appenzell Innerrhoden, Schweiz 2026,2027,2028 - hier finden Sie immer die aktuellen gesetzlichen Feiertage (arbeitsfrei) in Appenzell Innerrhoden",
+     "favicon_url": "https://you.com/favicon?domain=www.schulferien.org&size=128",
+     "snippets": [
+      "Hier finden Sie die gesetzlichen Feiertage für Appenzell Innerrhoden des laufenden (2026), der beiden folgenden (2027, 2028) sowie des vergangenen Jahres (2025)."
+     ]
+    },
+    {
+     "url": "https://www.ai.ch/themen/wirtschaft-und-arbeit/feiertage-ruhetage",
+     "title": "Feiertage / Ruhetage — Appenzell Innerrhoden",
+     "description": "Die Feiertage und Ruhetage im Kanton Appenzell Innerrhoden sind in einer Auflistung aufgeführt.",
+     "thumbnail_url": "https://www.ai.ch/++resource++ai/images/wappen_rund.png",
+     "original_thumbnail_url": "https://www.ai.ch/++resource++ai/images/wappen_rund.png",
+     "favicon_url": "https://you.com/favicon?domain=www.ai.ch&size=128",
+     "snippets": [
+      "Neben den Sonntagen und den Sonntagen gleichgestellten Feiertage (Neujahr, Karfreitag, Ostermontag, Auffahrt, Pfingstmontag, Fronleichnam, Weihnachts-Heiligtag, Stephanstag, sofern durch dessen Feier nicht drei Ruhetage aufeinander folgen) bestehen im Kanton vier übrige lokale Feiertage, nämlich Maria Himmelfahrt, Allerheiligen, Maria Empfängnis und im innern Landesteil der St.",
+      "Mauritiustag. Die übrigen lokalen Feiertage gelten arbeitgesetzlich als Werktage, d.h. für ausfallende Arbeitsstunden ist eine Vorholzeit zulässig. Dennoch handelt es sich um öffentliche Ruhetage nach kantonalem Recht. Nach kantonaler Praxis sind gewerbliche Verrichtungen an öffentlichen Ruhetagen nicht zulässig, soweit es sich nicht um erlaubte Arbeiten gemäss Art.",
+      "Unabhängig von der kantonalen Regelung zu den öffentlichen Ruhetagen erteilt das Arbeitsinspektorat Bewilligungen für vorübergehene Nacht- und Sonntagsarbeit gemäss eidgenössischer Arbeitsgesetzgebung. Dauerende oder regelmässig wiederkehrende Nacht- und Sonntagsarbeit wird vom Staatssekretariat für Wirtschaft SECO bewilligt. Arbeitsgesetzlich sind folgende Feiertage den Sonntagen gleichgestellt: Neujahr, Karfreitag, Ostermontag, Auffahrt, Pfingstmontag, Fronleichnam, 1.",
+      "Weihnachtstag, 2. Weihnachtstag, sofern dieser als Feiertag begangen wird. Sollen Mitarbeitende für Arbeiten an diesen Feiertagen zugezogen werden, wird eine Bewilligung für Sonntagsarbeit benötigt. Die kantonale Verwaltung ist nebst den Feiertagen auch an folgenden Tagen geschlossen:"
+     ]
+    },
+    {
+     "url": "https://www.ferienwiki.ch/feiertage/ch/appenzell-ausserrhoden",
+     "title": "Feiertage 2026 und 2027 in Appenzell Ausserrhoden",
+     "description": "Übersicht der Feiertage 2026 und 2027 in Appenzell Ausserrhoden auf Ferienwiki.at, dem Kalender und Ferienportal. Alle Jahrestermine wie Feiertage und Ferien auf einen Blick.",
+     "favicon_url": "https://you.com/favicon?domain=www.ferienwiki.ch&size=128",
+     "snippets": [
+      "Feiertage · Appenzell Ausserrhoden · Aargau · Appenzell Ausserrhoden · Appenzell Innerrhoden · Basel-Landschaft · Basel-Stadt · Bern · Freiburg · Genf · Glarus · Graubünden · Jura · Luzern · Neuenburg · Nidwalden · Obwalden · Regional · Schaffhausen ·"
+     ]
+    },
+    {
+     "url": "https://www.ferienwiki.ch/feiertage/ch/appenzell-innerrhoden",
+     "title": "Feiertage 2026 und 2027 in Appenzell Innerrhoden",
+     "description": "Übersicht der Feiertage 2026 und 2027 in Appenzell Innerrhoden auf Ferienwiki.at, dem Kalender und Ferienportal. Alle Jahrestermine wie Feiertage und Ferien auf einen Blick.",
+     "favicon_url": "https://you.com/favicon?domain=www.ferienwiki.ch&size=128",
+     "snippets": [
+      "Feiertage · Appenzell Innerrhoden · Aargau · Appenzell Ausserrhoden · Appenzell Innerrhoden · Basel-Landschaft · Basel-Stadt · Bern · Freiburg · Genf · Glarus · Graubünden · Jura · Luzern · Neuenburg · Nidwalden · Obwalden · Regional · Schaffhausen ·"
+     ]
+    }
+   ]
+  },
+  "metadata": {
+   "query": "gesetzliche Feiertage Kanton Appenzell Innerrhoden 2027",
+   "search_uuid": "d8d3814b-d6e3-483c-b83f-716284146030",
+   "latency": 0.42354812601115555
+  }
+ },
+ "query": "gesetzliche Feiertage Kanton Appenzell Innerrhoden 2027"
+}

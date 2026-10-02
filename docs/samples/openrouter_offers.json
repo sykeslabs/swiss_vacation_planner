@@ -1,0 +1,142 @@
+{
+ "url": "https://openrouter.ai/api/v1/chat/completions",
+ "status": 200,
+ "elapsed_s": 8.27,
+ "retrieved_at": "2026-10-02T19:19:44.952152+00:00",
+ "request_body": {
+  "model": "google/gemini-2.5-flash-lite",
+  "messages": [
+   {
+    "role": "system",
+    "content": "Du bist ein Reiseideen-Assistent fuer Reisende aus der Schweiz. Antworte auf Schweizer Hochdeutsch (kein ß). Erfinde keine konkreten Preise, Flugnummern oder Hotelverfuegbarkeiten; Budgets sind grobe Schaetzungen. Lass source_urls leer."
+   },
+   {
+    "role": "user",
+    "content": "Gib genau 10 Reiseideen. Land: Portugal (PT). Ferientyp: beach. Abreise ab Schweiz. Zeitraum: 2027-05-06 bis 2027-05-09 (4 Tage frei, 1 Ferientag)."
+   }
+  ],
+  "response_format": {
+   "type": "json_schema",
+   "json_schema": {
+    "name": "travel_offers",
+    "strict": true,
+    "schema": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "offers"
+     ],
+     "properties": {
+      "offers": {
+       "type": "array",
+       "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+         "title",
+         "destination",
+         "description",
+         "vacation_type",
+         "estimated_budget_chf",
+         "recommended_duration_days",
+         "why_it_fits",
+         "best_travel_window",
+         "transport_hint",
+         "source_urls"
+        ],
+        "properties": {
+         "title": {
+          "type": "string"
+         },
+         "destination": {
+          "type": "string"
+         },
+         "description": {
+          "type": "string"
+         },
+         "vacation_type": {
+          "type": "string"
+         },
+         "estimated_budget_chf": {
+          "type": [
+           "integer",
+           "null"
+          ]
+         },
+         "recommended_duration_days": {
+          "type": "integer"
+         },
+         "why_it_fits": {
+          "type": "string"
+         },
+         "best_travel_window": {
+          "type": "string"
+         },
+         "transport_hint": {
+          "type": "string"
+         },
+         "source_urls": {
+          "type": "array",
+          "items": {
+           "type": "string"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "usage": {
+   "include": true
+  },
+  "temperature": 0.7
+ },
+ "body": {
+  "id": "gen-1790968777-kDVux6E7nycxXoC4zjEZ",
+  "object": "chat.completion",
+  "created": 1790968777,
+  "model": "google/gemini-2.5-flash-lite",
+  "provider": "Google",
+  "system_fingerprint": null,
+  "service_tier": "default",
+  "choices": [
+   {
+    "index": 0,
+    "logprobs": null,
+    "finish_reason": "stop",
+    "native_finish_reason": "STOP",
+    "message": {
+     "role": "assistant",
+     "content": "{\n  \"offers\": [\n    {\n      \"title\": \"Algarve Beach Break\",\n      \"destination\": \"Algarve, Portugal\",\n      \"description\": \"Entspanne an den suedlichen Kuesten Portugals mit ihren wunderschoenen Sandstraenden und malerischen Klippen. Geniesse das mediterrane Klima und die frische Meeresbrise.\",\n      \"vacation_type\": \"beach\",\n      \"estimated_budget_chf\": 1200,\n      \"recommended_duration_days\": 4,\n      \"why_it_fits\": \"Die Algarve ist beruehmt fuer ihre Traumstraende und bietet sich perfekt fuer einen kurzen Strandurlaub an. Das Wetter im Mai ist meist schon sehr angenehm.\",\n      \"best_travel_window\": \"Mai bis September\",\n      \"transport_hint\": \"Flug von Schweiz nach Faro (FAO), dann Mietwagen oder oeffentliche Verkehrsmittel.\",\n      \"source_urls\": []\n    },\n    {\n      \"title\": \"Lissabon & Cascais Kuestenflucht\",\n      \"destination\": \"Cascais, Portugal\",\n      \"description\": \"Kombiniere einen Besuch in der lebendigen Hauptstadt Lissabon mit entspannten Tagen am Strand im nahegelegenen Fischerort Cascais. Erkunde historische Staedte und geniesse die Atlantikkueste.\",\n      \"vacation_type\": \"beach\",\n      \"estimated_budget_chf\": 1400,\n      \"recommended_duration_days\": 4,\n      \"why_it_fits\": \"Cascais bietet wunderschoene Buchten und Strande, ist aber auch gut an Lissabon angebunden, was eine gute Mischung aus Kultur und Entspannung ermoeglicht.\",\n      \"best_travel_window\": \"April bis Oktober\",\n      \"transport_hint\": \"Flug von Schweiz nach Lissabon (LIS), dann Zug oder Mietwagen nach Cascais.\",\n      \"source_urls\": []\n    },\n    {\n      \"title\": \"Sintra's Magie und Strand\",\n      \"destination\": \"Sintra & Praia Grande, Portugal\",\n      \"description\": \"Entdecke die romantischen Schloesser und Gaerten von Sintra und verbringe anschliessend Zeit an den weitlaeufigen Surferstraenden wie Praia Grande.\",\n      \"vacation_type\": \"beach\",\n      \"estimated_budget_chf\": 1300,\n      \"recommended_duration_days\": 4,\n      \"why_it_fits\": \"Sintra bietet eine einzigartige kulturelle Erfahrung, waehrend die nahegelegenen Straende, wie Praia Grande, zum Entspannen und fuer Wassersport einladen.\",\n      \"best_travel_window\": \"Mai bis September\",\n      \"transport_hint\": \"Flug von Schweiz nach Lissabon (LIS), dann Zug nach Sintra und Bus/Taxi zum Strand.\",\n      \"source_urls\": []\n    },\n    {\n      \"title\": \"Costa da Caparica Strandtag\",\n      \"destination\": \"Costa da Caparica, Portugal\",\n      \"description\": \"Ein langer, breiter Sandstrand suedlich von Lissabon, perfekt fuer einen Tag am Meer. Ideal zum Spazierengehen, Sonnenbaden oder Surfen.\",\n      \"vacation_type\": \"beach\",\n      \"estimated_budget_chf\": 1100,\n      \"recommended_duration_days\": 4,\n      \"why_it_fits\": \"Die Costa da Caparica ist leicht von Lissabon aus erreichbar und bietet endlose Sandstraende fuer eine kurze Auszeit am Meer.\",\n      \"best_travel_window\": \"Mai bis Oktober\",\n      \"transport_hint\": \"Flug von Schweiz nach Lissabon (LIS), dann Bus oder Mietwagen.\",\n      \"source_urls\": []\n    },\n    {\n      \"title\": \"Ericeira Surf Vibes\",\n      \"destination\": \"Ericeira, Portugal\",\n      \"description\": \"Besuche Ericeira, ein UNESCO-Welt-Surfreservat, und geniesse die entspannte Atmosphaere und die schoenen Straende. Auch fuer Nicht-Surfer ist die Stadt sehenswert.\",\n      \"vacation_type\": \"beach\",\n      \"estimated_budget_chf\": 1300,\n      \"recommended_duration_days\": 4,\n      \"why_it_fits\": \"Ericeira ist ein Paradies fuer Surfer und Beach-Liebhaber. Die Stadt selbst hat viel Charme und bietet eine tolle Kuestenlandschaft.\",\n      \"best_travel_window\": \"April bis Oktober\",\n      \"transport_hint\": \"Flug von Schweiz nach Lissabon (LIS), dann Bus oder Mietwagen.\",\n      \"source_urls\": []\n    },\n    {\n      \"title\": \"Inseltraum Madeira Strand\",\n      \"destination\": \"Madeira, Portugal\",\n      \"description\": \"Erkunde die suedlichen Kuestenabschnitte Madeiras mit ihren einzigartigen Kies- und Felsstraenden, oft mit vulkanischem Ursprung. Geniesse die beeindruckende Natur der Blumeninsel.\",\n      \"vacation_type\": \"beach\",\n      \"estimated_budget_chf\": 1500,\n      \"recommended_duration_days\": 4,\n      \"why_it_fits\": \"Madeira bietet eine andere Art von Strandurlaub mit dramatischer Landschaft. Mai ist eine tolle Zeit fuer die Bluetenpracht.\",\n      \"best_travel_window\": \"April bis November\",\n      \"transport_hint\": \"Flug von Schweiz nach Funchal (FNC), dann Mietwagen oder oeffentliche Verkehrsmittel.\",\n      \"source_urls\": []\n    },\n    {\n      \"title\": \"Porto und Vila Nova de Gaia Strände\",\n      \"destination\": \"Porto & Vila Nova de Gaia, Portugal\",\n      \"description\": \"Entdecke die Kulturstadt Porto und verbringe Zeit an den Straenden von Vila Nova de Gaia, direkt gegenueber der beruehmten Portweinkellereien.\",\n      \"vacation_type\": \"beach\",\n      \"estimated_budget_chf\": 1300,\n      \"recommended_duration_days\": 4,\n      \"why_it_fits\": \"Die Straende von Gaia sind gut erreichbar und bieten eine schoene Abwechslung zum Stadtleben von Porto. Mai ist ideal fuer angenehme Temperaturen.\",\n      \"best_travel_window\": \"Mai bis September\",\n      \"transport_hint\": \"Flug von Schweiz nach Porto (OPO), dann Tram oder Bus zu den Straenden.\",\n      \"source_urls\": []\n    },\n    {\n      \"title\": \"Azoren - Sao Miguel Inselstrand\",\n      \"destination\": \"Sao Miguel, Azoren, Portugal\",\n      \"description\": \"Erlebe die einzigartige Vulkanlandschaft der Azoren und entspanne an den schwarzen Sandstraenden von Sao Miguel. Genieße die unberuehrte Natur.\",\n      \"vacation_type\": \"beach\",\n      \"estimated_budget_chf\": 1600,\n      \"recommended_duration_days\": 4,\n      \"why_it_fits\": \"Ein aussergewoehnlicher Strandurlaub auf einer Insel mit atemberaubender Natur. Die Temperaturen sind im Mai mild und angenehm fuer Erkundungen.\",\n      \"best_travel_window\": \"Mai bis Oktober\",\n      \"transport_hint\": \"Flug von Schweiz nach Ponta Delgada (PDL), dann Mietwagen.\",\n      \"source_urls\": []\n    },\n    {\n      \"title\": \"Tavira und Ilha de Tavira\",\n      \"destination\": \"Tavira, Algarve, Portugal\",\n      \"description\": \"Besuche die charmante Stadt Tavira und nimm eine kurze Faehre zur Ilha de Tavira, einer langen Sandinsel mit wunderschoenen, ruhigen Straenden.\",\n      \"vacation_type\": \"beach\",\n      \"estimated_budget_chf\": 1200,\n      \"recommended_duration_days\": 4,\n      \"why_it_fits\": \"Die Ilha de Tavira bietet einen entspannten Strandurlaub abseits des grossen Trubels, perfekt fuer Naturliebhaber.\",\n      \"best_travel_window\": \"Mai bis September\",\n      \"transport_hint\": \"Flug von Schweiz nach Faro (FAO), dann Zug oder Mietwagen nach Tavira.\",\n      \"source_urls\": []\n    },\n    {\n      \"title\": \"Alvor Sandstrände\",\n      \"destination\": \"Alvor, Algarve, Portugal\",\n      \"description\": \"Entdecke die weitlaeufigen Sandstraende und Felsformationen um Alvor. Ein idealer Ort fuer lange Strandspaziergänge und zum Entspannen.\",\n      \"vacation_type\": \"beach\",\n      \"estimated_budget_chf\": 1250,\n      \"recommended_duration_days\": 4,\n      \"why_it_fits\": \"Alvor bietet eine Kombination aus langen Sandstraenden und felsigen Buchten, was abwechslungsreiche Erlebnisse am Meer ermoeglicht. Mai ist sonnig und warm.\",\n      \"best_travel_window\": \"Mai bis Oktober\",\n      \"transport_hint\": \"Flug von Schweiz nach Faro (FAO), dann Mietwagen oder Taxi.\",\n      \"source_urls\": []\n    }\n  ]\n}",
+     "refusal": null,
+     "reasoning": null
+    }
+   }
+  ],
+  "usage": {
+   "prompt_tokens": 121,
+   "completion_tokens": 2117,
+   "total_tokens": 2238,
+   "cost": 0.0008589,
+   "is_byok": false,
+   "prompt_tokens_details": {
+    "cached_tokens": 0,
+    "cache_write_tokens": 0,
+    "audio_tokens": 0,
+    "video_tokens": 0
+   },
+   "cost_details": {
+    "upstream_inference_cost": 0.0008589,
+    "upstream_inference_prompt_cost": 1.21e-05,
+    "upstream_inference_completions_cost": 0.0008468
+   },
+   "completion_tokens_details": {
+    "reasoning_tokens": 0,
+    "image_tokens": 0,
+    "audio_tokens": 0
+   }
+  }
+ }
+}

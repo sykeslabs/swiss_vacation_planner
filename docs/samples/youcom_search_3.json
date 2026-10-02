@@ -1,0 +1,64 @@
+{
+ "url": "https://ydc-index.io/v1/search?query=Feiertage+Stadt+Bern+2027+Ruhetage&count=5&country=CH&language=de",
+ "status": 200,
+ "retrieved_at": "2026-10-02T19:16:03.368426+00:00",
+ "body": {
+  "results": {
+   "web": [
+    {
+     "url": "https://www.ferienwiki.ch/feiertage/ch/bern",
+     "title": "Feiertage 2026 und 2027 in Bern - Ferienwiki",
+     "description": "Übersicht der Feiertage 2026 und 2027 in Bern auf Ferienwiki.at, dem Kalender und Ferienportal. Alle Jahrestermine wie Feiertage und Ferien auf einen Blick.",
+     "favicon_url": "https://you.com/favicon?domain=www.ferienwiki.ch&size=128",
+     "snippets": [
+      "Feiertage · Bern · Aargau · Appenzell Ausserrhoden · Appenzell Innerrhoden · Basel-Landschaft · Basel-Stadt · Bern · Freiburg · Genf · Glarus · Graubünden · Jura · Luzern · Neuenburg · Nidwalden · Obwalden · Regional · Schaffhausen · Schwyz · Solothurn ·"
+     ]
+    },
+    {
+     "url": "https://www.schulferien.org/schweiz/feiertage/bern/",
+     "title": "Feiertage Bern, Schweiz 2026, 2027, 2028",
+     "description": "Feiertage Bern, Schweiz 2026,2027,2028 - hier finden Sie immer die aktuellen gesetzlichen Feiertage (arbeitsfrei) in Bern",
+     "favicon_url": "https://you.com/favicon?domain=www.schulferien.org&size=128",
+     "snippets": [
+      "Hier finden Sie die gesetzlichen Feiertage für Bern des laufenden (2026), der beiden folgenden (2027, 2028) sowie des vergangenen Jahres (2025)."
+     ]
+    },
+    {
+     "url": "https://www.feiertagskalender.ch/index.php?geo=410&klasse=3&jahr=2027&hl=de",
+     "title": "Feiertage Stadt Bern 2027 (Gesetzliche Feiertage)",
+     "description": "Die Datenquelle mit Feiertagen und Schulferien, seit 2003",
+     "favicon_url": "https://you.com/favicon?domain=www.feiertagskalender.ch&size=128",
+     "snippets": [
+      "Länder Schweiz Kanton Bern Verwaltungskreis Bern-Mittelland Stadt Bern · 2027 · 2020 · 2021 · 2022 · 2023 · 2024 · 2025 · 2026 · 2027 · 2028 · 2029 · 2030 · 2031 · 2032 · 2033 · 2034 · 2035 · 2036 · Listen · Ereignisse und Feiertage · Feiertage · Gesetzliche Feiertage ·",
+      "recherchiert und publiziert Feiertage und Schulferien seit 2003."
+     ]
+    },
+    {
+     "url": "http://www.feiertage-schweiz.ch/kalender/2027/bern.html",
+     "title": "Feiertage Kanton Bern 2027 - Schweizer Online Kalender",
+     "description": "Feiertage Kanton Bern im Jahr 2027. Alle Feiertage und Ereignistage des Kanton Bern zusammengetragen und aufgelistet.",
+     "favicon_url": "https://you.com/favicon?domain=www.feiertage-schweiz.ch&size=128",
+     "snippets": [
+      "2010 | 2011 | 2012 | 2013 | 2014 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 | 2031 | 2032 | 2033 | 2034 | 2035 | 2036 | 2037"
+     ]
+    },
+    {
+     "url": "https://feiertagskalender.ch/cal.php?geo=369&jahr=2027&klasse=5&hl=de",
+     "title": "Kalender Kanton Bern 2027 (Ereignisse und Feiertage)",
+     "description": "Die Datenquelle mit Feiertagen und Schulferien, seit 2003",
+     "favicon_url": "https://you.com/favicon?domain=feiertagskalender.ch&size=128",
+     "snippets": [
+      "Interlaken-Oberhasli Jura bernois Oberaargau Obersimmental-Saanen · Seeland Thun · 2027 · 2020 · 2021 · 2022 · 2023 · 2024 · 2025 · 2026 · 2027 · 2028 · 2029 · 2030 · 2031 · 2032 · 2033 · 2034 · 2035 · 2036 · Listen · Ereignisse und Feiertage ·",
+      "recherchiert und publiziert Feiertage und Schulferien seit 2003."
+     ]
+    }
+   ]
+  },
+  "metadata": {
+   "query": "Feiertage Stadt Bern 2027 Ruhetage",
+   "search_uuid": "9c7423c4-9f9a-4cec-a53f-075f79654ace",
+   "latency": 0.4392019410151988
+  }
+ },
+ "query": "Feiertage Stadt Bern 2027 Ruhetage"
+}

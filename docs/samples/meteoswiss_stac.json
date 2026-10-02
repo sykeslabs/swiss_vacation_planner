@@ -1,0 +1,295 @@
+{
+ "collection": {
+  "url": "https://data.geo.admin.ch/api/stac/v1/collections/ch.meteoschweiz.ogd-smn",
+  "status": 200,
+  "retrieved_at": "2026-10-02T19:17:30.042503+00:00",
+  "body": {
+   "stac_version": "1.0.0",
+   "id": "ch.meteoschweiz.ogd-smn",
+   "title": "Automatic weather stations - Measurement values",
+   "description": "SwissMetNet, the automatic monitoring network of MeteoSwiss, comprises 158 automatic monitoring stations. The data set contains current measurements for each station on temperature, precipitation, wind, pressure, snow, humidity, sunshine duration, and radiation in 10 minutes ('t'), hourly ('h'), daily ('d'), monthly ('m') and yearly ('y') resolutions. There are updated data sets since midnight ('now'), from the current year up to yesterday ('recent') and since the beginning of the measurement in ten-year increments ('historical'). If you need hourly, daily, monthly or yearly values, we strongly recommend that you download the corresponding resolution.",
+   "summaries": {},
+   "extent": {
+    "spatial": {
+     "bbox": [
+      [
+       6.099453,
+       45.843444,
+       10.426314,
+       47.697278
+      ]
+     ]
+    },
+    "temporal": {
+     "interval": [
+      [
+       "2026-10-02T04:00:28.747134Z",
+       "2026-10-02T04:00:28.839572Z"
+      ]
+     ]
+    }
+   },
+   "providers": [
+    {
+     "name": "Federal Office of Meteorology and Climatology MeteoSwiss",
+     "roles": [
+      "producer",
+      "licensor"
+     ],
+     "url": "https://www.meteoswiss.admin.ch"
+    }
+   ],
+   "license": "CC-BY",
+   "created": "2025-03-10T06:16:52.545881Z",
+   "updated": "2026-10-02T19:09:46.008152Z",
+   "links": [
+    {
+     "rel": "self",
+     "href": "https://data.geo.admin.ch/api/stac/v1/collections/ch.meteoschweiz.ogd-smn"
+    },
+    {
+     "rel": "root",
+     "href": "https://data.geo.admin.ch/api/stac/v1/"
+    },
+    {
+     "rel": "parent",
+     "href": "https://data.geo.admin.ch/api/stac/v1/"
+    },
+    {
+     "rel": "items",
+     "href": "https://data.geo.admin.ch/api/stac/v1/collections/ch.meteoschweiz.ogd-smn/items"
+    },
+    {
+     "rel": "assets",
+     "href": "https://data.geo.admin.ch/api/stac/v1/collections/ch.meteoschweiz.ogd-smn/assets"
+    },
+    {
+     "rel": "http://www.opengis.net/def/rel/ogc/1.0/sortables",
+     "href": "https://data.geo.admin.ch/api/stac/v1/collections/ch.meteoschweiz.ogd-smn/sortables",
+     "type": "application/schema+json",
+     "title": "Sortable fields for the sortby parameter"
+    },
+    {
+     "rel": "alternate",
+     "title": "STAC Browser",
+     "type": "text/html",
+     "href": "https://data.geo.admin.ch/browser/index.html#/collections/ch.meteoschweiz.ogd-smn"
+    },
+    {
+     "href": "https://www.geocat.ch/geonetwork/srv/eng/catalog.search#/metadata/35323752-ed32-4cc1-8a75-898c749b777b",
+     "rel": "describedby",
+     "title": "Metadata"
+    },
+    {
+     "href": "https://www.meteoswiss.admin.ch/services-and-publications/service/open-data.html",
+     "rel": "about",
+     "title": "Further information"
+    }
+   ],
+   "crs": [
+    "http://www.opengis.net/def/crs/OGC/1.3/CRS84"
+   ],
+   "itemType": "Feature",
+   "assets": {
+    "ogd-smn_meta_datainventory.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/ogd-smn_meta_datainventory.csv",
+     "description": "This a collection asset for ogd-smn_meta_datainventory.csv",
+     "created": "2025-03-28T12:15:09.782185Z",
+     "updated": "2026-10-02T04:23:37.415145Z",
+     "file:checksum": "1220ac4cf7cbb25bf4b56bfc1dfe6b450bb4ed86c0a0b640403b7f2308d1e8f43847"
+    },
+    "ogd-smn_meta_parameters.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/ogd-smn_meta_parameters.csv",
+     "description": "This a collection asset for ogd-smn_meta_parameters.csv",
+     "created": "2025-03-28T12:15:13.084546Z",
+     "updated": "2026-04-23T04:30:03.383444Z",
+     "file:checksum": "12209fa4358356a1f856d5ba2ab8117e750ea5c742ec4c18594f16bf31e8a87fc2c0"
+    },
+    "ogd-smn_meta_stations.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/ogd-smn_meta_stations.csv",
+     "description": "This a collection asset for ogd-smn_meta_stations.csv",
+     "created": "2025-03-28T12:15:14.379251Z",
+     "updated": "2026-10-02T04:23:46.157653Z",
+     "file:checksum": "1220b0025fb9909f28d536e90983337525697c27b75a607d1724f2d411ef3477ab59"
+    }
+   },
+   "type": "Collection"
+  }
+ },
+ "item_sma": {
+  "url": "https://data.geo.admin.ch/api/stac/v1/collections/ch.meteoschweiz.ogd-smn/items/sma",
+  "status": 200,
+  "retrieved_at": "2026-10-02T19:17:30.516516+00:00",
+  "body": {
+   "id": "sma",
+   "collection": "ch.meteoschweiz.ogd-smn",
+   "type": "Feature",
+   "stac_version": "1.0.0",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     8.567194,
+     47.381003
+    ]
+   },
+   "bbox": [
+    8.567194,
+    47.381003,
+    8.567194,
+    47.381003
+   ],
+   "properties": {
+    "datetime": "2026-10-02T04:00:28.782958Z",
+    "title": "Zürich / Fluntern (SMA)",
+    "created": "2025-03-28T10:01:22.548889Z",
+    "updated": "2026-10-02T19:09:09.740322Z"
+   },
+   "links": [
+    {
+     "rel": "self",
+     "href": "https://data.geo.admin.ch/api/stac/v1/collections/ch.meteoschweiz.ogd-smn/items/sma"
+    },
+    {
+     "rel": "root",
+     "href": "https://data.geo.admin.ch/api/stac/v1/"
+    },
+    {
+     "rel": "parent",
+     "href": "https://data.geo.admin.ch/api/stac/v1/collections/ch.meteoschweiz.ogd-smn"
+    },
+    {
+     "rel": "collection",
+     "href": "https://data.geo.admin.ch/api/stac/v1/collections/ch.meteoschweiz.ogd-smn"
+    },
+    {
+     "rel": "alternate",
+     "title": "STAC Browser",
+     "type": "text/html",
+     "href": "https://data.geo.admin.ch/browser/index.html#/collections/ch.meteoschweiz.ogd-smn/items/sma"
+    },
+    {
+     "href": "https://www.meteoswiss.admin.ch/services-and-publications/applications/measurement-values-and-measuring-networks.html#param=messnetz-automatisch&station=SMA",
+     "rel": "about",
+     "title": "Automatic weather stations - Measurement values"
+    }
+   ],
+   "assets": {
+    "ogd-smn_sma_d_historical.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_d_historical.csv",
+     "created": "2025-04-30T15:19:22.419523Z",
+     "updated": "2026-02-18T20:32:03.838134Z",
+     "file:checksum": "12208a74cb18269b08d6367111ae77dbba0514aaaab41c74c524289af04f99d6c26c"
+    },
+    "ogd-smn_sma_d_recent.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_d_recent.csv",
+     "created": "2025-04-04T10:23:47.012757Z",
+     "updated": "2026-10-02T11:14:04.045661Z",
+     "file:checksum": "122068e8a51be23126910ea06d9f83d861ea7212faef22fd3dd289134e0cd15c73ab"
+    },
+    "ogd-smn_sma_h_historical_1980-1989.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_h_historical_1980-1989.csv",
+     "created": "2025-04-30T15:17:22.269295Z",
+     "updated": "2026-02-18T20:32:03.932510Z",
+     "file:checksum": "12201eee65f577fb398a1bcd25a8bf311309532e43875967aa01b52d4a30c0714fea"
+    },
+    "ogd-smn_sma_h_historical_1990-1999.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_h_historical_1990-1999.csv",
+     "created": "2025-04-30T15:19:22.259140Z",
+     "updated": "2026-02-18T20:32:03.819714Z",
+     "file:checksum": "1220a5517bd508d7f830a258b8a429828e96c8836a13cbd3d736f89026d5f1c15792"
+    },
+    "ogd-smn_sma_h_historical_2000-2009.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_h_historical_2000-2009.csv",
+     "created": "2025-04-30T15:19:22.487551Z",
+     "updated": "2026-02-18T20:32:03.912652Z",
+     "file:checksum": "1220bbfb933ee6a184c4db090be1ed4dccbd975351d4874562700e2a70a2f22a0d20"
+    },
+    "ogd-smn_sma_h_historical_2010-2019.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_h_historical_2010-2019.csv",
+     "created": "2025-04-30T15:19:22.240521Z",
+     "updated": "2026-02-18T20:32:04.045363Z",
+     "file:checksum": "1220d10977912be5dd66e801196afc09cd02f229ef207c536ac16542b65ff43fbcd7"
+    },
+    "ogd-smn_sma_h_historical_2020-2029.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_h_historical_2020-2029.csv",
+     "created": "2025-04-30T15:19:22.201869Z",
+     "updated": "2026-02-18T20:34:00.171877Z",
+     "file:checksum": "122017fee315d2bb8b90815b6c9627825e135a2b5de64c7776756e53c4433f8c8906"
+    },
+    "ogd-smn_sma_h_now.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_h_now.csv",
+     "created": "2025-04-04T10:04:22.276358Z",
+     "updated": "2026-10-02T18:28:35.133164Z",
+     "file:checksum": "1220e2fe310e8a8d3765727e9ed39ba410c5c3aa708dd6147fce384af1aa9dfbe168"
+    },
+    "ogd-smn_sma_h_recent.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_h_recent.csv",
+     "created": "2025-04-04T10:17:38.843484Z",
+     "updated": "2026-10-02T02:33:11.162179Z",
+     "file:checksum": "12208eb453015554d3b25ea73fbf641bba0a38e14ea798787b701941bc7153d5d2c1"
+    },
+    "ogd-smn_sma_m.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_m.csv",
+     "created": "2025-04-17T09:41:10.798195Z",
+     "updated": "2026-09-05T04:43:10.782067Z",
+     "file:checksum": "1220a3f81bb32f72350604d3498ec006a6776a73de300c8953ea3aef7ab4e878afe9"
+    },
+    "ogd-smn_sma_t_historical_2000-2009.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_t_historical_2000-2009.csv",
+     "created": "2025-04-30T15:21:25.391597Z",
+     "updated": "2026-02-18T20:34:00.507718Z",
+     "file:checksum": "12208f9ca34f17187c497bcc115ee1f3a56dd3112811148d61de8f4cf2bf8fcc695a"
+    },
+    "ogd-smn_sma_t_historical_2010-2019.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_t_historical_2010-2019.csv",
+     "created": "2025-04-30T15:21:26.025418Z",
+     "updated": "2026-02-18T20:36:06.556665Z",
+     "file:checksum": "1220b5df715a845ff2bbb25c0e9cffb941c7ab6dcb052f1102b32ff7407c2a3028b1"
+    },
+    "ogd-smn_sma_t_historical_2020-2029.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_t_historical_2020-2029.csv",
+     "created": "2025-04-30T15:21:25.559639Z",
+     "updated": "2026-02-18T20:36:06.248519Z",
+     "file:checksum": "122007513c3513f5906150f4b12b6f6c35ce56706e15dd02429a8ef1fc1e6730d5f2"
+    },
+    "ogd-smn_sma_t_now.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_t_now.csv",
+     "created": "2025-04-04T10:04:28.939247Z",
+     "updated": "2026-10-02T19:09:09.740322Z",
+     "file:checksum": "1220ccc2b4c7563f3cdad5e41728a0fb35027401372993ba0da7361cafca7f22dc73"
+    },
+    "ogd-smn_sma_t_recent.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_t_recent.csv",
+     "created": "2025-04-04T10:22:44.801755Z",
+     "updated": "2026-10-02T02:33:12.037697Z",
+     "file:checksum": "1220a85838a48715af303f6006477d0bc5c19619f5ef77a296440738d00f6176a20f"
+    },
+    "ogd-smn_sma_y.csv": {
+     "type": "text/csv",
+     "href": "https://data.geo.admin.ch/ch.meteoschweiz.ogd-smn/sma/ogd-smn_sma_y.csv",
+     "created": "2025-04-17T09:41:09.895087Z",
+     "updated": "2026-06-25T04:31:23.270984Z",
+     "file:checksum": "1220cd2d0df49b9b2329b3145632d30f9c561a96b8e0d52b2a5958e54893c8120160"
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "url": "https://api.you.com/v1/agents/runs",
+ "status": 200,
+ "retrieved_at": "2026-10-02T19:17:11.459548+00:00",
+ "body": {
+  "output": [
+   {
+    "text": "#### Feiertage 2027 – Gemeinde Zürich (Kanton Zürich)\n\n**Hinweis:** Es liegen keine Suchresultate vor, daher kann ich keine Quellenbelege aus aktuellen Websuchen angeben. Die folgende Liste basiert auf meinem Wissen über die kantonale Feiertagsregelung des Kantons Zürich (Gesetz über die öffentlichen Feiertage bzw. die entsprechende Vollzugsverordnung). Bitte verifizieren Sie die Angaben vor einer verbindlichen Nutzung (z. B. auf zh.ch oder der Website der Stadt Zürich), da ich keine aktuellen Quellen abrufen konnte.\n\n#### Gesetzliche Feiertage (ganztags)\n\nGemäss kantonalem Recht sind im Kanton Zürich folgende Tage **ganztägige** gesetzliche Feiertage:\n\n| Datum | Feiertag | Art |\n|---|---|---|\n| 2027-01-01 | Neujahr | ganztags |\n| 2027-03-26 | Karfreitag | ganztags |\n| 2027-03-29 | Ostermontag | ganztags |\n| 2027-08-01 | Schweizer Nationalfeiertag | ganztags |\n| 2027-12-25 | Weihnachten | ganztags |\n| 2027-12-26 | Stephanstag | ganztags |\n\n#### Kantonale Feiertage (halbtags)\n\nZusätzlich gelten im Kanton Zürich folgende **halbtägige** Feiertage:\n\n| Datum | Feiertag | Art |\n|---|---|---|\n| 2027-01-02 | Berchtoldstag | halbtags |\n| 2027-05-06 | Auffahrt (Christi Himmelfahrt) | halbtags |\n| 2027-05-17 | Pfingstmontag | halbtags |\n\n#### Anmerkungen\n\n- Die Ostertermine 2027 (Ostersonntag: 28. März 2027) ergeben die beweglichen Feiertage: Karfreitag (2 Tage vor Ostern), Ostermontag (1 Tag nach Ostern), Auffahrt (39 Tage nach Ostern) und Pfingstmontag (50 Tage nach Ostern).\n- Fronleichnam ist in der Stadt Zürich **kein** Feiertag (er gilt nur in einzelnen mehrheitlich katholischen Gemeinden anderer Kantone).\n- Der 1. August ist als Bundesfeiertag seit 1994 bundesrechtlich geschützt und gilt ganztags.\n\n**Quellen:** Da keine Suchresultate vorlagen, kann ich keine Quellennummerierungen angeben. Massgebliche Quellen wären: die Website des Kantons Zürich (www.zh.ch, Stichwort «Feiertage»), das kantonale Feiertagsgesetz (LS 171.1 bzw. Nachfolgeregelung) sowie das SECO (Bundesfeiertag). Ich empfehle dringend, die Daten dort zu verifizieren.",
+    "type": "message.answer"
+   }
+  ],
+  "agent": "express",
+  "mode": "express",
+  "input": [
+   {
+    "role": "user",
+    "content": "Liste alle gesetzlichen und kantonalen Feiertage 2027 fuer die Gemeinde Zürich (Kanton ZH), mit Datum (YYYY-MM-DD), Name und ob ganztags oder halbtags. Quellen angeben."
+   }
+  ]
+ },
+ "query": "Liste alle gesetzlichen und kantonalen Feiertage 2027 fuer die Gemeinde Zürich (Kanton ZH), mit Datum (YYYY-MM-DD), Name und ob ganztags oder halbtags. Quellen angeben.",
+ "request_body": {
+  "agent": "express",
+  "input": "Liste alle gesetzlichen und kantonalen Feiertage 2027 fuer die Gemeinde Zürich (Kanton ZH), mit Datum (YYYY-MM-DD), Name und ob ganztags oder halbtags. Quellen angeben.",
+  "stream": false
+ }
+}

@@ -1,0 +1,68 @@
+{
+ "url": "https://ydc-index.io/v1/search?query=Feiertage+Kanton+Z%C3%BCrich+2027&count=5&country=CH&language=de",
+ "status": 200,
+ "retrieved_at": "2026-10-02T19:16:01.200430+00:00",
+ "body": {
+  "results": {
+   "web": [
+    {
+     "url": "https://www.stadt-zuerich.ch/de/politik-und-verwaltung/arbeiten-bei-der-stadt/gut-zu-wissen/ferien-urlaub/feiertage-betriebsferientage-bft.html",
+     "title": "Feiertage und Betriebsferientage | Stadt Zürich",
+     "description": "Wissenswertes rund um die Feiertage und Betriebsferientage bei der Stadt Zürich.",
+     "favicon_url": "https://you.com/favicon?domain=www.stadt-zuerich.ch&size=128",
+     "snippets": [
+      "* Hinweis: Feiertage, die auf ein Wochenende fallen, sind in der Tabelle nicht aufgeführt. Feier- und Betriebsferientage 2027 · * Hinweis: Feiertage, die auf ein Wochenende fallen, sind in der Tabelle nicht aufgeführt. Feier- und Betriebsferientage 2028 ·",
+      "Feiertage sind der 1. und 2. Januar, Karfreitag, Ostermontag, 1. Mai, Auffahrt, Pfingstmontag, 1. August, 25. und 26. Dezember. Zusätzliche halbe Feiertage sind die Nachmittage des Sechseläutens, des Knabenschiessens und des 24.",
+      "Die städtischen Mitarbeitenden erhalten jedes Jahr zusätzlich zu ihren Ferien sechs sogenannte Betriebsferientage und profitieren zudem von städtischen Feiertagen."
+     ]
+    },
+    {
+     "url": "https://www.feiertagskalender.ch/index2.php?jahr=2027&geo=2872&klasse=3&hl=de&hidepast=1",
+     "title": "Feiertage Kanton Zürich 2027 (Gesetzliche Feiertage)",
+     "description": "Die Datenquelle mit Feiertagen und Schulferien, seit 2003",
+     "favicon_url": "https://you.com/favicon?domain=www.feiertagskalender.ch&size=128",
+     "snippets": [
+      "Länder Schweiz Kanton Zürich · bitte Region wählen · Affoltern Andelfingen Bülach Dielsdorf · Dietikon Hinwil Horgen Meilen · Pfäffikon Uster Winterthur Zürich · 2027 · 2020 · 2021 · 2022 · 2023 · 2024 · 2025 · 2026 · 2027 · 2028 · 2029 · 2030 · 2031 · 2032 · 2033 · 2034 · 2035 · 2036 · Listen · Ereignisse und Feiertage ·",
+      "Feiertagskalender.ch ist seit 2003 kostenlos nutzbar. Mit einem freiwilligen Beitrag helfen Sie, Recherche und Datenpflege zu finanzieren.",
+      "recherchiert und publiziert Feiertage und Schulferien seit 2003."
+     ]
+    },
+    {
+     "url": "https://www.ferienwiki.ch/feiertage/ch/zuerich",
+     "title": "Feiertage 2026 und 2027 in Zürich - Ferienwiki",
+     "description": "Übersicht der Feiertage 2026 und 2027 in Zürich auf Ferienwiki.at, dem Kalender und Ferienportal. Alle Jahrestermine wie Feiertage und Ferien auf einen Blick.",
+     "favicon_url": "https://you.com/favicon?domain=www.ferienwiki.ch&size=128",
+     "snippets": [
+      "Feiertage · Zürich · Aargau · Appenzell Ausserrhoden · Appenzell Innerrhoden · Basel-Landschaft · Basel-Stadt · Bern · Freiburg · Genf · Glarus · Graubünden · Jura · Luzern · Neuenburg · Nidwalden · Obwalden · Regional · Schaffhausen · Schwyz · Solothurn ·"
+     ]
+    },
+    {
+     "url": "https://feiertagskalender.ch/index2.php?jahr=2027&geo=2872&klasse=5&hl=de&hidepast=0",
+     "title": "Feiertage Kanton Zürich 2027 (Ereignisse und Feiertage)",
+     "description": "Die Datenquelle mit Feiertagen und Schulferien, seit 2003",
+     "favicon_url": "https://you.com/favicon?domain=feiertagskalender.ch&size=128",
+     "snippets": [
+      "Länder Schweiz Kanton Zürich · bitte Region wählen · Affoltern Andelfingen Bülach Dielsdorf · Dietikon Hinwil Horgen Meilen · Pfäffikon Uster Winterthur Zürich · 2027 · 2020 · 2021 · 2022 · 2023 · 2024 · 2025 · 2026 · 2027 · 2028 · 2029 · 2030 · 2031 · 2032 · 2033 · 2034 · 2035 · 2036 · Listen · Ereignisse und Feiertage ·",
+      "recherchiert und publiziert Feiertage und Schulferien seit 2003."
+     ]
+    },
+    {
+     "url": "https://www.feiertagskalender.ch/index.php?geo=2872&jahr=2027",
+     "title": "Feiertage Kanton Zürich 2027 (Ereignisse und Feiertage)",
+     "description": "Die Datenquelle mit Feiertagen und Schulferien, seit 2003",
+     "favicon_url": "https://you.com/favicon?domain=www.feiertagskalender.ch&size=128",
+     "snippets": [
+      "Länder Schweiz Kanton Zürich · bitte Region wählen · Affoltern Andelfingen Bülach Dielsdorf · Dietikon Hinwil Horgen Meilen · Pfäffikon Uster Winterthur Zürich · 2027 · 2020 · 2021 · 2022 · 2023 · 2024 · 2025 · 2026 · 2027 · 2028 · 2029 · 2030 · 2031 · 2032 · 2033 · 2034 · 2035 · 2036 · Listen · Ereignisse und Feiertage ·",
+      "recherchiert und publiziert Feiertage und Schulferien seit 2003."
+     ]
+    }
+   ]
+  },
+  "metadata": {
+   "query": "Feiertage Kanton Zürich 2027",
+   "search_uuid": "c4836c0b-c008-4271-9259-6c6149ffae49",
+   "latency": 0.4862773990025744
+  }
+ },
+ "query": "Feiertage Kanton Zürich 2027"
+}

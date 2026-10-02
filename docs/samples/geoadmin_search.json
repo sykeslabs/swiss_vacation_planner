@@ -1,0 +1,331 @@
+{
+ "Zürich|gg25,zipcode": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Z%C3%BCrich&type=locations&sr=4326&limit=10&origins=gg25%2Czipcode",
+  "status": 200,
+  "retrieved_at": "2026-10-02T19:14:40.837271+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "zuerich zh",
+      "featureId": "261",
+      "geom_quadindex": "030003",
+      "geom_st_box2d": "BOX(8.44688 47.319035,8.627198 47.435142)",
+      "label": "<b>Zürich (ZH)</b>",
+      "lat": 47.37721252441406,
+      "lon": 8.527311325073242,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 8.527311325073242,
+      "y": 47.37721252441406,
+      "zoomlevel": 4294967295
+     },
+     "id": 153,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "zuerichsee zh",
+      "featureId": "9051",
+      "geom_quadindex": "0300",
+      "geom_st_box2d": "BOX(8.540118 47.201946,8.811765 47.346235)",
+      "label": "<b>Zürichsee (ZH)</b>",
+      "lat": 47.274932861328125,
+      "lon": 8.602251052856445,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 8.602251052856445,
+      "y": 47.274932861328125,
+      "zoomlevel": 4294967295
+     },
+     "id": 2209,
+     "weight": 6
+    }
+   ]
+  }
+ },
+ "8001|zipcode": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=8001&type=locations&sr=4326&limit=10&origins=zipcode",
+  "status": 200,
+  "retrieved_at": "2026-10-02T19:14:41.277604+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "8001",
+      "featureId": "4385",
+      "geom_quadindex": "030003",
+      "geom_st_box2d": "BOX(8.528869 47.363094,8.553853 47.383059)",
+      "label": "<b>8001 - Zürich</b>",
+      "lat": 47.372947692871094,
+      "lon": 8.541608810424805,
+      "num": 1,
+      "objectclass": "",
+      "origin": "zipcode",
+      "rank": 1,
+      "x": 8.541608810424805,
+      "y": 47.372947692871094,
+      "zoomlevel": 4294967295
+     },
+     "id": 4385,
+     "weight": 100
+    }
+   ]
+  }
+ },
+ "Appenzell|gg25,zipcode": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Appenzell&type=locations&sr=4326&limit=10&origins=gg25%2Czipcode",
+  "status": 200,
+  "retrieved_at": "2026-10-02T19:14:41.726070+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "appenzell ai",
+      "featureId": "3101",
+      "geom_quadindex": "0301",
+      "geom_st_box2d": "BOX(9.371131 47.302613,9.479736 47.362208)",
+      "label": "<b>Appenzell (AI)</b>",
+      "lat": 47.33292770385742,
+      "lon": 9.396230697631836,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 9.396230697631836,
+      "y": 47.33292770385742,
+      "zoomlevel": 4294967295
+     },
+     "id": 1070,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "appenzello ai",
+      "featureId": "3101",
+      "geom_quadindex": "0301",
+      "geom_st_box2d": "BOX(9.371131 47.302613,9.479736 47.362208)",
+      "label": "<b>Appenzello (AI)</b>",
+      "lat": 47.33292770385742,
+      "lon": 9.396230697631836,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 9.396230697631836,
+      "y": 47.33292770385742,
+      "zoomlevel": 4294967295
+     },
+     "id": 1071,
+     "weight": 6
+    }
+   ]
+  }
+ },
+ "Bern|": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Bern&type=locations&sr=4326&limit=10",
+  "status": 200,
+  "retrieved_at": "2026-10-02T19:14:42.262191+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "bern be",
+      "featureId": "351",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.294133 46.918995,7.495609 46.990139)",
+      "label": "<b>Bern (BE)</b>",
+      "lat": 46.954559326171875,
+      "lon": 7.420684814453125,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 7.420684814453125,
+      "y": 46.954559326171875,
+      "zoomlevel": 4294967295
+     },
+     "id": 195,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "Bern-Mittelland",
+      "featureId": "246",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.111942 46.670403,7.73361 47.122327)",
+      "label": "<b>Bern-Mittelland</b>",
+      "lat": 46.896873474121094,
+      "lon": 7.495893478393555,
+      "num": 1,
+      "objectclass": "",
+      "origin": "district",
+      "rank": 3,
+      "x": 7.495893478393555,
+      "y": 46.896873474121094,
+      "zoomlevel": 4294967295
+     },
+     "id": 246,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern be",
+      "featureId": "2",
+      "geom_quadindex": "0",
+      "geom_st_box2d": "BOX(6.859558 46.322164,8.467388 47.343906)",
+      "label": "<b>Bern</b>",
+      "lat": 46.824337005615234,
+      "lon": 7.617098808288574,
+      "num": 1,
+      "objectclass": "",
+      "origin": "kantone",
+      "rank": 4,
+      "x": 7.617098808288574,
+      "y": 46.824337005615234,
+      "zoomlevel": 4294967295
+     },
+     "id": 2,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "bern bremgarten bei bern,bern,muri bei bern,koeniz,ostermundigen",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.35958 46.927266,7.486574 46.978562)",
+      "label": "<b>Bern</b> (BE) - Bremgarten bei Bern,Bern,Muri bei Bern,Köniz,Ostermundigen",
+      "lat": 46.948997497558594,
+      "lon": 7.437127590179443,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 7.437127590179443,
+      "y": 46.948997497558594,
+      "zoomlevel": 9
+     },
+     "id": 248095,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "bern\n bremgarten bei bern,bern,muri bei bern,koeniz,ostermundigen",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.35958 46.927266,7.486574 46.978562)",
+      "label": "<b>Bern\n</b> (BE) - Bremgarten bei Bern,Bern,Muri bei Bern,Köniz,Ostermundigen",
+      "lat": 46.948997497558594,
+      "lon": 7.437127590179443,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 7.437127590179443,
+      "y": 46.948997497558594,
+      "zoomlevel": 9
+     },
+     "id": 248754,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern matte bern",
+      "geom_quadindex": "021300202300320003221",
+      "geom_st_box2d": "BOX(7.452541 46.946632,7.452541 46.946632)",
+      "label": "<i>Uebrige Bahnen</i> <b>Bern Matte</b> (BE) - Bern",
+      "lat": 46.946632385253906,
+      "lon": 7.452541828155518,
+      "num": 1,
+      "objectclass": "TLM_HALTESTELLE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.452541828155518,
+      "y": 46.946632385253906,
+      "zoomlevel": 9
+     },
+     "id": 6467,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "bern-eymatt bern",
+      "geom_quadindex": "021211301310",
+      "geom_st_box2d": "BOX(7.384171 46.963854,7.385027 46.964435)",
+      "label": "<i>Standplatzareal</i> <b>Bern-Eymatt</b> (BE) - Bern",
+      "lat": 46.96415710449219,
+      "lon": 7.384593963623047,
+      "num": 1,
+      "objectclass": "TLM_FREIZEITAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.384593963623047,
+      "y": 46.96415710449219,
+      "zoomlevel": 9
+     },
+     "id": 21155,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-neufeld bern",
+      "geom_quadindex": "021211311300231033213",
+      "geom_st_box2d": "BOX(7.427635 46.963435,7.427635 46.963435)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Neufeld</b> (BE) - Bern",
+      "lat": 46.963436126708984,
+      "lon": 7.42763614654541,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.42763614654541,
+      "y": 46.963436126708984,
+      "zoomlevel": 9
+     },
+     "id": 28007,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-wankdorf bern",
+      "geom_quadindex": "021300201032000101121",
+      "geom_st_box2d": "BOX(7.469704 46.967233,7.469704 46.967233)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Wankdorf</b> (BE) - Bern",
+      "lat": 46.96723556518555,
+      "lon": 7.469705104827881,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.469705104827881,
+      "y": 46.96723556518555,
+      "zoomlevel": 9
+     },
+     "id": 83328,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-ostring bern",
+      "geom_quadindex": "021300203231000332110",
+      "geom_st_box2d": "BOX(7.472822 46.943819,7.472822 46.943819)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Ostring</b> (BE) - Bern",
+      "lat": 46.94382095336914,
+      "lon": 7.472822666168213,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.472822666168213,
+      "y": 46.94382095336914,
+      "zoomlevel": 9
+     },
+     "id": 83363,
+     "weight": 1
+    }
+   ]
+  }
+ }
+}
