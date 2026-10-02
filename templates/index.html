@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H"
         crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css"
+        integrity="sha384-uTttxo/aOKbdE5RlD/SPzSDoDmNvGlUYPjONi2MN/b7c9HPSvW07OIuyP7uL6jxK"
+        crossorigin="anonymous">
   <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
@@ -15,24 +18,14 @@
   <header class="glass panel search-panel">
     <h1>Ferienplaner Schweiz</h1>
     <div class="search">
-      <label for="location-search" class="visually-hidden">Ort oder PLZ suchen</label>
+      <label id="location-search-label" for="location-search" class="visually-hidden">Ort oder PLZ suchen</label>
       <input id="location-search" type="search" role="combobox" aria-autocomplete="list"
              aria-expanded="false" aria-controls="location-results"
              placeholder="Ort oder PLZ suchen" autocomplete="off" spellcheck="false">
       <ul id="location-results" class="results" role="listbox" aria-label="Suchergebnisse" hidden></ul>
       <p id="search-status" class="search-status" role="status" aria-live="polite" hidden></p>
     </div>
-  </header>
-
-  <aside id="planner" class="glass panel planner" aria-labelledby="planner-title" hidden>
-    <section class="planner-section">
-      <h2 id="planner-title">Deine Orte</h2>
-      <ul id="location-chips" class="chips"></ul>
-      <button id="add-location" type="button" class="btn-secondary">+ Ort hinzufügen</button>
-      <p id="locations-hint" class="hint" role="status" hidden></p>
-    </section>
-
-    <details class="planner-section settings" open>
+    <details id="settings" class="settings" hidden>
       <summary>Einstellungen</summary>
       <div class="field">
         <label for="planner-year">Jahr</label>
@@ -44,7 +37,16 @@
         <p id="working-days-hint" class="hint" role="status" hidden></p>
       </div>
       <div class="field">
-        <span class="field-label">Halbe Arbeitstage</span>
+        <span class="field-label">Halbe Arbeitstage
+          <span class="info">
+            <button type="button" class="info-btn" aria-label="Was sind halbe Arbeitstage?"
+                    aria-describedby="half-day-info">i</button>
+            <span id="half-day-info" class="info-tip" role="tooltip">An einem halben Arbeitstag arbeitest du nur einen halben Tag,
+              zum Beispiel am 24. und 31. Dezember. Der Tag gilt als Arbeitstag: Willst du ihn ganz frei nehmen,
+              brauchst du dafür nur einen halben Ferientag. Fällt ein halber Arbeitstag auf ein Wochenende
+              oder einen Feiertag, hat er keine Wirkung.</span>
+          </span>
+        </span>
         <ul id="half-days" class="half-days"></ul>
         <div class="half-day-add">
           <label for="half-day-input" class="visually-hidden">Datum für halben Arbeitstag</label>
@@ -54,28 +56,26 @@
         <p id="half-day-hint" class="hint" role="status" hidden></p>
       </div>
     </details>
+  </header>
 
-    <section class="planner-section" aria-labelledby="calendar-title">
-      <h2 id="calendar-title">Kalender</h2>
-      <p id="calendar-status" class="hint" role="status" aria-live="polite"></p>
-      <div id="calendar"></div>
-      <details class="legend-box" open>
-        <summary>Legende</summary>
-        <div id="calendar-legend"></div>
-      </details>
-      <p id="calendar-source" class="source-note"></p>
-    </section>
-  </aside>
+  <!-- One movable panel per selected town (built in town-panels.js). -->
+  <div id="town-panels" class="town-panels" aria-label="Kalender der gewählten Orte" hidden></div>
 
   <div class="glass panel layer-switch" role="group" aria-label="Kartenhintergrund">
-    <button type="button" class="seg" data-layer="map" aria-pressed="true">Karte</button>
-    <button type="button" class="seg" data-layer="satellite" aria-pressed="false">Satellit</button>
+    <button type="button" class="seg" data-layer="map" aria-pressed="false">Karte</button>
+    <button type="button" class="seg" data-layer="satellite" aria-pressed="true">Satellit</button>
   </div>
 
   <div id="map-notice" class="glass panel notice" role="status" hidden></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH"
+          crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"
+          integrity="sha384-5+cfbwT0iiub6VsQAdn6yz16nr6sDiQoHx6tm4O8OVYXHYOxcffFmCJBL0dgdvGp"
+          crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js"
+          integrity="sha384-tXYNKOHx4T02jMP7YYCtBxPIv1B5gaA5mcVPBzqMp6d7VzWzxJgI2aWF/nJLrQdS"
           crossorigin="anonymous"></script>
   <script type="module" src="/js/main.js"></script>
 </body>

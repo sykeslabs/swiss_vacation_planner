@@ -42,7 +42,7 @@ export function createSearchBox({ input, list, status, fetchLocations, onSelect,
         primary.textContent = locationLabel(loc);
         const detail = document.createElement("span");
         detail.className = "option-detail";
-        detail.textContent = locationDetail(loc) + (isSelected(loc.id) ? " · bereits hinzugefügt" : "");
+        detail.textContent = locationDetail(loc) + (isSelected(loc) ? " · bereits hinzugefügt" : "");
         li.append(primary, detail);
         // mousedown keeps focus in the input so the list doesn't close before the click.
         li.addEventListener("mousedown", (e) => e.preventDefault());

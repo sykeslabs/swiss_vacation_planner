@@ -27,14 +27,21 @@ def clear_caches():
 class FakeApi:
     """Stands in for services.http.get_json; routes by URL and records calls."""
 
-    def __init__(self, search=None, identify=None, search_error=None, identify_error=None):
+    def __init__(self, search=None, identify=None, search_error=None, identify_error=None,
+                 gazetteer=None, gazetteer_error=None):
         self.search, self.identify = search, identify
         self.search_error, self.identify_error = search_error, identify_error
+        self.gazetteer = gazetteer if gazetteer is not None else {"results": []}
+        self.gazetteer_error = gazetteer_error
         self.calls = []
 
     def __call__(self, service, url, params=None, **kwargs):
         self.calls.append((url, dict(params or {})))
         assert service == "geoadmin"
+        if url == geoadmin.SEARCH_URL and (params or {}).get("origins") == "gazetteer":
+            if self.gazetteer_error:
+                raise self.gazetteer_error
+            return self.gazetteer
         if url == geoadmin.SEARCH_URL:
             if self.search_error:
                 raise self.search_error
@@ -165,9 +172,11 @@ def test_identify_falls_back_to_previous_year(fake, monkeypatch):
 def test_results_are_cached(fake):
     api = fake(search=search_body("Bern|"))
     first = geoadmin.search_locations("Bern")
+    calls_after_first = len(api.calls)
     second = geoadmin.search_locations("  bern ")
     assert first == second
-    assert api.count(geoadmin.SEARCH_URL) == 1
+    assert calls_after_first == 2            # municipalities + settlement points
+    assert len(api.calls) == calls_after_first
 
 
 def test_search_outage_raises(fake):
@@ -208,3 +217,75 @@ def test_malformed_results_are_skipped(fake):
     fake(search={"results": [{"attrs": {"origin": "gg25", "label": "<b>X (ZH)</b>"}},
                              {"nope": 1}, {"attrs": None}]})
     assert geoadmin.search_locations("Xyz") == []
+
+
+# --- settlement point and postcodes (owner feedback after M3) ----------------------------
+
+GAZ = json.loads((FIXTURES / "geoadmin_gazetteer.json").read_text(encoding="utf-8"))
+
+
+def test_dot_is_placed_on_the_settlement_not_the_municipality_centre(fake):
+    fake(search=GAZ["Baden|gg25"]["body"], gazetteer=GAZ["Baden|gazetteer"]["body"])
+    baden = next(l for l in geoadmin.search_locations("Baden") if l.id == "bfs-4021")
+    # gg25 representative point is 47.4702, 8.2922; the town (settlement name) is here:
+    assert (round(baden.latitude, 4), round(baden.longitude, 4)) == (47.4759, 8.3032)
+
+
+def test_settlement_in_several_municipalities_matches_by_list(fake):
+    fake(search=GAZ["Zürich|gg25"]["body"], gazetteer=GAZ["Zürich|gazetteer"]["body"])
+    zh = next(l for l in geoadmin.search_locations("Zürich") if l.id == "bfs-261")
+    assert (round(zh.latitude, 4), round(zh.longitude, 4)) == (47.3839, 8.5301)
+
+
+def test_settlement_with_same_name_elsewhere_is_not_used():
+    settlements = [s for s in (geoadmin.parse_settlement(r["attrs"])
+                               for r in GAZ["Biel|gazetteer"]["body"]["results"]) if s]
+    biel_bienne = geoadmin.normalise_municipality(
+        next(r["attrs"] for r in GAZ["Biel|gg25"]["body"]["results"] if r["attrs"]["featureId"] == "371"), "t")
+    lat, lon = geoadmin.settlement_point(biel_bienne, settlements)
+    assert (round(lat, 4), round(lon, 4)) == (47.1431, 7.2627)      # "Biel/Bienne (BE)"
+    # The settlement "Biel" (BL) lies in Titterten, so it must not move a place in Biel-Benken.
+    from dataclasses import replace
+    biel_benken = replace(biel_bienne, name="Biel", municipality="Biel-Benken", canton="BL")
+    assert geoadmin.settlement_point(biel_benken, settlements) is None
+
+
+def test_parse_settlement_labels():
+    rows = GAZ["Bern|gazetteer"]["body"]["results"]
+    name, canton, munis, lat, lon = geoadmin.parse_settlement(rows[0]["attrs"])
+    assert (name, canton) == ("Bern", "BE") and "Bern" in munis and "Köniz" in munis
+    assert geoadmin.parse_settlement({"objectclass": "TLM_AUS_EINFAHRT", "label": "x"}) is None
+
+
+def test_gazetteer_failure_keeps_municipality_point_uncached(fake):
+    api = fake(search=GAZ["Baden|gg25"]["body"], gazetteer_error=http.UpstreamError("geoadmin", "HTTP 500"))
+    baden = next(l for l in geoadmin.search_locations("Baden") if l.id == "bfs-4021")
+    assert round(baden.latitude, 4) == 47.4702
+    assert geoadmin._search_cache.get("baden") is None
+
+
+def test_municipality_results_carry_postcodes(fake):
+    fake(search=GAZ["Baden|gg25"]["body"], gazetteer=GAZ["Baden|gazetteer"]["body"])
+    baden = next(l for l in geoadmin.search_locations("Baden") if l.id == "bfs-4021")
+    assert "5400" in baden.postcodes and list(baden.postcodes) == sorted(baden.postcodes)
+    assert baden.to_dict()["postcodes"] == list(baden.postcodes)
+
+
+def test_missing_postcode_file_degrades(monkeypatch, tmp_path):
+    geoadmin.postcodes_by_bfs.cache_clear()
+    monkeypatch.setattr(geoadmin, "POSTCODES_FILE", tmp_path / "missing.json")
+    try:
+        assert geoadmin.postcodes_by_bfs() == {}
+    finally:
+        geoadmin.postcodes_by_bfs.cache_clear()
+
+
+def test_same_town_key():
+    from domain.models import Location
+    common = dict(municipality="Baden", municipality_id=4021, canton="AG", latitude=47.47,
+                  longitude=8.30, source="", source_url="", retrieved_at="")
+    town = Location(id="bfs-4021", name="Baden", postcode=None, **common)
+    via_plz = Location(id="bfs-4021-plz-5400", name="Baden", postcode="5400", **common)
+    other_village = Location(id="bfs-4021-plz-5300", name="Turgi", postcode="5300", **common)
+    assert town.town_key() == via_plz.town_key()
+    assert town.town_key() != other_village.town_key()

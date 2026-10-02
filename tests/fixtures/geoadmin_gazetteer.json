@@ -1,0 +1,2666 @@
+{
+ "Baden|gg25": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Baden&type=locations&origins=gg25&sr=4326&limit=16",
+  "retrieved_at": "2026-10-02T20:33:08+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "baden ag",
+      "featureId": "4021",
+      "geom_quadindex": "03000",
+      "geom_st_box2d": "BOX(8.246216 47.432546,8.319739 47.497036)",
+      "label": "<b>Baden (AG)</b>",
+      "lat": 47.47016525268555,
+      "lon": 8.292152404785156,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 8.292152404785156,
+      "y": 47.47016525268555,
+      "zoomlevel": 4294967295
+     },
+     "id": 1267,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "ennetbaden ag",
+      "featureId": "4026",
+      "geom_quadindex": "030000",
+      "geom_st_box2d": "BOX(8.309756 47.472846,8.341733 47.4868)",
+      "label": "<b>Ennetbaden (AG)</b>",
+      "lat": 47.47972106933594,
+      "lon": 8.32765007019043,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 8.32765007019043,
+      "y": 47.47972106933594,
+      "zoomlevel": 4294967295
+     },
+     "id": 1271,
+     "weight": 3
+    }
+   ]
+  }
+ },
+ "Baden|gazetteer": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Baden&type=locations&origins=gazetteer&sr=4326&limit=30",
+  "retrieved_at": "2026-10-02T20:33:09+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "baden baden",
+      "geom_quadindex": "030000230110002122030",
+      "geom_st_box2d": "BOX(8.303203 47.475919,8.303203 47.475919)",
+      "label": "<i>Ort</i> <b>Baden</b> (AG) - Baden",
+      "lat": 47.47591781616211,
+      "lon": 8.303215026855469,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.303215026855469,
+      "y": 47.47591781616211,
+      "zoomlevel": 10
+     },
+     "id": 413108,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "baden-west birmenstorf _ag_",
+      "geom_quadindex": "030000223102300230212",
+      "geom_st_box2d": "BOX(8.273258 47.456267,8.273258 47.456267)",
+      "label": "<i>Ausfahrt</i> <b>Baden-West</b> (AG) - Birmenstorf (AG)",
+      "lat": 47.456268310546875,
+      "lon": 8.273270606994629,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.273270606994629,
+      "y": 47.456268310546875,
+      "zoomlevel": 9
+     },
+     "id": 138375,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "baden-west baden",
+      "geom_quadindex": "030000223111221103220",
+      "geom_st_box2d": "BOX(8.281573 47.457945,8.281573 47.457945)",
+      "label": "<i>Ausfahrt</i> <b>Baden-West</b> (AG) - Baden",
+      "lat": 47.45794677734375,
+      "lon": 8.281584739685059,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.281584739685059,
+      "y": 47.45794677734375,
+      "zoomlevel": 9
+     },
+     "id": 359526,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "ruetihof baden",
+      "geom_quadindex": "030002001031003202120",
+      "geom_st_box2d": "BOX(8.268614 47.438162,8.268614 47.438162)",
+      "label": "<i>Ort</i> <b>Rütihof</b> (AG) - Baden",
+      "lat": 47.43816375732422,
+      "lon": 8.26862621307373,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.26862621307373,
+      "y": 47.43816375732422,
+      "zoomlevel": 10
+     },
+     "id": 164570,
+     "weight": 7
+    },
+    {
+     "attrs": {
+      "detail": "turgi baden",
+      "geom_quadindex": "030000202103113330322",
+      "geom_st_box2d": "BOX(8.253401 47.490918,8.253401 47.490918)",
+      "label": "<i>Ort</i> <b>Turgi</b> (AG) - Baden",
+      "lat": 47.49091720581055,
+      "lon": 8.253413200378418,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.253413200378418,
+      "y": 47.49091720581055,
+      "zoomlevel": 10
+     },
+     "id": 246987,
+     "weight": 7
+    },
+    {
+     "attrs": {
+      "detail": "segelhof baden",
+      "geom_quadindex": "030000221323301103120",
+      "geom_st_box2d": "BOX(8.27698 47.46063,8.27698 47.46063)",
+      "label": "<i>Ort</i> <b>Segelhof</b> (AG) - Baden",
+      "lat": 47.46063232421875,
+      "lon": 8.276991844177246,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.276991844177246,
+      "y": 47.46063232421875,
+      "zoomlevel": 10
+     },
+     "id": 247163,
+     "weight": 7
+    },
+    {
+     "attrs": {
+      "detail": "baldegg baden",
+      "geom_quadindex": "030000221132021223003",
+      "geom_st_box2d": "BOX(8.278459 47.469385,8.278459 47.469385)",
+      "label": "<i>Ort</i> <b>Baldegg</b> (AG) - Baden",
+      "lat": 47.46938705444336,
+      "lon": 8.278470993041992,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.278470993041992,
+      "y": 47.46938705444336,
+      "zoomlevel": 10
+     },
+     "id": 247423,
+     "weight": 7
+    },
+    {
+     "attrs": {
+      "detail": "daettwil ag baden",
+      "geom_quadindex": "030000232022100231001",
+      "geom_st_box2d": "BOX(8.285678 47.453032,8.285678 47.453032)",
+      "label": "<i>Ort</i> <b>Dättwil AG</b> (AG) - Baden",
+      "lat": 47.453033447265625,
+      "lon": 8.285690307617188,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.285690307617188,
+      "y": 47.453033447265625,
+      "zoomlevel": 10
+     },
+     "id": 412312,
+     "weight": 7
+    },
+    {
+     "attrs": {
+      "detail": "ennetbaden ennetbaden",
+      "geom_quadindex": "030000213230112331132",
+      "geom_st_box2d": "BOX(8.318205 47.47992,8.318205 47.47992)",
+      "label": "<i>Ort</i> <b>Ennetbaden</b> (AG) - Ennetbaden",
+      "lat": 47.47991943359375,
+      "lon": 8.318218231201172,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.318218231201172,
+      "y": 47.47991943359375,
+      "zoomlevel": 10
+     },
+     "id": 26055,
+     "weight": 5
+    },
+    {
+     "attrs": {
+      "detail": "tagesschule laendli, baden baden",
+      "geom_quadindex": "030000230131",
+      "geom_st_box2d": "BOX(8.307374 47.470368,8.307969 47.470883)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Tagesschule Ländli, Baden</b> (AG) - Baden",
+      "lat": 47.47063064575195,
+      "lon": 8.307680130004883,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.307680130004883,
+      "y": 47.47063064575195,
+      "zoomlevel": 9
+     },
+     "id": 47959,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "sekundarstufenzentrum burghalde, baden baden",
+      "geom_quadindex": "0300002301",
+      "geom_st_box2d": "BOX(8.301549 47.470611,8.304885 47.472232)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Sekundarstufenzentrum Burghalde, Baden</b> (AG) - Baden",
+      "lat": 47.47145080566406,
+      "lon": 8.303126335144043,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.303126335144043,
+      "y": 47.47145080566406,
+      "zoomlevel": 9
+     },
+     "id": 51510,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "minerva baden baden",
+      "geom_quadindex": "03000023011",
+      "geom_st_box2d": "BOX(8.305917 47.475488,8.306351 47.475743)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Minerva Baden</b> (AG) - Baden",
+      "lat": 47.47560501098633,
+      "lon": 8.306144714355469,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.306144714355469,
+      "y": 47.47560501098633,
+      "zoomlevel": 9
+     },
+     "id": 51551,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "zb. zentrum bildung baden, hoehere fachschule baden",
+      "geom_quadindex": "030000230132",
+      "geom_st_box2d": "BOX(8.302982 47.46883,8.305021 47.469725)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>zB. Zentrum Bildung Baden, Höhere Fachschule</b> (AG) - Baden",
+      "lat": 47.469207763671875,
+      "lon": 8.303950309753418,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.303950309753418,
+      "y": 47.469207763671875,
+      "zoomlevel": 9
+     },
+     "id": 51604,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "zb. zentrum bildung baden baden",
+      "geom_quadindex": "030000230132",
+      "geom_st_box2d": "BOX(8.302982 47.46883,8.305021 47.469725)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>zB. Zentrum Bildung Baden</b> (AG) - Baden",
+      "lat": 47.469207763671875,
+      "lon": 8.303950309753418,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.303950309753418,
+      "y": 47.469207763671875,
+      "zoomlevel": 9
+     },
+     "id": 51605,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "ehemaliges kapuzinerinnenkloster baden baden",
+      "geom_quadindex": "030000230130",
+      "geom_st_box2d": "BOX(8.304039 47.470369,8.304726 47.470824)",
+      "label": "<i>Historisches Areal</i> <b>Ehemaliges Kapuzinerinnenkloster Baden</b> (AG) - Baden",
+      "lat": 47.47062683105469,
+      "lon": 8.304407119750977,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.304407119750977,
+      "y": 47.47062683105469,
+      "zoomlevel": 9
+     },
+     "id": 106642,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "primarschule daettwil, baden baden",
+      "geom_quadindex": "0300002",
+      "geom_st_box2d": "BOX(8.283002 47.453387,8.284898 47.454562)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Primarschule Dättwil, Baden</b> (AG) - Baden",
+      "lat": 47.45396423339844,
+      "lon": 8.283990859985352,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.283990859985352,
+      "y": 47.45396423339844,
+      "zoomlevel": 9
+     },
+     "id": 188456,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "zentrum fuer koerperbehinderte kinder _zeka_, baden baden",
+      "geom_quadindex": "0300002",
+      "geom_st_box2d": "BOX(8.283002 47.453387,8.284898 47.454562)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Zentrum für körperbehinderte Kinder (zeka), Baden</b> (AG) - Baden",
+      "lat": 47.45396423339844,
+      "lon": 8.283990859985352,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.283990859985352,
+      "y": 47.45396423339844,
+      "zoomlevel": 9
+     },
+     "id": 188457,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "primarschule ruetihof, baden baden",
+      "geom_quadindex": "030002001011",
+      "geom_st_box2d": "BOX(8.26929 47.440758,8.270475 47.441628)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Primarschule Rütihof, Baden</b> (AG) - Baden",
+      "lat": 47.441192626953125,
+      "lon": 8.269918441772461,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.269918441772461,
+      "y": 47.441192626953125,
+      "zoomlevel": 9
+     },
+     "id": 189796,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "primarschule kappelerhof, baden baden",
+      "geom_quadindex": "030000212201",
+      "geom_st_box2d": "BOX(8.288578 47.4829,8.289605 47.483467)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Primarschule Kappelerhof, Baden</b> (AG) - Baden",
+      "lat": 47.483184814453125,
+      "lon": 8.28911018371582,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.28911018371582,
+      "y": 47.483184814453125,
+      "zoomlevel": 9
+     },
+     "id": 213725,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "p+rail baden baden",
+      "geom_quadindex": "030000212333",
+      "geom_st_box2d": "BOX(8.307351 47.47728,8.307603 47.478304)",
+      "label": "<i>Oeffentliches Parkplatzareal</i> <b>P+Rail Baden</b> (AG) - Baden",
+      "lat": 47.477787017822266,
+      "lon": 8.307516098022461,
+      "num": 1,
+      "objectclass": "TLM_VERKEHRSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.307516098022461,
+      "y": 47.477787017822266,
+      "zoomlevel": 9
+     },
+     "id": 216160,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "kantonale schule fuer berufsbildung, baden baden",
+      "geom_quadindex": "0300002123023",
+      "geom_st_box2d": "BOX(8.299461 47.480569,8.299868 47.481328)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Kantonale Schule für Berufsbildung, Baden</b> (AG) - Baden",
+      "lat": 47.480960845947266,
+      "lon": 8.299660682678223,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.299660682678223,
+      "y": 47.480960845947266,
+      "zoomlevel": 9
+     },
+     "id": 245022,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "primarschule tannegg, baden baden",
+      "geom_quadindex": "03000023",
+      "geom_st_box2d": "BOX(8.307929 47.470759,8.309164 47.471311)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Primarschule Tannegg, Baden</b> (AG) - Baden",
+      "lat": 47.47102737426758,
+      "lon": 8.308568000793457,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.308568000793457,
+      "y": 47.47102737426758,
+      "zoomlevel": 9
+     },
+     "id": 245164,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "berufsfachschule bbb bruggerstrasse, baden baden",
+      "geom_quadindex": "0300002123",
+      "geom_st_box2d": "BOX(8.300132 47.479989,8.301705 47.48128)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Berufsfachschule BBB Bruggerstrasse, Baden</b> (AG) - Baden",
+      "lat": 47.4805908203125,
+      "lon": 8.30095100402832,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.30095100402832,
+      "y": 47.4805908203125,
+      "zoomlevel": 9
+     },
+     "id": 268956,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "berufsfachschule bbb martinsberg, baden baden",
+      "geom_quadindex": "030000212320",
+      "geom_st_box2d": "BOX(8.29742 47.478828,8.299518 47.479964)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Berufsfachschule BBB Martinsberg, Baden</b> (AG) - Baden",
+      "lat": 47.47940444946289,
+      "lon": 8.298465728759766,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.298465728759766,
+      "y": 47.47940444946289,
+      "zoomlevel": 9
+     },
+     "id": 273016,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "abb technikerschule, baden baden",
+      "geom_quadindex": "030000212323",
+      "geom_st_box2d": "BOX(8.300365 47.477163,8.301549 47.477841)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>ABB Technikerschule, Baden</b> (AG) - Baden",
+      "lat": 47.477474212646484,
+      "lon": 8.3009672164917,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.3009672164917,
+      "y": 47.477474212646484,
+      "zoomlevel": 9
+     },
+     "id": 324619,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "forum 44 baden baden",
+      "geom_quadindex": "0300002301",
+      "geom_st_box2d": "BOX(8.302899 47.470707,8.303339 47.471009)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Forum 44 Baden</b> (AG) - Baden",
+      "lat": 47.47085952758789,
+      "lon": 8.303118705749512,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.303118705749512,
+      "y": 47.47085952758789,
+      "zoomlevel": 9
+     },
+     "id": 354158,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "primarschule meierhof, baden baden",
+      "geom_quadindex": "030000230",
+      "geom_st_box2d": "BOX(8.291245 47.466983,8.293055 47.468007)",
+      "label": "<i>Schul- und Hochschulareal</i> <b>Primarschule Meierhof, Baden</b> (AG) - Baden",
+      "lat": 47.4675178527832,
+      "lon": 8.292129516601562,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.292129516601562,
+      "y": 47.4675178527832,
+      "zoomlevel": 9
+     },
+     "id": 383029,
+     "weight": 13
+    },
+    {
+     "attrs": {
+      "detail": "innenstadt ennetbaden,obersiggenthal,wettingen,baden",
+      "geom_quadindex": "0300002",
+      "geom_st_box2d": "BOX(8.29714 47.459531,8.31953 47.484071)",
+      "label": "<i>Ortsteil</i> <b>Innenstadt</b> (AG) - Ennetbaden,Obersiggenthal,Wettingen,Baden",
+      "lat": 47.47368240356445,
+      "lon": 8.30750560760498,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.30750560760498,
+      "y": 47.47368240356445,
+      "zoomlevel": 9
+     },
+     "id": 52306,
+     "weight": 9
+    },
+    {
+     "attrs": {
+      "detail": "turgi _baden_ baden",
+      "geom_quadindex": "03000020303",
+      "geom_st_box2d": "BOX(8.266547 47.486058,8.269727 47.488079)",
+      "label": "<i>Abwasserreinigungsareal</i> <b>Turgi (Baden)</b> (AG) - Baden",
+      "lat": 47.4871711730957,
+      "lon": 8.26819133758545,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.26819133758545,
+      "y": 47.4871711730957,
+      "zoomlevel": 9
+     },
+     "id": 161095,
+     "weight": 9
+    },
+    {
+     "attrs": {
+      "detail": "bahnhof ennetbaden,baden",
+      "geom_quadindex": "0300002",
+      "geom_st_box2d": "BOX(8.304289 47.473153,8.311462 47.478518)",
+      "label": "<i>Quartier</i> <b>Bahnhof</b> (AG) - Ennetbaden,Baden",
+      "lat": 47.47612762451172,
+      "lon": 8.307762145996094,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.307762145996094,
+      "y": 47.47612762451172,
+      "zoomlevel": 9
+     },
+     "id": 215755,
+     "weight": 9
+    }
+   ]
+  }
+ },
+ "Bern|gg25": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Bern&type=locations&origins=gg25&sr=4326&limit=16",
+  "retrieved_at": "2026-10-02T20:33:09+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "bern be",
+      "featureId": "351",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.294133 46.918995,7.495609 46.990139)",
+      "label": "<b>Bern (BE)</b>",
+      "lat": 46.954559326171875,
+      "lon": 7.420684814453125,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 7.420684814453125,
+      "y": 46.954559326171875,
+      "zoomlevel": 4294967295
+     },
+     "id": 195,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "berna be",
+      "featureId": "351",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.294133 46.918995,7.495609 46.990139)",
+      "label": "<b>Berna (BE)</b>",
+      "lat": 46.954559326171875,
+      "lon": 7.420684814453125,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 7.420684814453125,
+      "y": 46.954559326171875,
+      "zoomlevel": 4294967295
+     },
+     "id": 196,
+     "weight": 6
+    },
+    {
+     "attrs": {
+      "detail": "berne be",
+      "featureId": "351",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.294133 46.918995,7.495609 46.990139)",
+      "label": "<b>Berne (BE)</b>",
+      "lat": 46.954559326171875,
+      "lon": 7.420684814453125,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 7.420684814453125,
+      "y": 46.954559326171875,
+      "zoomlevel": 4294967295
+     },
+     "id": 197,
+     "weight": 6
+    },
+    {
+     "attrs": {
+      "detail": "bremgarten bei bern be",
+      "featureId": "353",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.423057 46.968181,7.449049 46.988153)",
+      "label": "<b>Bremgarten bei Bern (BE)</b>",
+      "lat": 46.97819519042969,
+      "lon": 7.43417501449585,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 7.43417501449585,
+      "y": 46.97819519042969,
+      "zoomlevel": 4294967295
+     },
+     "id": 199,
+     "weight": 6
+    },
+    {
+     "attrs": {
+      "detail": "muri bei bern be",
+      "featureId": "356",
+      "geom_quadindex": "0213002",
+      "geom_st_box2d": "BOX(7.469097 46.915707,7.524819 46.950873)",
+      "label": "<b>Muri bei Bern (BE)</b>",
+      "lat": 46.933433532714844,
+      "lon": 7.499686241149902,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 7.499686241149902,
+      "y": 46.933433532714844,
+      "zoomlevel": 4294967295
+     },
+     "id": 202,
+     "weight": 6
+    },
+    {
+     "attrs": {
+      "detail": "wohlen bei bern be",
+      "featureId": "360",
+      "geom_quadindex": "021211",
+      "geom_st_box2d": "BOX(7.278619 46.95974,7.415574 47.004917)",
+      "label": "<b>Wohlen bei Bern (BE)</b>",
+      "lat": 46.982147216796875,
+      "lon": 7.3478593826293945,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 7.3478593826293945,
+      "y": 46.982147216796875,
+      "zoomlevel": 4294967295
+     },
+     "id": 206,
+     "weight": 6
+    },
+    {
+     "attrs": {
+      "detail": "berneck sg",
+      "featureId": "3233",
+      "geom_quadindex": "03011",
+      "geom_st_box2d": "BOX(9.587761 47.412575,9.63098 47.439693)",
+      "label": "<b>Berneck (SG)</b>",
+      "lat": 47.426082611083984,
+      "lon": 9.610477447509766,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 9.610477447509766,
+      "y": 47.426082611083984,
+      "zoomlevel": 4294967295
+     },
+     "id": 1093,
+     "weight": 6
+    },
+    {
+     "attrs": {
+      "detail": "bernex ge",
+      "featureId": "6607",
+      "geom_quadindex": "02212",
+      "geom_st_box2d": "BOX(6.037256 46.14895,6.09533 46.211355)",
+      "label": "<b>Bernex (GE)</b>",
+      "lat": 46.180213928222656,
+      "lon": 6.0699896812438965,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 6.0699896812438965,
+      "y": 46.180213928222656,
+      "zoomlevel": 4294967295
+     },
+     "id": 2101,
+     "weight": 6
+    }
+   ]
+  }
+ },
+ "Bern|gazetteer": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Bern&type=locations&origins=gazetteer&sr=4326&limit=30",
+  "retrieved_at": "2026-10-02T20:33:09+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "bern bremgarten bei bern,bern,muri bei bern,koeniz,ostermundigen",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.35958 46.927266,7.486574 46.978562)",
+      "label": "<b>Bern</b> (BE) - Bremgarten bei Bern,Bern,Muri bei Bern,Köniz,Ostermundigen",
+      "lat": 46.948997497558594,
+      "lon": 7.437127590179443,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 7.437127590179443,
+      "y": 46.948997497558594,
+      "zoomlevel": 9
+     },
+     "id": 248095,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "bern\n bremgarten bei bern,bern,muri bei bern,koeniz,ostermundigen",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.35958 46.927266,7.486574 46.978562)",
+      "label": "<b>Bern\n</b> (BE) - Bremgarten bei Bern,Bern,Muri bei Bern,Köniz,Ostermundigen",
+      "lat": 46.948997497558594,
+      "lon": 7.437127590179443,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 7.437127590179443,
+      "y": 46.948997497558594,
+      "zoomlevel": 9
+     },
+     "id": 248754,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern matte bern",
+      "geom_quadindex": "021300202300320003221",
+      "geom_st_box2d": "BOX(7.452541 46.946632,7.452541 46.946632)",
+      "label": "<i>Uebrige Bahnen</i> <b>Bern Matte</b> (BE) - Bern",
+      "lat": 46.946632385253906,
+      "lon": 7.452541828155518,
+      "num": 1,
+      "objectclass": "TLM_HALTESTELLE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.452541828155518,
+      "y": 46.946632385253906,
+      "zoomlevel": 9
+     },
+     "id": 6467,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "bern-eymatt bern",
+      "geom_quadindex": "021211301310",
+      "geom_st_box2d": "BOX(7.384171 46.963854,7.385027 46.964435)",
+      "label": "<i>Standplatzareal</i> <b>Bern-Eymatt</b> (BE) - Bern",
+      "lat": 46.96415710449219,
+      "lon": 7.384593963623047,
+      "num": 1,
+      "objectclass": "TLM_FREIZEITAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.384593963623047,
+      "y": 46.96415710449219,
+      "zoomlevel": 9
+     },
+     "id": 21155,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-neufeld bern",
+      "geom_quadindex": "021211311300231033213",
+      "geom_st_box2d": "BOX(7.427635 46.963435,7.427635 46.963435)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Neufeld</b> (BE) - Bern",
+      "lat": 46.963436126708984,
+      "lon": 7.42763614654541,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.42763614654541,
+      "y": 46.963436126708984,
+      "zoomlevel": 9
+     },
+     "id": 28007,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-wankdorf bern",
+      "geom_quadindex": "021300201032000101121",
+      "geom_st_box2d": "BOX(7.469704 46.967233,7.469704 46.967233)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Wankdorf</b> (BE) - Bern",
+      "lat": 46.96723556518555,
+      "lon": 7.469705104827881,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.469705104827881,
+      "y": 46.96723556518555,
+      "zoomlevel": 9
+     },
+     "id": 83328,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-ostring bern",
+      "geom_quadindex": "021300203231000332110",
+      "geom_st_box2d": "BOX(7.472822 46.943819,7.472822 46.943819)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Ostring</b> (BE) - Bern",
+      "lat": 46.94382095336914,
+      "lon": 7.472822666168213,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.472822666168213,
+      "y": 46.94382095336914,
+      "zoomlevel": 9
+     },
+     "id": 83363,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-wankdorf bern",
+      "geom_quadindex": "021300201021133131333",
+      "geom_st_box2d": "BOX(7.469425 46.968463,7.469425 46.968463)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Wankdorf</b> (BE) - Bern",
+      "lat": 46.96846389770508,
+      "lon": 7.469425678253174,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.469425678253174,
+      "y": 46.96846389770508,
+      "zoomlevel": 9
+     },
+     "id": 110769,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-ostring bern",
+      "geom_quadindex": "021300203211202032302",
+      "geom_st_box2d": "BOX(7.472618 46.946827,7.472618 46.946827)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Ostring</b> (BE) - Bern",
+      "lat": 46.94682693481445,
+      "lon": 7.472618579864502,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.472618579864502,
+      "y": 46.94682693481445,
+      "zoomlevel": 9
+     },
+     "id": 110809,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-riedbach forst 300/50/25m bern",
+      "geom_quadindex": "021211231012000203020",
+      "geom_st_box2d": "BOX(7.321723 46.937495,7.321723 46.937495)",
+      "label": "<i>Offenes Gebaeude</i> <b>Bern-Riedbach Forst 300/50/25m</b> (BE) - Bern",
+      "lat": 46.937496185302734,
+      "lon": 7.321723461151123,
+      "num": 1,
+      "objectclass": "TLM_GEBAEUDE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.321723461151123,
+      "y": 46.937496185302734,
+      "zoomlevel": 9
+     },
+     "id": 127692,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-buempliz bern",
+      "geom_quadindex": "021211312323230221030",
+      "geom_st_box2d": "BOX(7.405606 46.940152,7.405606 46.940152)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Bümpliz</b> (BE) - Bern",
+      "lat": 46.94015121459961,
+      "lon": 7.405606746673584,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.405606746673584,
+      "y": 46.94015121459961,
+      "zoomlevel": 9
+     },
+     "id": 138313,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-forsthaus bern",
+      "geom_quadindex": "021211312130213022113",
+      "geom_st_box2d": "BOX(7.409046 46.951061,7.409046 46.951061)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Forsthaus</b> (BE) - Bern",
+      "lat": 46.9510612487793,
+      "lon": 7.4090471267700195,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.4090471267700195,
+      "y": 46.9510612487793,
+      "zoomlevel": 9
+     },
+     "id": 138314,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern muensterplattform bern",
+      "geom_quadindex": "021300202300320002321",
+      "geom_st_box2d": "BOX(7.452518 46.946631,7.452518 46.946631)",
+      "label": "<i>Uebrige Bahnen</i> <b>Bern Münsterplattform</b> (BE) - Bern",
+      "lat": 46.946632385253906,
+      "lon": 7.452518939971924,
+      "num": 1,
+      "objectclass": "TLM_HALTESTELLE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.452518939971924,
+      "y": 46.946632385253906,
+      "zoomlevel": 9
+     },
+     "id": 199546,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "bern-forsthaus bern",
+      "geom_quadindex": "021211312120333013001",
+      "geom_st_box2d": "BOX(7.404533 46.950603,7.404533 46.950603)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Forsthaus</b> (BE) - Bern",
+      "lat": 46.95060348510742,
+      "lon": 7.404533863067627,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.404533863067627,
+      "y": 46.95060348510742,
+      "zoomlevel": 9
+     },
+     "id": 220942,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-bethlehem bern",
+      "geom_quadindex": "021211312003133000130",
+      "geom_st_box2d": "BOX(7.395179 46.953787,7.395179 46.953787)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Bethlehem</b> (BE) - Bern",
+      "lat": 46.95378875732422,
+      "lon": 7.395180702209473,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.395180702209473,
+      "y": 46.95378875732422,
+      "zoomlevel": 9
+     },
+     "id": 221064,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-belp belp",
+      "geom_quadindex": "021300232211232223302",
+      "geom_st_box2d": "BOX(7.49793 46.912427,7.49793 46.912427)",
+      "label": "<i>Flugplatzareal</i> <b>Bern-Belp</b> (BE) - Belp",
+      "lat": 46.91242599487305,
+      "lon": 7.497930526733398,
+      "num": 1,
+      "objectclass": "TLM_VERKEHRSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.497930526733398,
+      "y": 46.91242599487305,
+      "zoomlevel": 10
+     },
+     "id": 243876,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-wankdorf bern",
+      "geom_quadindex": "021300201032033221132",
+      "geom_st_box2d": "BOX(7.470674 46.966238,7.470674 46.966238)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Wankdorf</b> (BE) - Bern",
+      "lat": 46.96623992919922,
+      "lon": 7.470674514770508,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.470674514770508,
+      "y": 46.96623992919922,
+      "zoomlevel": 9
+     },
+     "id": 248960,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-forsthaus bern",
+      "geom_quadindex": "021211313002200101033",
+      "geom_st_box2d": "BOX(7.414263 46.953525,7.414263 46.953525)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Forsthaus</b> (BE) - Bern",
+      "lat": 46.95352554321289,
+      "lon": 7.414264678955078,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.414264678955078,
+      "y": 46.95352554321289,
+      "zoomlevel": 9
+     },
+     "id": 249010,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-riedbach forst 300/50/25m bern",
+      "geom_quadindex": "021211231012000210022",
+      "geom_st_box2d": "BOX(7.321768 46.937524,7.321768 46.937524)",
+      "label": "<i>Gebaeude</i> <b>Bern-Riedbach Forst 300/50/25m</b> (BE) - Bern",
+      "lat": 46.93752670288086,
+      "lon": 7.321769714355469,
+      "num": 1,
+      "objectclass": "TLM_GEBAEUDE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.321769714355469,
+      "y": 46.93752670288086,
+      "zoomlevel": 9
+     },
+     "id": 265970,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-eymatt bern",
+      "geom_quadindex": "021211301310030220233",
+      "geom_st_box2d": "BOX(7.383994 46.96437,7.383994 46.96437)",
+      "label": "<i>Campingplatzareal</i> <b>Bern-Eymatt</b> (BE) - Bern",
+      "lat": 46.96437072753906,
+      "lon": 7.38399600982666,
+      "num": 1,
+      "objectclass": "TLM_FREIZEITAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.38399600982666,
+      "y": 46.96437072753906,
+      "zoomlevel": 10
+     },
+     "id": 269456,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-eymatt bern",
+      "geom_quadindex": "021211301",
+      "geom_st_box2d": "BOX(7.38416 46.964479,7.385433 46.965495)",
+      "label": "<i>Standplatzareal</i> <b>Bern-Eymatt</b> (BE) - Bern",
+      "lat": 46.96501541137695,
+      "lon": 7.384841442108154,
+      "num": 1,
+      "objectclass": "TLM_FREIZEITAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.384841442108154,
+      "y": 46.96501541137695,
+      "zoomlevel": 9
+     },
+     "id": 325064,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-wankdorf bern",
+      "geom_quadindex": "021300201231012230003",
+      "geom_st_box2d": "BOX(7.473378 46.960449,7.473378 46.960449)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Wankdorf</b> (BE) - Bern",
+      "lat": 46.96044921875,
+      "lon": 7.473379135131836,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.473379135131836,
+      "y": 46.96044921875,
+      "zoomlevel": 9
+     },
+     "id": 332178,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-buempliz bern",
+      "geom_quadindex": "021211312321103002200",
+      "geom_st_box2d": "BOX(7.406701 46.943737,7.406701 46.943737)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Bümpliz</b> (BE) - Bern",
+      "lat": 46.9437370300293,
+      "lon": 7.406702041625977,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.406702041625977,
+      "y": 46.9437370300293,
+      "zoomlevel": 9
+     },
+     "id": 359468,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-neufeld bern",
+      "geom_quadindex": "021211311132132331303",
+      "geom_st_box2d": "BOX(7.435153 46.966236,7.435153 46.966236)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Neufeld</b> (BE) - Bern",
+      "lat": 46.96623611450195,
+      "lon": 7.435153961181641,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.435153961181641,
+      "y": 46.96623611450195,
+      "zoomlevel": 9
+     },
+     "id": 386895,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-bruennen bern",
+      "geom_quadindex": "021211303212312010302",
+      "geom_st_box2d": "BOX(7.373339 46.944804,7.373339 46.944804)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Brünnen</b> (BE) - Bern",
+      "lat": 46.94480514526367,
+      "lon": 7.373340606689453,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.373340606689453,
+      "y": 46.94480514526367,
+      "zoomlevel": 9
+     },
+     "id": 414118,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-bruennen bern",
+      "geom_quadindex": "021211303202333031203",
+      "geom_st_box2d": "BOX(7.367598 46.944209,7.367598 46.944209)",
+      "label": "<i>Ausfahrt</i> <b>Bern-Brünnen</b> (BE) - Bern",
+      "lat": 46.944210052490234,
+      "lon": 7.367599010467529,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.367599010467529,
+      "y": 46.944210052490234,
+      "zoomlevel": 9
+     },
+     "id": 414119,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bern-riedbach forst 300/50/25m bern",
+      "geom_quadindex": "021211231012000032203",
+      "geom_st_box2d": "BOX(7.321776 46.937549,7.321776 46.937549)",
+      "label": "<i>Gebaeude Einzelhaus</i> <b>Bern-Riedbach Forst 300/50/25m</b> (BE) - Bern",
+      "lat": 46.93754959106445,
+      "lon": 7.32177734375,
+      "num": 1,
+      "objectclass": "tlm_gebaeude",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.32177734375,
+      "y": 46.93754959106445,
+      "zoomlevel": 10
+     },
+     "id": 444903,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "berna bremgarten bei bern,bern,muri bei bern,koeniz,ostermundigen",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.35958 46.927266,7.486574 46.978562)",
+      "label": "<b>Berna</b> (BE) - Bremgarten bei Bern,Bern,Muri bei Bern,Köniz,Ostermundigen",
+      "lat": 46.948997497558594,
+      "lon": 7.437127590179443,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 7.437127590179443,
+      "y": 46.948997497558594,
+      "zoomlevel": 9
+     },
+     "id": 248096,
+     "weight": 24
+    },
+    {
+     "attrs": {
+      "detail": "berne bremgarten bei bern,bern,muri bei bern,koeniz,ostermundigen",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.35958 46.927266,7.486574 46.978562)",
+      "label": "<b>Berne</b> (BE) - Bremgarten bei Bern,Bern,Muri bei Bern,Köniz,Ostermundigen",
+      "lat": 46.948997497558594,
+      "lon": 7.437127590179443,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 7.437127590179443,
+      "y": 46.948997497558594,
+      "zoomlevel": 9
+     },
+     "id": 248098,
+     "weight": 24
+    },
+    {
+     "attrs": {
+      "detail": "bremgarten b. bern bremgarten bei bern",
+      "geom_quadindex": "021211133331121210213",
+      "geom_st_box2d": "BOX(7.437597 46.977105,7.437597 46.977105)",
+      "label": "<i>Ort</i> <b>Bremgarten b. Bern</b> (BE) - Bremgarten bei Bern",
+      "lat": 46.977108001708984,
+      "lon": 7.437599182128906,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 7.437599182128906,
+      "y": 46.977108001708984,
+      "zoomlevel": 10
+     },
+     "id": 219966,
+     "weight": 13
+    }
+   ]
+  }
+ },
+ "Biel|gg25": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Biel&type=locations&origins=gg25&sr=4326&limit=16",
+  "retrieved_at": "2026-10-02T20:33:09+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "biel/bienne be",
+      "featureId": "371",
+      "geom_quadindex": "02103",
+      "geom_st_box2d": "BOX(7.200907 47.122081,7.312826 47.177065)",
+      "label": "<b>Biel/Bienne (BE)</b>",
+      "lat": 47.14948654174805,
+      "lon": 7.269010066986084,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 7.269010066986084,
+      "y": 47.14948654174805,
+      "zoomlevel": 4294967295
+     },
+     "id": 210,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "biel-benken bl",
+      "featureId": "2764",
+      "geom_quadindex": "021100",
+      "geom_st_box2d": "BOX(7.497844 47.496756,7.536723 47.521248)",
+      "label": "<b>Biel-Benken (BL)</b>",
+      "lat": 47.50904083251953,
+      "lon": 7.52285099029541,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 7.52285099029541,
+      "y": 47.50904083251953,
+      "zoomlevel": 4294967295
+     },
+     "id": 938,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "bielersee be",
+      "featureId": "9149",
+      "geom_quadindex": "021",
+      "geom_st_box2d": "BOX(7.076347 47.037328,7.236793 47.134693)",
+      "label": "<b>Bielersee (BE)</b>",
+      "lat": 47.08607864379883,
+      "lon": 7.171518802642822,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 7.171518802642822,
+      "y": 47.08607864379883,
+      "zoomlevel": 4294967295
+     },
+     "id": 2212,
+     "weight": 6
+    },
+    {
+     "attrs": {
+      "detail": "bielersee ne",
+      "featureId": "9150",
+      "geom_quadindex": "02103222",
+      "geom_st_box2d": "BOX(7.072387 47.051785,7.087706 47.060144)",
+      "label": "<b>Bielersee (NE)</b>",
+      "lat": 47.05594253540039,
+      "lon": 7.078464984893799,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 7.078464984893799,
+      "y": 47.05594253540039,
+      "zoomlevel": 4294967295
+     },
+     "id": 2213,
+     "weight": 6
+    }
+   ]
+  }
+ },
+ "Biel|gazetteer": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Biel&type=locations&origins=gazetteer&sr=4326&limit=30",
+  "retrieved_at": "2026-10-02T20:33:09+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "biel vs goms",
+      "geom_quadindex": "023111131311012013233",
+      "geom_st_box2d": "BOX(8.217496 46.45615,8.217496 46.45615)",
+      "label": "<i>Ort</i> <b>Biel VS</b> (VS) - Goms",
+      "lat": 46.456146240234375,
+      "lon": 8.217495918273926,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.217495918273926,
+      "y": 46.456146240234375,
+      "zoomlevel": 10
+     },
+     "id": 53254,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel titterten",
+      "geom_quadindex": "02110303",
+      "geom_st_box2d": "BOX(7.710782 47.404423,7.711932 47.405559)",
+      "label": "<b>Biel</b> (BL) - Titterten",
+      "lat": 47.40489196777344,
+      "lon": 7.711390972137451,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 7.711390972137451,
+      "y": 47.40489196777344,
+      "zoomlevel": 9
+     },
+     "id": 54193,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel beckenried",
+      "geom_quadindex": "030201201103202023100",
+      "geom_st_box2d": "BOX(8.464246 46.96546,8.464246 46.96546)",
+      "label": "<i>Ort</i> <b>Biel</b> (NW) - Beckenried",
+      "lat": 46.965457916259766,
+      "lon": 8.464255332946777,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.464255332946777,
+      "y": 46.965457916259766,
+      "zoomlevel": 10
+     },
+     "id": 163491,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel seedorf _ur_",
+      "geom_quadindex": "030201332330001312121",
+      "geom_st_box2d": "BOX(8.589844 46.904364,8.589844 46.904364)",
+      "label": "<i>Ort</i> <b>Biel</b> (UR) - Seedorf (UR)",
+      "lat": 46.904361724853516,
+      "lon": 8.589851379394531,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.589851379394531,
+      "y": 46.904361724853516,
+      "zoomlevel": 10
+     },
+     "id": 191580,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel-benken bl biel-benken",
+      "geom_quadindex": "021100211031223333220",
+      "geom_st_box2d": "BOX(7.523355 47.506898,7.523355 47.506898)",
+      "label": "<i>Ort</i> <b>Biel-Benken BL</b> (BL) - Biel-Benken",
+      "lat": 47.50690460205078,
+      "lon": 7.523360252380371,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 7.523360252380371,
+      "y": 47.50690460205078,
+      "zoomlevel": 10
+     },
+     "id": 193100,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "biel oberdorf _nw_",
+      "geom_quadindex": "030200312131313202020",
+      "geom_st_box2d": "BOX(8.398782 46.946977,8.398782 46.946977)",
+      "label": "<i>Ort</i> <b>Biel</b> (NW) - Oberdorf (NW)",
+      "lat": 46.94697570800781,
+      "lon": 8.398791313171387,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.398791313171387,
+      "y": 46.94697570800781,
+      "zoomlevel": 10
+     },
+     "id": 356415,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel buerglen _ur_",
+      "geom_quadindex": "030212011102310332300",
+      "geom_st_box2d": "BOX(8.708461 46.895658,8.708461 46.895658)",
+      "label": "<i>Ort</i> <b>Biel</b> (UR) - Bürglen (UR)",
+      "lat": 46.89565658569336,
+      "lon": 8.70846939086914,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.70846939086914,
+      "y": 46.89565658569336,
+      "zoomlevel": 10
+     },
+     "id": 385787,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel zwischbergen",
+      "geom_quadindex": "023131120131113111211",
+      "geom_st_box2d": "BOX(8.142932 46.19102,8.142932 46.19102)",
+      "label": "<i>Ort</i> <b>Biel</b> (VS) - Zwischbergen",
+      "lat": 46.191017150878906,
+      "lon": 8.142926216125488,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.142926216125488,
+      "y": 46.191017150878906,
+      "zoomlevel": 10
+     },
+     "id": 412004,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel ruswil",
+      "geom_quadindex": "021133230123111010231",
+      "geom_st_box2d": "BOX(8.09865 47.066521,8.09865 47.066521)",
+      "label": "<i>Ort</i> <b>Biel</b> (LU) - Ruswil",
+      "lat": 47.06652069091797,
+      "lon": 8.098658561706543,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.098658561706543,
+      "y": 47.06652069091797,
+      "zoomlevel": 10
+     },
+     "id": 439027,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel alpnach",
+      "geom_quadindex": "030200202233223113000",
+      "geom_st_box2d": "BOX(8.236568 46.937294,8.236568 46.937294)",
+      "label": "<i>Ort</i> <b>Biel</b> (OW) - Alpnach",
+      "lat": 46.937294006347656,
+      "lon": 8.236576080322266,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.236576080322266,
+      "y": 46.937294006347656,
+      "zoomlevel": 10
+     },
+     "id": 439888,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel/bienne twann-tuescherz,bruegg,nidau,orpund,bielersee _be_,biel/bienne,port",
+      "geom_quadindex": "02103",
+      "geom_st_box2d": "BOX(7.210941 47.120474,7.304003 47.164818)",
+      "label": "<b>Biel/Bienne</b> (BE) - Twann-Tüscherz,Brügg,Nidau,Orpund,Bielersee (BE),Biel/Bienne,Port",
+      "lat": 47.14313507080078,
+      "lon": 7.262670040130615,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 7.262670040130615,
+      "y": 47.14313507080078,
+      "zoomlevel": 9
+     },
+     "id": 441541,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "biel biel/bienne",
+      "geom_quadindex": "021033020001213030300",
+      "geom_st_box2d": "BOX(7.245258 47.140661,7.245258 47.140661)",
+      "label": "<b>Biel</b> (BE) - Biel/Bienne",
+      "lat": 47.14066696166992,
+      "lon": 7.245260715484619,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.245260715484619,
+      "y": 47.14066696166992,
+      "zoomlevel": 9
+     },
+     "id": 11052,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel st. niklaus",
+      "geom_quadindex": "023121130111113230210",
+      "geom_st_box2d": "BOX(7.80271 46.196647,7.80271 46.196647)",
+      "label": "<i>Huegel</i> <b>Biel</b> (VS) - St. Niklaus",
+      "lat": 46.1966438293457,
+      "lon": 7.802702903747559,
+      "num": 1,
+      "objectclass": "TLM_NAME_PKT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.802702903747559,
+      "y": 46.1966438293457,
+      "zoomlevel": 10
+     },
+     "id": 12825,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel binn",
+      "geom_quadindex": "023111333301003202202",
+      "geom_st_box2d": "BOX(8.209654 46.37174,8.209654 46.37174)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel</b> (VS) - Binn",
+      "lat": 46.371734619140625,
+      "lon": 8.209651947021484,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.209651947021484,
+      "y": 46.371734619140625,
+      "zoomlevel": 10
+     },
+     "id": 17041,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel unterbaech",
+      "geom_quadindex": "023103312110031233120",
+      "geom_st_box2d": "BOX(7.79877 46.280704,7.79877 46.280704)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel</b> (VS) - Unterbäch",
+      "lat": 46.28070068359375,
+      "lon": 7.798765182495117,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.798765182495117,
+      "y": 46.28070068359375,
+      "zoomlevel": 10
+     },
+     "id": 18665,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel halten kerns",
+      "geom_quadindex": "030202010300333200012",
+      "geom_st_box2d": "BOX(8.290171 46.892528,8.290171 46.892528)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel Halten</b> (OW) - Kerns",
+      "lat": 46.89252471923828,
+      "lon": 8.290179252624512,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.290179252624512,
+      "y": 46.89252471923828,
+      "zoomlevel": 10
+     },
+     "id": 30879,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel goeschenen",
+      "geom_quadindex": "030221312211123120230",
+      "geom_st_box2d": "BOX(8.577116 46.671849,8.577116 46.671849)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel</b> (UR) - Göschenen",
+      "lat": 46.671844482421875,
+      "lon": 8.57712173461914,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.57712173461914,
+      "y": 46.671844482421875,
+      "zoomlevel": 10
+     },
+     "id": 35371,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel schattenhalb",
+      "geom_quadindex": "021331133033223033220",
+      "geom_st_box2d": "BOX(8.208496 46.709689,8.208496 46.709689)",
+      "label": "<i>Huegel</i> <b>Biel</b> (BE) - Schattenhalb",
+      "lat": 46.709686279296875,
+      "lon": 8.208501815795898,
+      "num": 1,
+      "objectclass": "TLM_NAME_PKT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.208501815795898,
+      "y": 46.709686279296875,
+      "zoomlevel": 10
+     },
+     "id": 40446,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel grengiols",
+      "geom_quadindex": "023111233210103303133",
+      "geom_st_box2d": "BOX(8.104856 46.372413,8.104856 46.372413)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel</b> (VS) - Grengiols",
+      "lat": 46.37240982055664,
+      "lon": 8.104853630065918,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.104853630065918,
+      "y": 46.37240982055664,
+      "zoomlevel": 10
+     },
+     "id": 44081,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel/bienne biel/bienne",
+      "geom_quadindex": "021033000332302110310",
+      "geom_st_box2d": "BOX(7.261236 47.159727,7.261236 47.159727)",
+      "label": "<i>Ausfahrt</i> <b>Biel/Bienne</b> (BE) - Biel/Bienne",
+      "lat": 47.159732818603516,
+      "lon": 7.2612385749816895,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.2612385749816895,
+      "y": 47.159732818603516,
+      "zoomlevel": 9
+     },
+     "id": 55501,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "biel/bienne-sued/sud bruegg",
+      "geom_quadindex": "021033022110310033021",
+      "geom_st_box2d": "BOX(7.261951 47.124062,7.261951 47.124062)",
+      "label": "<i>Ausfahrt</i> <b>Biel/Bienne-Süd/Sud</b> (BE) - Brügg",
+      "lat": 47.12406539916992,
+      "lon": 7.261953353881836,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.261953353881836,
+      "y": 47.12406539916992,
+      "zoomlevel": 9
+     },
+     "id": 55585,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "biel zermatt",
+      "geom_quadindex": "023123301323210021023",
+      "geom_st_box2d": "BOX(7.769283 46.012667,7.769283 46.012667)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel</b> (VS) - Zermatt",
+      "lat": 46.012664794921875,
+      "lon": 7.769273281097412,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.769273281097412,
+      "y": 46.012664794921875,
+      "zoomlevel": 10
+     },
+     "id": 57156,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel wolfenschiessen",
+      "geom_quadindex": "030202111313222031111",
+      "geom_st_box2d": "BOX(8.419851 46.889453,8.419851 46.889453)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel</b> (NW) - Wolfenschiessen",
+      "lat": 46.88945007324219,
+      "lon": 8.419859886169434,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.419859886169434,
+      "y": 46.88945007324219,
+      "zoomlevel": 10
+     },
+     "id": 58464,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel buesserach",
+      "geom_quadindex": "021102033122121323300",
+      "geom_st_box2d": "BOX(7.52775 47.388064,7.52775 47.388064)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel</b> (SO) - Büsserach",
+      "lat": 47.38806915283203,
+      "lon": 7.527756214141846,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.527756214141846,
+      "y": 47.38806915283203,
+      "zoomlevel": 10
+     },
+     "id": 63024,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel kippel",
+      "geom_quadindex": "023101321121000202200",
+      "geom_st_box2d": "BOX(7.770792 46.395227,7.770792 46.395227)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel</b> (VS) - Kippel",
+      "lat": 46.395225524902344,
+      "lon": 7.770788669586182,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.770788669586182,
+      "y": 46.395225524902344,
+      "zoomlevel": 10
+     },
+     "id": 71522,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel-oberalp 1 buerglen _ur_",
+      "geom_quadindex": "03021",
+      "geom_st_box2d": "BOX(8.709082 46.895417,8.70968 46.900137)",
+      "label": "<i>Skilift</i> <b>Biel-Oberalp 1</b> (UR) - Bürglen (UR)",
+      "lat": 46.89777374267578,
+      "lon": 8.709386825561523,
+      "num": 1,
+      "objectclass": "TLM_UEBRIGE_BAHN",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.709386825561523,
+      "y": 46.89777374267578,
+      "zoomlevel": 9
+     },
+     "id": 74908,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "biel toerbel",
+      "geom_quadindex": "023112223200212123232",
+      "geom_st_box2d": "BOX(7.85288 46.237673,7.85288 46.237673)",
+      "label": "<b>Biel</b> (VS) - Törbel",
+      "lat": 46.2376708984375,
+      "lon": 7.852874755859375,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.852874755859375,
+      "y": 46.2376708984375,
+      "zoomlevel": 9
+     },
+     "id": 84488,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel emmetten",
+      "geom_quadindex": "030201300123302033021",
+      "geom_st_box2d": "BOX(8.539678 46.960534,8.539678 46.960534)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel</b> (NW) - Emmetten",
+      "lat": 46.960533142089844,
+      "lon": 8.539687156677246,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.539687156677246,
+      "y": 46.960533142089844,
+      "zoomlevel": 10
+     },
+     "id": 86298,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel baerschwil",
+      "geom_quadindex": "021102023320331212232",
+      "geom_st_box2d": "BOX(7.478699 47.380765,7.478699 47.380765)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel</b> (SO) - Bärschwil",
+      "lat": 47.380767822265625,
+      "lon": 7.478704452514648,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.478704452514648,
+      "y": 47.380767822265625,
+      "zoomlevel": 10
+     },
+     "id": 90639,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "biel wiler _loetschen_",
+      "geom_quadindex": "023101310223130002222",
+      "geom_st_box2d": "BOX(7.785412 46.417967,7.785412 46.417967)",
+      "label": "<i>Flurname swisstopo</i> <b>Biel</b> (VS) - Wiler (Lötschen)",
+      "lat": 46.417964935302734,
+      "lon": 7.7854084968566895,
+      "num": 1,
+      "objectclass": "TLM_FLURNAME",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 7.7854084968566895,
+      "y": 46.417964935302734,
+      "zoomlevel": 10
+     },
+     "id": 98741,
+     "weight": 100
+    }
+   ]
+  }
+ },
+ "Zürich|gg25": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Z%C3%BCrich&type=locations&origins=gg25&sr=4326&limit=16",
+  "retrieved_at": "2026-10-02T20:33:09+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "zuerich zh",
+      "featureId": "261",
+      "geom_quadindex": "030003",
+      "geom_st_box2d": "BOX(8.44688 47.319035,8.627198 47.435142)",
+      "label": "<b>Zürich (ZH)</b>",
+      "lat": 47.37721252441406,
+      "lon": 8.527311325073242,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 8.527311325073242,
+      "y": 47.37721252441406,
+      "zoomlevel": 4294967295
+     },
+     "id": 153,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "zuerichsee zh",
+      "featureId": "9051",
+      "geom_quadindex": "0300",
+      "geom_st_box2d": "BOX(8.540118 47.201946,8.811765 47.346235)",
+      "label": "<b>Zürichsee (ZH)</b>",
+      "lat": 47.274932861328125,
+      "lon": 8.602251052856445,
+      "num": 1,
+      "objectclass": "",
+      "origin": "gg25",
+      "rank": 2,
+      "x": 8.602251052856445,
+      "y": 47.274932861328125,
+      "zoomlevel": 4294967295
+     },
+     "id": 2209,
+     "weight": 6
+    }
+   ]
+  }
+ },
+ "Zürich|gazetteer": {
+  "url": "https://api3.geo.admin.ch/rest/services/api/SearchServer?searchText=Z%C3%BCrich&type=locations&origins=gazetteer&sr=4326&limit=30",
+  "retrieved_at": "2026-10-02T20:33:09+00:00",
+  "body": {
+   "results": [
+    {
+     "attrs": {
+      "detail": "zuerich duebendorf,zollikon,kilchberg _zh_,wallisellen,opfikon,ruemlang,oberengstringen,adliswil,zuerich,schlieren",
+      "geom_quadindex": "030003",
+      "geom_st_box2d": "BOX(8.463271 47.320841,8.609074 47.434778)",
+      "label": "<b>Zürich</b> (ZH) - Dübendorf,Zollikon,Kilchberg (ZH),Wallisellen,Opfikon,Rümlang,Oberengstringen,Adliswil,Zürich,Schlieren",
+      "lat": 47.383949279785156,
+      "lon": 8.530145645141602,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.530145645141602,
+      "y": 47.383949279785156,
+      "zoomlevel": 9
+     },
+     "id": 413178,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "zuerich\n duebendorf,zollikon,kilchberg _zh_,wallisellen,opfikon,ruemlang,oberengstringen,adliswil,zuerich,schlieren",
+      "geom_quadindex": "030003",
+      "geom_st_box2d": "BOX(8.463271 47.320841,8.609074 47.434778)",
+      "label": "<b>Zürich\n</b> (ZH) - Dübendorf,Zollikon,Kilchberg (ZH),Wallisellen,Opfikon,Rümlang,Oberengstringen,Adliswil,Zürich,Schlieren",
+      "lat": 47.383949279785156,
+      "lon": 8.530145645141602,
+      "num": 1,
+      "objectclass": "TLM_SIEDLUNGSNAME",
+      "origin": "gazetteer",
+      "rank": 5,
+      "x": 8.530145645141602,
+      "y": 47.383949279785156,
+      "zoomlevel": 9
+     },
+     "id": 413969,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-west birmensdorf _zh_",
+      "geom_quadindex": "030003202333113012022",
+      "geom_st_box2d": "BOX(8.455611 47.341929,8.455611 47.341929)",
+      "label": "<i>Verzweigung</i> <b>Zürich-West</b> (ZH) - Birmensdorf (ZH)",
+      "lat": 47.34192657470703,
+      "lon": 8.455621719360352,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.455621719360352,
+      "y": 47.34192657470703,
+      "zoomlevel": 9
+     },
+     "id": 216,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-albisguetli 25m zuerich",
+      "geom_quadindex": "030003213020120322103",
+      "geom_st_box2d": "BOX(8.507493 47.351546,8.507493 47.351546)",
+      "label": "<i>Gebaeude</i> <b>Zürich-Albisgütli 25m</b> (ZH) - Zürich",
+      "lat": 47.35154342651367,
+      "lon": 8.5075044631958,
+      "num": 1,
+      "objectclass": "TLM_GEBAEUDE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.5075044631958,
+      "y": 47.35154342651367,
+      "zoomlevel": 9
+     },
+     "id": 16516,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-schwamendingen probstei 25m zuerich",
+      "geom_quadindex": "030003130201132310210",
+      "geom_st_box2d": "BOX(8.586885 47.396989,8.586885 47.396989)",
+      "label": "<i>Gebaeude</i> <b>Zürich-Schwamendingen Probstei 25m</b> (ZH) - Zürich",
+      "lat": 47.39698791503906,
+      "lon": 8.586896896362305,
+      "num": 1,
+      "objectclass": "TLM_GEBAEUDE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.586896896362305,
+      "y": 47.39698791503906,
+      "zoomlevel": 9
+     },
+     "id": 44980,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-affoltern zuerich",
+      "geom_quadindex": "030003010231331233120",
+      "geom_st_box2d": "BOX(8.494579 47.426504,8.494579 47.426504)",
+      "label": "<i>Ausfahrt</i> <b>Zürich-Affoltern</b> (ZH) - Zürich",
+      "lat": 47.4265022277832,
+      "lon": 8.494590759277344,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.494590759277344,
+      "y": 47.4265022277832,
+      "zoomlevel": 9
+     },
+     "id": 55571,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-seebach zuerich",
+      "geom_quadindex": "030003100312013023302",
+      "geom_st_box2d": "BOX(8.552018 47.429511,8.552018 47.429511)",
+      "label": "<i>Ausfahrt</i> <b>Zürich-Seebach</b> (ZH) - Zürich",
+      "lat": 47.429508209228516,
+      "lon": 8.552030563354492,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.552030563354492,
+      "y": 47.429508209228516,
+      "zoomlevel": 9
+     },
+     "id": 55572,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-ost wallisellen",
+      "geom_quadindex": "030003103301301323301",
+      "geom_st_box2d": "BOX(8.574401 47.413616,8.574401 47.413616)",
+      "label": "<i>Verzweigung</i> <b>Zürich-Ost</b> (ZH) - Wallisellen",
+      "lat": 47.41361618041992,
+      "lon": 8.574413299560547,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.574413299560547,
+      "y": 47.41361618041992,
+      "zoomlevel": 9
+     },
+     "id": 55573,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-nord opfikon",
+      "geom_quadindex": "030003101233123231311",
+      "geom_st_box2d": "BOX(8.568337 47.424514,8.568337 47.424514)",
+      "label": "<i>Verzweigung</i> <b>Zürich-Nord</b> (ZH) - Opfikon",
+      "lat": 47.42451095581055,
+      "lon": 8.568349838256836,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.568349838256836,
+      "y": 47.42451095581055,
+      "zoomlevel": 9
+     },
+     "id": 110766,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-west birmensdorf _zh_",
+      "geom_quadindex": "030003221003012322103",
+      "geom_st_box2d": "BOX(8.459918 47.337483,8.459918 47.337483)",
+      "label": "<i>Verzweigung</i> <b>Zürich-West</b> (ZH) - Birmensdorf (ZH)",
+      "lat": 47.33748245239258,
+      "lon": 8.459929466247559,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.459929466247559,
+      "y": 47.33748245239258,
+      "zoomlevel": 9
+     },
+     "id": 138386,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-seebach zuerich",
+      "geom_quadindex": "030003100300130123033",
+      "geom_st_box2d": "BOX(8.547197 47.431407,8.547197 47.431407)",
+      "label": "<i>Ausfahrt</i> <b>Zürich-Seebach</b> (ZH) - Zürich",
+      "lat": 47.43140411376953,
+      "lon": 8.547208786010742,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.547208786010742,
+      "y": 47.43140411376953,
+      "zoomlevel": 9
+     },
+     "id": 165929,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-affoltern regensdorf",
+      "geom_quadindex": "030003010223131021102",
+      "geom_st_box2d": "BOX(8.488251 47.425677,8.488251 47.425677)",
+      "label": "<i>Ausfahrt</i> <b>Zürich-Affoltern</b> (ZH) - Regensdorf",
+      "lat": 47.42567443847656,
+      "lon": 8.488263130187988,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.488263130187988,
+      "y": 47.42567443847656,
+      "zoomlevel": 9
+     },
+     "id": 165930,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-altstetten zuerich",
+      "geom_quadindex": "030003030202301200020",
+      "geom_st_box2d": "BOX(8.483708 47.395603,8.483708 47.395603)",
+      "label": "<i>Ausfahrt</i> <b>Zürich-Altstetten</b> (ZH) - Zürich",
+      "lat": 47.39560317993164,
+      "lon": 8.483719825744629,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.483719825744629,
+      "y": 47.39560317993164,
+      "zoomlevel": 9
+     },
+     "id": 165936,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich riesbach 30m zuerich",
+      "geom_quadindex": "030003301231300202332",
+      "geom_st_box2d": "BOX(8.566408 47.358934,8.566408 47.358934)",
+      "label": "<i>Gebaeude</i> <b>Zürich Riesbach 30m</b> (ZH) - Zürich",
+      "lat": 47.35893249511719,
+      "lon": 8.56641960144043,
+      "num": 1,
+      "objectclass": "TLM_GEBAEUDE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.56641960144043,
+      "y": 47.35893249511719,
+      "zoomlevel": 9
+     },
+     "id": 210757,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-aussersihl lehmbodenalp 50m zuerich",
+      "geom_quadindex": "030003213020030212131",
+      "geom_st_box2d": "BOX(8.506635 47.351616,8.506635 47.351616)",
+      "label": "<i>Gebaeude</i> <b>Zürich-Aussersihl Lehmbodenalp 50m</b> (ZH) - Zürich",
+      "lat": 47.35161590576172,
+      "lon": 8.506646156311035,
+      "num": 1,
+      "objectclass": "TLM_GEBAEUDE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.506646156311035,
+      "y": 47.35161590576172,
+      "zoomlevel": 9
+     },
+     "id": 211683,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-altstetten zuerich",
+      "geom_quadindex": "030003021310303333331",
+      "geom_st_box2d": "BOX(8.477916 47.397386,8.477916 47.397386)",
+      "label": "<i>Ausfahrt</i> <b>Zürich-Altstetten</b> (ZH) - Zürich",
+      "lat": 47.39738464355469,
+      "lon": 8.477928161621094,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.477928161621094,
+      "y": 47.39738464355469,
+      "zoomlevel": 9
+     },
+     "id": 221015,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-sued zuerich",
+      "geom_quadindex": "030003213323033220122",
+      "geom_st_box2d": "BOX(8.522196 47.340629,8.522196 47.340629)",
+      "label": "<i>Verzweigung</i> <b>Zürich-Süd</b> (ZH) - Zürich",
+      "lat": 47.34062576293945,
+      "lon": 8.522208213806152,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.522208213806152,
+      "y": 47.34062576293945,
+      "zoomlevel": 9
+     },
+     "id": 221016,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-schwamendingen probstei 50m zuerich",
+      "geom_quadindex": "030003130201120103022",
+      "geom_st_box2d": "BOX(8.586059 47.397363,8.586059 47.397363)",
+      "label": "<i>Gebaeude</i> <b>Zürich-Schwamendingen Probstei 50m</b> (ZH) - Zürich",
+      "lat": 47.397361755371094,
+      "lon": 8.586071014404297,
+      "num": 1,
+      "objectclass": "TLM_GEBAEUDE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.586071014404297,
+      "y": 47.397361755371094,
+      "zoomlevel": 9
+     },
+     "id": 238682,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich _werdhoelzli_ zuerich",
+      "geom_quadindex": "0300030",
+      "geom_st_box2d": "BOX(8.474679 47.398216,8.486089 47.403508)",
+      "label": "<i>Abwasserreinigungsareal</i> <b>Zürich (Werdhölzli)</b> (ZH) - Zürich",
+      "lat": 47.40103530883789,
+      "lon": 8.480386734008789,
+      "num": 1,
+      "objectclass": "TLM_NUTZUNGSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.480386734008789,
+      "y": 47.40103530883789,
+      "zoomlevel": 9
+     },
+     "id": 271770,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-west wettswil am albis",
+      "geom_quadindex": "030003203221200112203",
+      "geom_st_box2d": "BOX(8.459326 47.343202,8.459326 47.343202)",
+      "label": "<i>Verzweigung</i> <b>Zürich-West</b> (ZH) - Wettswil am Albis",
+      "lat": 47.34320068359375,
+      "lon": 8.45933723449707,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.45933723449707,
+      "y": 47.34320068359375,
+      "zoomlevel": 9
+     },
+     "id": 276527,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-sued zuerich",
+      "geom_quadindex": "030003213300301001023",
+      "geom_st_box2d": "BOX(8.520029 47.346911,8.520029 47.346911)",
+      "label": "<i>Verzweigung</i> <b>Zürich-Süd</b> (ZH) - Zürich",
+      "lat": 47.34690856933594,
+      "lon": 8.520041465759277,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.520041465759277,
+      "y": 47.34690856933594,
+      "zoomlevel": 9
+     },
+     "id": 276529,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-nord opfikon",
+      "geom_quadindex": "030003101321223233131",
+      "geom_st_box2d": "BOX(8.573016 47.425496,8.573016 47.425496)",
+      "label": "<i>Verzweigung</i> <b>Zürich-Nord</b> (ZH) - Opfikon",
+      "lat": 47.42549514770508,
+      "lon": 8.573028564453125,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.573028564453125,
+      "y": 47.42549514770508,
+      "zoomlevel": 9
+     },
+     "id": 276530,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-albisguetli 300/50m zuerich",
+      "geom_quadindex": "030003213021030220021",
+      "geom_st_box2d": "BOX(8.509607 47.351556,8.509607 47.351556)",
+      "label": "<i>Gebaeude</i> <b>Zürich-Albisgütli 300/50m</b> (ZH) - Zürich",
+      "lat": 47.35155487060547,
+      "lon": 8.509618759155273,
+      "num": 1,
+      "objectclass": "TLM_GEBAEUDE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.509618759155273,
+      "y": 47.35155487060547,
+      "zoomlevel": 9
+     },
+     "id": 294729,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-nord wallisellen",
+      "geom_quadindex": "030003103103101232001",
+      "geom_st_box2d": "BOX(8.574389 47.421012,8.574389 47.421012)",
+      "label": "<i>Verzweigung</i> <b>Zürich-Nord</b> (ZH) - Wallisellen",
+      "lat": 47.4210090637207,
+      "lon": 8.574400901794434,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.574400901794434,
+      "y": 47.4210090637207,
+      "zoomlevel": 9
+     },
+     "id": 304212,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-affoltern huerstwald 50/25m zuerich",
+      "geom_quadindex": "030003013031321202321",
+      "geom_st_box2d": "BOX(8.518342 47.417901,8.518342 47.417901)",
+      "label": "<i>Gebaeude</i> <b>Zürich-Affoltern Hürstwald 50/25m</b> (ZH) - Zürich",
+      "lat": 47.41790008544922,
+      "lon": 8.518354415893555,
+      "num": 1,
+      "objectclass": "TLM_GEBAEUDE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.518354415893555,
+      "y": 47.41790008544922,
+      "zoomlevel": 9
+     },
+     "id": 321493,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-hoengg 300/50/25m zuerich",
+      "geom_quadindex": "030003012320312232321",
+      "geom_st_box2d": "BOX(8.496923 47.409863,8.496923 47.409863)",
+      "label": "<i>Gebaeude</i> <b>Zürich-Höngg 300/50/25m</b> (ZH) - Zürich",
+      "lat": 47.40986251831055,
+      "lon": 8.49693489074707,
+      "num": 1,
+      "objectclass": "TLM_GEBAEUDE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.49693489074707,
+      "y": 47.40986251831055,
+      "zoomlevel": 9
+     },
+     "id": 321935,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich kloten",
+      "geom_quadindex": "030001320332120133323",
+      "geom_st_box2d": "BOX(8.553316 47.458738,8.553316 47.458738)",
+      "label": "<i>Flughafenareal</i> <b>Zürich</b> (ZH) - Kloten",
+      "lat": 47.458736419677734,
+      "lon": 8.553328514099121,
+      "num": 1,
+      "objectclass": "TLM_VERKEHRSAREAL",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.553328514099121,
+      "y": 47.458736419677734,
+      "zoomlevel": 10
+     },
+     "id": 327279,
+     "weight": 100
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-ost wallisellen",
+      "geom_quadindex": "030003112323122321033",
+      "geom_st_box2d": "BOX(8.598708 47.40735,8.598708 47.40735)",
+      "label": "<i>Verzweigung</i> <b>Zürich-Ost</b> (ZH) - Wallisellen",
+      "lat": 47.4073486328125,
+      "lon": 8.59872055053711,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.59872055053711,
+      "y": 47.4073486328125,
+      "zoomlevel": 9
+     },
+     "id": 332152,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-albisrieden hasenrain 300/50/25m zuerich",
+      "geom_quadindex": "030003023332100111230",
+      "geom_st_box2d": "BOX(8.477075 47.37575,8.477075 47.37575)",
+      "label": "<i>Offenes Gebaeude</i> <b>Zürich-Albisrieden Hasenrain 300/50/25m</b> (ZH) - Zürich",
+      "lat": 47.37574768066406,
+      "lon": 8.477087020874023,
+      "num": 1,
+      "objectclass": "TLM_GEBAEUDE",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.477087020874023,
+      "y": 47.37574768066406,
+      "zoomlevel": 9
+     },
+     "id": 349481,
+     "weight": 1
+    },
+    {
+     "attrs": {
+      "detail": "zuerich-sued zuerich",
+      "geom_quadindex": "030003213213333112220",
+      "geom_st_box2d": "BOX(8.517879 47.343983,8.517879 47.343983)",
+      "label": "<i>Verzweigung</i> <b>Zürich-Süd</b> (ZH) - Zürich",
+      "lat": 47.3439826965332,
+      "lon": 8.517890930175781,
+      "num": 1,
+      "objectclass": "TLM_AUS_EINFAHRT",
+      "origin": "gazetteer",
+      "rank": 6,
+      "x": 8.517890930175781,
+      "y": 47.3439826965332,
+      "zoomlevel": 9
+     },
+     "id": 359531,
+     "weight": 1
+    }
+   ]
+  }
+ }
+}

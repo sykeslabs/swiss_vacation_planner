@@ -35,6 +35,7 @@ class LocationIn(BaseModel):
     source: str = ""
     source_url: str = ""
     retrieved_at: str = ""
+    postcodes: Annotated[list[Annotated[str, Field(pattern=r"^\d{4}$")]], Field(max_length=200)] = []
 
     @field_validator("canton")
     @classmethod
@@ -44,7 +45,9 @@ class LocationIn(BaseModel):
         return v
 
     def to_domain(self) -> Location:
-        return Location(**self.model_dump())
+        data = self.model_dump()
+        data["postcodes"] = tuple(data["postcodes"])
+        return Location(**data)
 
 
 class OptimizeIn(BaseModel):
@@ -99,6 +102,7 @@ def parse_optimize(payload) -> OptimizeIn:
             _fail("invalid_half_days", "Halbe Arbeitstage müssen im angezeigten Zeitraum liegen.")
         if not 0 < fraction < 1:
             _fail("invalid_half_days", "Ein halber Arbeitstag muss zwischen 0 und 1 liegen.")
-    if len({loc.id for loc in req.locations}) != len(req.locations):
+    towns = {loc.to_domain().town_key() for loc in req.locations}
+    if len({loc.id for loc in req.locations}) != len(req.locations) or len(towns) != len(req.locations):
         _fail("invalid_locations", "Jeder Ort darf nur einmal vorkommen.")
     return req

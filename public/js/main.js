@@ -1,13 +1,16 @@
 import { fetchLocations, postOptimize } from "./api.js";
-import { createCalendarView, renderLegend } from "./calendar-view.js";
 import { createSwissMap } from "./map.js";
-import { createPlannerPanel } from "./planner.js";
+import { PANEL_GAP, PANEL_WIDTH, rightCoverage } from "./panel-layout.js";
+import { createSettingsPanel } from "./planner.js";
 import { createSearchBox } from "./search.js";
-import { createPlannerStore, locationLabel, MAX_LOCATIONS, optimizePayload } from "./state.js";
+import { createPlannerStore, firstVisibleMonth, locationLabel, MAX_LOCATIONS, optimizePayload } from "./state.js";
+import { createTownPanels } from "./town-panels.js";
 import { debounce } from "./util.js";
 
-const PLANNER_OPEN_DELAY_MS = 1000;   // search → zoom → ~1 s → planner panel
+const PANELS_OPEN_DELAY_MS = 1000;   // search → zoom → ~1 s → panel
 const RECALC_DEBOUNCE_MS = 200;
+const PLACEHOLDER_SEARCH = "Ort oder PLZ suchen";
+const PLACEHOLDER_ADD = "Ort hinzufügen";
 
 const $ = (id) => document.getElementById(id);
 
@@ -17,7 +20,19 @@ function showNotice(text) {
   notice.hidden = !text;
 }
 
-const swissMap = createSwissMap($("map"), { onNotice: showNotice });
+let storage = null;
+try {
+  storage = window.localStorage;
+} catch {
+  // storage blocked (e.g. privacy settings): the planner works, it just won't remember
+}
+
+let townPanels = null;
+const swissMap = createSwissMap($("map"), {
+  onNotice: showNotice,
+  // Before the first panel is visible, reserve room for one panel.
+  getRightCoverage: () => rightCoverage(townPanels?.rects() ?? [], window.innerWidth) || PANEL_WIDTH + PANEL_GAP,
+});
 
 const segButtons = document.querySelectorAll(".layer-switch .seg");
 for (const btn of segButtons) {
@@ -29,60 +44,61 @@ for (const btn of segButtons) {
   });
 }
 
-let storage = null;
-try {
-  storage = window.localStorage;
-} catch {
-  // storage blocked (e.g. privacy settings): the planner works, it just won't remember
-}
 const store = createPlannerStore({ storage });
 
-const locationsHint = $("locations-hint");
-const search = createSearchBox({
-  input: $("location-search"),
+const searchInput = $("location-search");
+const searchLabel = $("location-search-label");
+const searchStatus = $("search-status");
+createSearchBox({
+  input: searchInput,
   list: $("location-results"),
-  status: $("search-status"),
+  status: searchStatus,
   fetchLocations,
-  isSelected: (id) => store.has(id),
+  isSelected: (location) => store.findSameTown(location) !== null,
   onSelect(location) {
     const result = store.addLocation(location);
-    locationsHint.hidden = result !== "full";
-    if (result === "full") locationsHint.textContent = `Du kannst höchstens ${MAX_LOCATIONS} Orte vergleichen.`;
+    if (result === "full") {
+      searchStatus.textContent = `Du kannst höchstens ${MAX_LOCATIONS} Orte vergleichen.`;
+      searchStatus.hidden = false;
+    }
     if (result === "duplicate") {
-      store.setActiveLocation(location.id);
-      swissMap.fitLocations([location]);
+      const existing = store.findSameTown(location);
+      townPanels.bringToFront(existing.id);
+      swissMap.fitLocations([existing]);
     }
   },
 });
 
-const planner = createPlannerPanel({ root: $("planner"), store, onAddLocation: () => search.focus() });
+const settingsRoot = $("settings");
+const settings = createSettingsPanel({ root: settingsRoot, store });
 
-// --- calendar ---------------------------------------------------------------------------
+townPanels = createTownPanels({
+  container: $("town-panels"),
+  storage,
+  searchPanel: document.querySelector(".search-panel"),
+  onRemove: (id) => store.removeLocation(id),
+});
 
-const calendar = createCalendarView($("calendar"));
-$("calendar-legend").append(renderLegend());
-const calendarStatus = $("calendar-status");
-const calendarSource = $("calendar-source");
+// --- calendars ------------------------------------------------------------------------------
 
 let latest = null;          // last successful /api/optimize response
 let inflight = null;
 
-function renderCalendar() {
+function renderCalendars() {
   const state = store.get();
-  const active = store.activeLocation();
-  const result = active && latest?.year === state.year ? latest.per_location[active.id] : null;
-  if (!active) {
-    calendar.clear();
-    calendarStatus.textContent = "";
-    calendarSource.textContent = "";
-    return;
+  if (!latest || latest.year !== state.year) return;   // a recalculation is pending
+  for (const loc of state.locations) {
+    const result = latest.per_location[loc.id];
+    if (!result) continue;
+    const warnings = (result.warnings ?? []).map((w) => w.message);
+    const h = result.holidays?.[0];
+    townPanels.setResult(loc.id, {
+      days: result.days,
+      fromMonth: firstVisibleMonth(state.year),
+      statusText: [String(state.year), ...warnings].join(" · "),
+      sourceText: h ? `Quelle Feiertage: ${h.source_title} · Kanton ${loc.canton}` : "",
+    });
   }
-  if (!result) return;     // a recalculation is pending; keep showing the previous days
-  calendar.setDays(result.days);
-  const warnings = (result.warnings ?? []).map((w) => w.message);
-  calendarStatus.textContent = [`${locationLabel(active)} (${active.canton}) · ${state.year}`, ...warnings].join(" · ");
-  const h = result.holidays?.[0];
-  calendarSource.textContent = h ? `Quelle Feiertage: ${h.source_title} · Kanton ${active.canton}` : "";
 }
 
 async function recalculate() {
@@ -91,13 +107,12 @@ async function recalculate() {
   inflight?.abort();
   const ctrl = new AbortController();
   inflight = ctrl;
-  calendarStatus.textContent = "Kalender wird berechnet …";
   try {
     latest = await postOptimize(optimizePayload(state), { signal: ctrl.signal });
-    renderCalendar();
+    renderCalendars();
   } catch (err) {
     if (err.name === "AbortError") return;
-    calendarStatus.textContent = err.message;
+    for (const loc of state.locations) townPanels.setStatus(loc.id, err.message);
   } finally {
     if (inflight === ctrl) inflight = null;
   }
@@ -106,34 +121,42 @@ const scheduleRecalc = debounce(recalculate, RECALC_DEBOUNCE_MS);
 
 // --- wiring -------------------------------------------------------------------------------
 
+function renderChrome(state) {
+  const hasTowns = state.locations.length > 0;
+  searchInput.placeholder = hasTowns ? PLACEHOLDER_ADD : PLACEHOLDER_SEARCH;
+  searchLabel.textContent = hasTowns ? PLACEHOLDER_ADD : PLACEHOLDER_SEARCH;
+  settingsRoot.hidden = !hasTowns;
+  settings.render(state);
+}
+
 let openTimer = null;
 store.subscribe((state, change) => {
-  planner.render(state);
+  renderChrome(state);
+  townPanels.sync(state.locations);
   if (change.type === "add" || change.type === "remove") {
     swissMap.setLocations(state.locations, locationLabel);
     swissMap.fitLocations(state.locations);
   }
   if (!state.locations.length) {
     clearTimeout(openTimer);
-    planner.close();
+    townPanels.hide();
     latest = null;
-    renderCalendar();
     return;
   }
-  if (!planner.isOpen()) {
+  if (!townPanels.isShown()) {
     clearTimeout(openTimer);
-    openTimer = setTimeout(() => planner.open(), PLANNER_OPEN_DELAY_MS);
+    openTimer = setTimeout(() => townPanels.show(), PANELS_OPEN_DELAY_MS);
   }
-  if (change.type === "active") renderCalendar();
-  else scheduleRecalc();
+  scheduleRecalc();
 });
 
 // Restore a remembered session without the search → zoom → delay sequence.
 const initial = store.get();
-planner.render(initial);
+renderChrome(initial);
 if (initial.locations.length) {
+  townPanels.show();
+  townPanels.sync(initial.locations);
   swissMap.setLocations(initial.locations, locationLabel);
   swissMap.fitLocations(initial.locations);
-  planner.open();
   recalculate();
 }

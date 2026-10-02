@@ -28,13 +28,29 @@ def test_static_assets_served_from_public(client):
         res.close()
 
 
-def test_map_uses_swisstopo_wmts_3857_with_attribution(client):
+def test_map_uses_swisstopo_only_with_attribution(client):
     js = client.get("/js/map.js").get_data(as_text=True)
     assert "wmts.geo.admin.ch/1.0.0/{layer}/default/current/3857/{z}/{x}/{y}" in js
     assert "ch.swisstopo.pixelkarte-farbe" in js
+    # Satellite: swisstopo vector style with names and borders, raster fallback with border
+    assert "vectortiles.geo.admin.ch/styles/ch.swisstopo.imagerybasemap.vt/style.json" in js
     assert "ch.swisstopo.swissimage" in js
+    assert "ch.swisstopo.swissboundaries3d-land-flaeche.fill" in js
+    assert 'DEFAULT_BASE_LAYER = "satellite"' in js
     assert "swisstopo</a>" in js
     assert "google" not in js.lower()
+
+
+def test_satellite_is_preselected_and_settings_start_collapsed(client):
+    html = client.get("/").get_data(as_text=True)
+    assert 'data-layer="satellite" aria-pressed="true"' in html
+    assert 'data-layer="map" aria-pressed="false"' in html
+    # Shared settings live in the search panel, collapsed, shown once a town is selected
+    settings = html[html.index('<header class="glass panel search-panel">'):html.index("</header>")]
+    assert '<details id="settings" class="settings" hidden>' in settings      # no "open"
+    assert 'role="tooltip"' in settings and "halben Arbeitstag" in settings
+    # Town panels (with legend above each calendar) are built in JS; no "+ Ort hinzufügen" button
+    assert 'id="town-panels"' in html and "add-location" not in html
 
 
 def test_unknown_api_route_returns_json_error(client):

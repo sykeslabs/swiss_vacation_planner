@@ -24,9 +24,17 @@ class Location:
     source: str
     source_url: str
     retrieved_at: str          # ISO 8601, UTC
+    postcodes: tuple[str, ...] = ()   # all postcodes of the municipality (name searches)
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        d = asdict(self)
+        d["postcodes"] = list(self.postcodes)
+        return d
+
+    def town_key(self) -> tuple[int, str]:
+        """Two entries are the same town if municipality and place name match
+        ("Baden" and "5400 Baden"); different villages of one municipality stay apart."""
+        return self.municipality_id, self.name.casefold()
 
 
 @dataclass(frozen=True)

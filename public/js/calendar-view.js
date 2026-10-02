@@ -133,6 +133,9 @@ export function createCalendarView(container) {
     renderDetail();
     yearView.hidden = true;
     detailView.hidden = false;
+    // Bring the detail to the top of the (scrollable) planner panel. The jump is instant;
+    // the FLIP below animates from where the month box was on screen.
+    detailView.scrollIntoView({ block: "start", behavior: "auto" });
     back.focus({ preventScroll: true });
     if (prefersMotion()) flip(detailView, fromRect);
   }
@@ -141,25 +144,23 @@ export function createCalendarView(container) {
     const key = openKey;
     openKey = null;
     if (detailView.hidden) return;
+    const detailRect = detailView.getBoundingClientRect();
     yearView.hidden = false;
+    detailView.hidden = true;
     const box = yearView.querySelector(`[data-month="${key}"]`);
-    if (animate && box && prefersMotion()) {
-      // Shrink the year box out of the detail rectangle for continuity.
-      const detailRect = detailView.getBoundingClientRect();
-      detailView.hidden = true;
-      await flip(box, detailRect);
-    } else {
-      detailView.hidden = true;
-    }
+    box?.scrollIntoView({ block: "nearest", behavior: "auto" });
+    // Shrink the year box out of the detail rectangle for continuity.
+    if (animate && box && prefersMotion()) await flip(box, detailRect);
     box?.focus({ preventScroll: true });
   }
 
   back.addEventListener("click", () => closeMonth());
 
   return {
-    /** Re-render from a fresh day list; an open month detail stays open. */
-    setDays(days) {
-      months = groupByMonth(days);
+    /** Re-render from a fresh day list; an open month detail stays open.
+     * `fromMonth` ("YYYY-MM") hides earlier months (current-year planning). */
+    setDays(days, { fromMonth = null } = {}) {
+      months = groupByMonth(days).filter((m) => !fromMonth || keyOf(m) >= fromMonth);
       renderYear();
       if (openKey) renderDetail();
     },

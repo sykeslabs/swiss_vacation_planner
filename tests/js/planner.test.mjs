@@ -76,22 +76,21 @@ test("defaults: Mon–Fri, current year, 24./31.12. of both Decembers", () => {
   assert.deepEqual(calendarWindow(2027), { start: "2026-12-01", end: "2028-01-31" });
 });
 
-test("locations: add, dedupe, activate, remove, limit", () => {
+test("locations: add, dedupe, remove, limit", () => {
   const store = createPlannerStore({ today: TODAY });
   const changes = [];
   store.subscribe((s, c) => changes.push(c.type));
   assert.equal(store.addLocation(ZH), "added");
   assert.equal(store.addLocation({ ...ZH }), "duplicate");
   assert.equal(store.addLocation(BE), "added");
-  assert.equal(store.get().activeLocationId, "bfs-351");          // newest becomes active
-  assert.equal(store.setActiveLocation("bfs-261"), true);
+  assert.deepEqual(store.get().locations.map((l) => l.id), ["bfs-261", "bfs-351"]);
   assert.equal(store.removeLocation("bfs-261"), true);
-  assert.equal(store.get().activeLocationId, "bfs-351");          // falls back to a remaining one
   assert.equal(store.removeLocation("bfs-261"), false);
-  assert.deepEqual(changes, ["add", "add", "active", "remove"]);
-  for (let i = 0; i < MAX_LOCATIONS; i++) store.addLocation({ ...ZH, id: `bfs-${1000 + i}` });
+  assert.deepEqual(store.get().locations.map((l) => l.id), ["bfs-351"]);
+  assert.deepEqual(changes, ["add", "add", "remove"]);
+  for (let i = 0; i < MAX_LOCATIONS; i++) store.addLocation({ ...ZH, id: `bfs-${1000 + i}`, municipality_id: 1000 + i, name: `Ort ${i}` });
   assert.equal(store.get().locations.length, MAX_LOCATIONS);
-  assert.equal(store.addLocation({ ...ZH, id: "bfs-9" }), "full");
+  assert.equal(store.addLocation({ ...ZH, id: "bfs-9", municipality_id: 9, name: "Ort X" }), "full");
 });
 
 test("working days can't become empty", () => {
@@ -130,7 +129,6 @@ test("state survives a reload via storage", () => {
   const a = createPlannerStore({ storage, today: TODAY });
   a.addLocation(ZH);
   a.addLocation(BE);
-  a.setActiveLocation("bfs-261");
   a.setYear(2027);
   a.toggleWorkingDay("FRI");
   a.addHalfDay("2027-04-19");
@@ -146,13 +144,12 @@ test("corrupt or foreign storage falls back to defaults", () => {
   }
   const mixed = restoreState(JSON.stringify({
     v: 1, year: 2040, workingDays: ["XYZ"], halfDays: { "2026-12-24": 0.5, "1999-01-01": 0.5, "2026-06-01": 7 },
-    locations: [ZH, { id: "broken" }, ZH], activeLocationId: "missing",
+    locations: [ZH, { id: "broken" }, ZH],
   }), TODAY);
   assert.equal(mixed.year, 2026);
   assert.deepEqual(mixed.workingDays, ["MON", "TUE", "WED", "THU", "FRI"]);
   assert.deepEqual(Object.keys(mixed.halfDays).sort(), ["2025-12-24", "2025-12-31", "2026-12-24", "2026-12-31"]);
   assert.deepEqual(mixed.locations.map((l) => l.id), ["bfs-261"]);
-  assert.equal(mixed.activeLocationId, "bfs-261");
 });
 
 test("storage errors never break the planner", () => {
@@ -169,4 +166,68 @@ test("optimize payload never contains a vacation type", () => {
   assert.deepEqual(Object.keys(p).sort(), ["half_days", "locations", "vacation_budget", "working_days", "year"]);
   assert.deepEqual(p.half_days, defaultHalfDays(2026));
   assert.ok(serializeState(store.get()));
+});
+
+// --- owner feedback after M3 ----------------------------------------------------------------
+
+import { firstVisibleMonth, formatPostcodes, locationDetail, townKey } from "../../public/js/state.js";
+
+test("the same town can't be added twice (municipality + place name)", () => {
+  const baden = { ...ZH, id: "bfs-4021", name: "Baden", municipality: "Baden", municipality_id: 4021, canton: "AG" };
+  const baden5400 = { ...baden, id: "bfs-4021-plz-5400", postcode: "5400" };
+  const turgi = { ...baden, id: "bfs-4021-plz-5300", name: "Turgi", postcode: "5300" };
+  const store = createPlannerStore({ today: TODAY });
+  assert.equal(store.addLocation(baden), "added");
+  assert.equal(store.addLocation(baden5400), "duplicate");
+  assert.equal(store.findSameTown(baden5400).id, "bfs-4021");
+  assert.equal(store.addLocation(turgi), "added");            // another village of the municipality
+  assert.equal(townKey(baden), townKey(baden5400));
+  const restored = restoreState(serializeState({ ...store.get(), locations: [baden, baden5400, turgi] }), TODAY);
+  assert.deepEqual(restored.locations.map((l) => l.id), ["bfs-4021", "bfs-4021-plz-5300"]);
+});
+
+test("current year starts at the current month; other years show the whole window", () => {
+  assert.equal(firstVisibleMonth(2026, TODAY), "2026-10");
+  assert.equal(firstVisibleMonth(2027, TODAY), null);
+  assert.equal(firstVisibleMonth(2026, new Date(2026, 0, 15)), "2026-01");
+});
+
+test("postcodes in the search result line", () => {
+  assert.equal(formatPostcodes(["9050"]), "9050");
+  assert.equal(formatPostcodes(["3822", "3823", "3824"]), "3822, 3823, 3824");
+  assert.equal(formatPostcodes(["8001", "8002", "8003", "8143"]), "8001–8143 (4)");
+  assert.equal(formatPostcodes(undefined), "");
+  assert.equal(locationDetail({ ...ZH, postcodes: ["8001", "8002"] }), "Gemeinde · ZH · PLZ 8001, 8002");
+  assert.equal(locationDetail({ ...ZH, postcodes: [] }), "Gemeinde · ZH");
+});
+
+// --- movable town panels --------------------------------------------------------------------
+
+import { clampPosition, defaultPosition, PANEL_GAP, PANEL_WIDTH, rightCoverage } from "../../public/js/panel-layout.js";
+
+test("panels start side by side from the right and cascade when they don't fit", () => {
+  const opts = { viewportWidth: 1600, top: 64, minLeft: 384 };
+  const p0 = defaultPosition(0, opts);
+  const p1 = defaultPosition(1, opts);
+  assert.equal(p0.left, 1600 - PANEL_GAP - PANEL_WIDTH);
+  assert.equal(p1.left, p0.left - PANEL_WIDTH - PANEL_GAP);
+  assert.equal(p0.top, 64);
+  const p2 = defaultPosition(2, opts);                 // a third one doesn't fit beside the search panel
+  assert.ok(p2.left >= opts.minLeft && p2.top > 64);
+  const p3 = defaultPosition(3, opts);
+  assert.ok(p3.top > p2.top);                          // keeps cascading
+});
+
+test("dragging keeps the title bar reachable", () => {
+  const vp = { width: 480, viewportWidth: 1200, viewportHeight: 800, headerHeight: 40 };
+  assert.deepEqual(clampPosition({ left: -2000, top: -50 }, vp), { left: 80 - 480, top: 0 });
+  assert.deepEqual(clampPosition({ left: 5000, top: 5000 }, vp), { left: 1200 - 80, top: 760 });
+  assert.deepEqual(clampPosition({ left: 300.4, top: 120.6 }, vp), { left: 300, top: 121 });
+});
+
+test("map padding covers the panels on the right only", () => {
+  const vw = 1600;
+  assert.equal(rightCoverage([], vw), 0);
+  assert.equal(rightCoverage([{ left: 1108, width: 480 }, { left: 616, width: 480 }], vw), 984);
+  assert.equal(rightCoverage([{ left: 20, width: 480 }], vw), 0);   // moved to the left side
 });

@@ -32,6 +32,19 @@ function inWindow(iso, year) {
   return parseIso(iso) !== null && iso >= start && iso <= end;
 }
 
+/** Same town = same municipality and same place name ("Baden" and "5400 Baden"); different
+ * villages of one municipality ("3823 Wengen", "Lauterbrunnen") stay separate. */
+export function townKey(loc) {
+  return `${loc.municipality_id}|${String(loc.name).toLocaleLowerCase("de-CH")}`;
+}
+
+/** "YYYY-MM" of the first month to show: the current month when planning the current
+ * year (past months are hidden), otherwise null (show the whole window). */
+export function firstVisibleMonth(year, today = new Date()) {
+  if (year !== today.getFullYear()) return null;
+  return `${year}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+}
+
 function isValidLocation(loc) {
   return loc && typeof loc === "object" && LOCATION_FIELDS.every((f) => loc[f] !== undefined && loc[f] !== null)
     && typeof loc.id === "string" && Number.isFinite(loc.latitude) && Number.isFinite(loc.longitude);
@@ -39,7 +52,7 @@ function isValidLocation(loc) {
 
 export function defaultState(today = new Date()) {
   const year = selectableYears(today)[0];
-  return { year, workingDays: [...DEFAULT_WORKING_DAYS], halfDays: defaultHalfDays(year), locations: [], activeLocationId: null };
+  return { year, workingDays: [...DEFAULT_WORKING_DAYS], halfDays: defaultHalfDays(year), locations: [] };
 }
 
 /** Validates persisted data; anything unreadable falls back to defaults field by field. */
@@ -64,17 +77,14 @@ export function restoreState(raw, today = new Date()) {
   }
   const seen = new Set();
   const locations = (Array.isArray(data.locations) ? data.locations : [])
-    .filter((l) => isValidLocation(l) && !seen.has(l.id) && seen.add(l.id))
+    .filter((l) => isValidLocation(l) && !seen.has(townKey(l)) && seen.add(townKey(l)))
     .slice(0, MAX_LOCATIONS);
-  const activeLocationId = locations.some((l) => l.id === data.activeLocationId)
-    ? data.activeLocationId : (locations[0]?.id ?? null);
 
   return {
     year,
     workingDays: workingDays.length ? workingDays : base.workingDays,
     halfDays,
     locations,
-    activeLocationId,
   };
 }
 
@@ -109,27 +119,21 @@ export function createPlannerStore({ storage = null, today = new Date() } = {}) 
   return {
     get: () => state,
     has: (id) => state.locations.some((l) => l.id === id),
-    activeLocation: () => state.locations.find((l) => l.id === state.activeLocationId) ?? null,
+    /** The already selected entry for the same town, if any. */
+    findSameTown: (location) => state.locations.find((l) => townKey(l) === townKey(location)) ?? null,
 
-    /** Returns "added", "duplicate" or "full". New locations become active. */
+    /** Returns "added", "duplicate" (same town already selected) or "full". */
     addLocation(location) {
-      if (state.locations.some((l) => l.id === location.id)) return "duplicate";
+      if (state.locations.some((l) => townKey(l) === townKey(location))) return "duplicate";
       if (state.locations.length >= MAX_LOCATIONS) return "full";
-      commit({ ...state, locations: [...state.locations, location], activeLocationId: location.id },
-        { type: "add", location });
+      commit({ ...state, locations: [...state.locations, location] }, { type: "add", location });
       return "added";
     },
     removeLocation(id) {
       const location = state.locations.find((l) => l.id === id);
       if (!location) return false;
       const locations = state.locations.filter((l) => l.id !== id);
-      const activeLocationId = state.activeLocationId === id ? (locations[0]?.id ?? null) : state.activeLocationId;
-      commit({ ...state, locations, activeLocationId }, { type: "remove", location });
-      return true;
-    },
-    setActiveLocation(id) {
-      if (id === state.activeLocationId || !state.locations.some((l) => l.id === id)) return false;
-      commit({ ...state, activeLocationId: id }, { type: "active" });
+      commit({ ...state, locations }, { type: "remove", location });
       return true;
     },
 
@@ -177,11 +181,18 @@ export function locationLabel(location) {
   return location.postcode ? `${location.postcode} ${location.name}` : location.name;
 }
 
+/** "9050", "3822, 3823, 3824", "8001–8143 (25)" */
+export function formatPostcodes(postcodes) {
+  const list = Array.isArray(postcodes) ? postcodes : [];
+  if (list.length <= 3) return list.join(", ");
+  return `${list[0]}–${list.at(-1)} (${list.length})`;
+}
+
 /** Secondary line in search results. */
 export function locationDetail(location) {
-  return location.postcode
-    ? `PLZ · Gemeinde ${location.municipality} · ${location.canton}`
-    : `Gemeinde · ${location.canton}`;
+  if (location.postcode) return `PLZ · Gemeinde ${location.municipality} · ${location.canton}`;
+  const plz = formatPostcodes(location.postcodes);
+  return `Gemeinde · ${location.canton}${plz ? ` · PLZ ${plz}` : ""}`;
 }
 
 /** Request body for POST /api/optimize. vacation_type is deliberately not part of it. */

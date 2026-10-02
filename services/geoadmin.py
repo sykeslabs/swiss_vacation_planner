@@ -7,16 +7,27 @@ Observed API behaviour (see docs/PLAN.md §4.1 and docs/samples/):
 - `zipcode` results carry no BFS number or canton, so the municipality is resolved by a
   point query (`identify`) on the municipality boundary layer.
 - Text queries match only `gg25`; the zipcode layer matches only digits.
+- The `gg25` point is a representative point of the whole municipality, which can be
+  far from the town (Baden since its mergers: ~1 km). The settlement name point from
+  the `gazetteer` origin (objectclass TLM_SIEDLUNGSNAME) marks the town itself.
+- Postcodes of a municipality come from the official locality directory, bundled as
+  data/postcodes.json (scripts/build_postcodes.py).
 """
 
+import json
 import logging
 import re
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from datetime import UTC, datetime
+from functools import lru_cache
+from pathlib import Path
 
 from domain.models import Location
 from services import http
 from services.cache import TTLCache
+
+POSTCODES_FILE = Path(__file__).resolve().parent.parent / "data" / "postcodes.json"
 
 log = logging.getLogger(__name__)
 
@@ -34,8 +45,12 @@ _search_cache = TTLCache(CACHE_TTL_S)
 _identify_cache = TTLCache(CACHE_TTL_S, max_items=2048)
 
 _TAG = re.compile(r"<[^>]+>")
+_ITALIC = re.compile(r"<i>.*?</i>", re.S)
 _MUNICIPALITY_LABEL = re.compile(r"^(?P<name>.+?)\s*\((?P<canton>[A-Z]{2})\)$")
 _ZIP_LABEL = re.compile(r"^(?P<plz>\d{4})\s*-\s*(?P<place>.+)$")
+# "<i>Ort</i> <b>Baden</b> (AG) - Baden"  /  "<b>Bern</b> (BE) - Bremgarten bei Bern,Bern,…"
+_SETTLEMENT_LABEL = re.compile(r"^(?P<name>.+?)\s*\((?P<canton>[A-Z]{2})\)\s*-\s*(?P<munis>.+)$")
+SETTLEMENT_CLASS = "TLM_SIEDLUNGSNAME"
 
 
 def _now_iso() -> str:
@@ -48,6 +63,40 @@ def _clean(label: str) -> str:
 
 def is_postcode_query(q: str) -> bool:
     return q[:1].isdigit()
+
+
+@lru_cache(maxsize=1)
+def postcodes_by_bfs() -> dict[str, list[str]]:
+    """BFS number → postcodes. A missing or broken file only drops the postcode display."""
+    try:
+        return json.loads(POSTCODES_FILE.read_text(encoding="utf-8"))["by_bfs"]
+    except (OSError, ValueError, KeyError) as exc:
+        log.warning("Postcode directory unavailable: %s", exc)
+        return {}
+
+
+def parse_settlement(attrs: dict) -> tuple[str, str, list[str], float, float] | None:
+    """(name, canton, municipalities, lat, lon) of a gazetteer settlement-name result."""
+    if attrs.get("objectclass") != SETTLEMENT_CLASS:
+        return None
+    m = _SETTLEMENT_LABEL.match(_clean(_ITALIC.sub("", attrs.get("label", ""))))
+    if not m:
+        return None
+    try:
+        lat, lon = float(attrs["lat"]), float(attrs["lon"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    munis = [x.strip() for x in m["munis"].split(",") if x.strip()]
+    return m["name"], m["canton"], munis, lat, lon
+
+
+def settlement_point(loc: Location, settlements: list[tuple]) -> tuple[float, float] | None:
+    """Point of the settlement that carries the municipality's own name, if any."""
+    for name, canton, munis, lat, lon in settlements:
+        if canton == loc.canton and name.casefold() == loc.name.casefold() \
+                and any(m.casefold() == loc.municipality.casefold() for m in munis):
+            return lat, lon
+    return None
 
 
 def normalise_municipality(attrs: dict, retrieved_at: str) -> Location | None:
@@ -74,6 +123,7 @@ def normalise_municipality(attrs: dict, retrieved_at: str) -> Location | None:
         source=SOURCE,
         source_url=SEARCH_URL,
         retrieved_at=retrieved_at,
+        postcodes=tuple(postcodes_by_bfs().get(str(bfs), ())),
     )
 
 
@@ -163,6 +213,30 @@ def _postcode_location(attrs: dict, retrieved_at: str) -> Location | type[_Looku
     )
 
 
+def _settlements(q: str) -> list[tuple] | None:
+    """Settlement-name points matching the query; None if the lookup failed."""
+    try:
+        body = http.get_json(SERVICE, SEARCH_URL, {
+            "searchText": q,
+            "type": "locations",
+            "origins": "gazetteer",
+            "sr": "4326",
+            "limit": "30",
+        })
+    except http.UpstreamError as exc:
+        log.warning("GeoAdmin gazetteer lookup failed for %r: %s", q, exc.reason)
+        return None
+    parsed = (parse_settlement(r.get("attrs") or {}) for r in (body or {}).get("results") or [])
+    return [s for s in parsed if s]
+
+
+def _at_settlement(loc: Location | None, settlements: list[tuple]) -> Location | None:
+    if loc is None:
+        return None
+    point = settlement_point(loc, settlements)
+    return replace(loc, latitude=point[0], longitude=point[1]) if point else loc
+
+
 def search_locations(query: str) -> list[Location]:
     """Search municipalities by name or localities by postcode. Raises UpstreamError."""
     q = " ".join(query.split())
@@ -189,6 +263,12 @@ def search_locations(query: str) -> list[Location]:
     else:
         locations = [normalise_municipality(a, retrieved_at)
                      for a in attrs_list if a.get("origin") == "gg25"]
+        if any(locations):
+            settlements = _settlements(q)
+            if settlements is None:
+                locations.append(_LookupFailed)        # keep gg25 points, don't cache
+            else:
+                locations = [_at_settlement(loc, settlements) for loc in locations]
 
     lookup_failed = any(loc is _LookupFailed for loc in locations)
     if lookup_failed and not any(isinstance(loc, Location) for loc in locations):

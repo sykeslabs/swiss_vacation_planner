@@ -41,6 +41,14 @@ def test_returns_days_per_location(client):
                         "work_fraction", "is_vacation", "is_free", "in_selected_period"}
 
 
+def test_villages_of_one_municipality_are_allowed(client):
+    wengen = {**ZURICH, "id": "bfs-584-plz-3823", "name": "Wengen", "postcode": "3823",
+              "municipality": "Lauterbrunnen", "municipality_id": 584, "canton": "BE"}
+    lauterbrunnen = {**wengen, "id": "bfs-584", "name": "Lauterbrunnen", "postcode": None,
+                     "postcodes": ["3822", "3823"]}
+    assert post(client, payload(locations=[wengen, lauterbrunnen])).status_code == 200
+
+
 def test_locations_with_different_holidays(client):
     data = post(client, payload(locations=[ZURICH, APPENZELL])).get_json()["per_location"]
     zh_hol = {d["date"] for d in data["bfs-261"]["days"] if d["is_holiday"]}
@@ -70,6 +78,8 @@ def test_identical_requests_give_identical_responses(client):
     ({"year": "next"}, "invalid_year"),
     ({"locations": []}, "invalid_locations"),
     ({"locations": [ZURICH, ZURICH]}, "invalid_locations"),
+    ({"locations": [ZURICH, {**ZURICH, "id": "bfs-261-plz-8001", "postcode": "8001"}]}, "invalid_locations"),
+    ({"locations": [{**ZURICH, "postcodes": ["80O1"]}]}, "invalid_locations"),
     ({"locations": [{**ZURICH, "canton": "XX"}]}, "invalid_locations"),
     ({"locations": [{**ZURICH, "latitude": 52.5}]}, "invalid_locations"),
     ({"locations": [{**ZURICH, "id": f"bfs-{i}"} for i in range(1, 12)]}, "invalid_locations"),

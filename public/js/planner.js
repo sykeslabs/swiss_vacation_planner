@@ -1,15 +1,14 @@
-// Planner panel: location chips (switch / remove), year, working days, half days and
-// the calendar area. All text is set via textContent.
+// Shared settings (apply to every town): year, working days and half days.
+// Lives in the search panel top left. All text is set via textContent.
 import { formatDateWithWeekday } from "./format.js";
-import { calendarWindow, locationLabel, selectableYears, WEEKDAY_CODES } from "./state.js";
+import { calendarWindow, selectableYears, WEEKDAY_CODES } from "./state.js";
 
 const WEEKDAY_LABELS = { MON: "Mo", TUE: "Di", WED: "Mi", THU: "Do", FRI: "Fr", SAT: "Sa", SUN: "So" };
 const WEEKDAY_NAMES = { MON: "Montag", TUE: "Dienstag", WED: "Mittwoch", THU: "Donnerstag",
   FRI: "Freitag", SAT: "Samstag", SUN: "Sonntag" };
 
-export function createPlannerPanel({ root, store, onAddLocation }) {
+export function createSettingsPanel({ root, store }) {
   const $ = (id) => root.querySelector(`#${id}`);
-  const chips = $("location-chips");
   const yearSelect = $("planner-year");
   const weekdayBox = $("working-days");
   const workingHint = $("working-days-hint");
@@ -17,8 +16,6 @@ export function createPlannerPanel({ root, store, onAddLocation }) {
   const halfInput = $("half-day-input");
   const halfAdd = $("half-day-add");
   const halfHint = $("half-day-hint");
-
-  $("add-location").addEventListener("click", onAddLocation);
 
   for (const y of selectableYears()) {
     const opt = document.createElement("option");
@@ -63,30 +60,6 @@ export function createPlannerPanel({ root, store, onAddLocation }) {
     }
   });
 
-  function renderChips(state) {
-    chips.replaceChildren(...state.locations.map((loc) => {
-      const li = document.createElement("li");
-      li.className = "chip";
-      const label = `${locationLabel(loc)} (${loc.canton})`;
-      const activate = document.createElement("button");
-      activate.type = "button";
-      activate.className = "chip-label";
-      activate.textContent = label;
-      activate.setAttribute("aria-pressed", String(loc.id === state.activeLocationId));
-      activate.title = `Kalender für ${locationLabel(loc)} anzeigen`;
-      activate.addEventListener("click", () => store.setActiveLocation(loc.id));
-      const remove = document.createElement("button");
-      remove.type = "button";
-      remove.className = "chip-remove";
-      remove.textContent = "×";
-      remove.setAttribute("aria-label", `${locationLabel(loc)} entfernen`);
-      remove.addEventListener("click", () => store.removeLocation(loc.id));
-      li.classList.toggle("is-active", loc.id === state.activeLocationId);
-      li.append(activate, remove);
-      return li;
-    }));
-  }
-
   function renderConfig(state) {
     yearSelect.value = String(state.year);
     for (const b of weekdayButtons) b.setAttribute("aria-pressed", String(state.workingDays.includes(b.dataset.code)));
@@ -117,7 +90,6 @@ export function createPlannerPanel({ root, store, onAddLocation }) {
 
   return {
     render(state) {
-      renderChips(state);
       renderConfig(state);
     },
     open: () => { root.hidden = false; },

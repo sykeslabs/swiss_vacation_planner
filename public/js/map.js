@@ -1,7 +1,12 @@
-// Full-screen Swiss base map: swisstopo WMTS tiles in Web Mercator (EPSG:3857).
+// Full-screen Swiss base map in Web Mercator (EPSG:3857), swisstopo data only.
+// - "Karte": swisstopo WMTS raster (pixelkarte-farbe), names and borders included.
+// - "Satellit": swisstopo vector style "imagerybasemap" (SWISSIMAGE + place names +
+//   borders, as on map.geo.admin.ch), rendered by MapLibre GL through the Leaflet bridge.
+//   Without WebGL/MapLibre it falls back to SWISSIMAGE raster + national border overlay.
 /* global L */
 
-const WMTS = "https://wmts.geo.admin.ch/1.0.0/{layer}/default/current/3857/{z}/{x}/{y}.jpeg";
+const WMTS = "https://wmts.geo.admin.ch/1.0.0/{layer}/default/current/3857/{z}/{x}/{y}.{ext}";
+export const IMAGERY_STYLE_URL = "https://vectortiles.geo.admin.ch/styles/ch.swisstopo.imagerybasemap.vt/style.json";
 
 const ATTRIBUTION =
   '© <a href="https://www.swisstopo.admin.ch/de/home.html" target="_blank" rel="noopener">swisstopo</a>';
@@ -10,38 +15,71 @@ const ATTRIBUTION =
 const SWISS_BOUNDS = [[45.6, 5.7], [48.0, 10.7]];
 const MAX_BOUNDS = [[44.8, 4.4], [48.9, 12.0]];
 
-export const BASE_LAYERS = {
-  map: { id: "ch.swisstopo.pixelkarte-farbe", maxNativeZoom: 18 },
-  satellite: { id: "ch.swisstopo.swissimage", maxNativeZoom: 19 },
-};
-
+export const DEFAULT_BASE_LAYER = "satellite";
 const TILE_ERROR_THRESHOLD = 6;
 
-function makeLayer(key, onTilesFailing, onTilesOk) {
-  const cfg = BASE_LAYERS[key];
-  const layer = L.tileLayer(WMTS.replace("{layer}", cfg.id), {
-    attribution: ATTRIBUTION,
-    maxNativeZoom: cfg.maxNativeZoom,
-    maxZoom: 19,
-    crossOrigin: true,
+function wmts(id, ext, opts) {
+  return L.tileLayer(WMTS.replace("{layer}", id).replace("{ext}", ext), {
+    attribution: ATTRIBUTION, maxZoom: 19, crossOrigin: true, ...opts,
   });
+}
+
+/** Counts failures and reports them once, until tiles load again. */
+function watchErrors(onFailing, onOk) {
   let errors = 0;
-  layer.on("tileerror", () => {
-    errors += 1;
-    if (errors === TILE_ERROR_THRESHOLD) onTilesFailing();
-  });
-  layer.on("load", () => {
-    if (errors >= TILE_ERROR_THRESHOLD) onTilesOk();
-    errors = 0;
-  });
+  return {
+    error() {
+      errors += 1;
+      if (errors === TILE_ERROR_THRESHOLD) onFailing();
+    },
+    ok() {
+      if (errors >= TILE_ERROR_THRESHOLD) onOk();
+      errors = 0;
+    },
+  };
+}
+
+function rasterLayer(layer, watcher) {
+  layer.on("tileerror", watcher.error);
+  layer.on("load", watcher.ok);
   return layer;
+}
+
+function webglAvailable() {
+  try {
+    const c = document.createElement("canvas");
+    return Boolean(c.getContext("webgl2") || c.getContext("webgl"));
+  } catch {
+    return false;
+  }
+}
+
+function satelliteLayer(watcher) {
+  if (typeof L.maplibreGL === "function" && typeof window.maplibregl !== "undefined" && webglAvailable()) {
+    try {
+      const layer = L.maplibreGL({ style: IMAGERY_STYLE_URL, interactive: false });
+      layer.getAttribution = () => ATTRIBUTION;
+      layer.on("add", () => {
+        const gl = layer.getMaplibreMap();
+        gl.on("error", watcher.error);
+        gl.on("idle", watcher.ok);
+      });
+      return layer;
+    } catch {
+      // fall through to the raster fallback
+    }
+  }
+  return L.layerGroup([
+    rasterLayer(wmts("ch.swisstopo.swissimage", "jpeg", { maxNativeZoom: 19 }), watcher),
+    wmts("ch.swisstopo.swissboundaries3d-land-flaeche.fill", "png", { maxNativeZoom: 18, attribution: "" }),
+  ]);
 }
 
 /**
  * Create the map in `el`. Returns { map, setBaseLayer(key), activeBaseLayer() }.
  * `onNotice(text|null)` shows or clears a non-blocking message.
  */
-export function createSwissMap(el, { onNotice = () => {} } = {}) {
+export function createSwissMap(el, { onNotice = () => {}, getRightCoverage = () => 0 } = {}) {
   const map = L.map(el, {
     zoomControl: false,
     maxBounds: MAX_BOUNDS,
@@ -56,11 +94,14 @@ export function createSwissMap(el, { onNotice = () => {} } = {}) {
     .addTo(map);
   map.fitBounds(SWISS_BOUNDS);
 
-  const failing = () => onNotice("Kartenkacheln von swisstopo konnten nicht geladen werden.");
-  const ok = () => onNotice(null);
-  const layers = Object.fromEntries(
-    Object.keys(BASE_LAYERS).map((key) => [key, makeLayer(key, failing, ok)])
+  const watcher = () => watchErrors(
+    () => onNotice("Kartenkacheln von swisstopo konnten nicht geladen werden."),
+    () => onNotice(null),
   );
+  const layers = {
+    map: rasterLayer(wmts("ch.swisstopo.pixelkarte-farbe", "jpeg", { maxNativeZoom: 18 }), watcher()),
+    satellite: satelliteLayer(watcher()),
+  };
 
   let active = null;
   function setBaseLayer(key) {
@@ -70,7 +111,7 @@ export function createSwissMap(el, { onNotice = () => {} } = {}) {
     active = key;
     onNotice(null);
   }
-  setBaseLayer("map");
+  setBaseLayer(DEFAULT_BASE_LAYER);
 
   const markerLayer = L.layerGroup().addTo(map);
   const markers = new Map();
@@ -98,12 +139,12 @@ export function createSwissMap(el, { onNotice = () => {} } = {}) {
     }
   }
 
-  // Keep the selected places clear of the planner panel (right side, or bottom sheet on phones).
+  // Keep the selected places clear of the town panels (right side, or bottom sheet on phones).
   function viewPadding() {
     const narrow = window.innerWidth <= 720;
-    return narrow
-      ? { paddingTopLeft: [40, 140], paddingBottomRight: [40, Math.round(window.innerHeight * 0.45)] }
-      : { paddingTopLeft: [60, 60], paddingBottomRight: [470, 60] };
+    if (narrow) return { paddingTopLeft: [40, 140], paddingBottomRight: [40, Math.round(window.innerHeight * 0.45)] };
+    const right = Math.min(Math.round(window.innerWidth * 0.7), Math.max(60, getRightCoverage() + 40));
+    return { paddingTopLeft: [60, 60], paddingBottomRight: [right, 60] };
   }
 
   // Fly animations run on requestAnimationFrame, which browsers pause in background tabs;
