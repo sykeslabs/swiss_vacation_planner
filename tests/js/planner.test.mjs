@@ -205,17 +205,21 @@ test("postcodes in the search result line", () => {
 
 import { clampPosition, defaultPosition, PANEL_GAP, PANEL_WIDTH, rightCoverage } from "../../public/js/panel-layout.js";
 
-test("panels start side by side from the right and cascade when they don't fit", () => {
-  const opts = { viewportWidth: 1600, top: 64, minLeft: 384 };
-  const p0 = defaultPosition(0, opts);
-  const p1 = defaultPosition(1, opts);
-  assert.equal(p0.left, 1600 - PANEL_GAP - PANEL_WIDTH);
-  assert.equal(p1.left, p0.left - PANEL_WIDTH - PANEL_GAP);
-  assert.equal(p0.top, 64);
-  const p2 = defaultPosition(2, opts);                 // a third one doesn't fit beside the search panel
-  assert.ok(p2.left >= opts.minLeft && p2.top > 64);
-  const p3 = defaultPosition(3, opts);
-  assert.ok(p3.top > p2.top);                          // keeps cascading
+test("panels: side by side while they fit, then below the previous one, then cascaded", () => {
+  const wide = { viewportWidth: 2600, viewportHeight: 1000, top: 64, minLeft: 384 };
+  const a = defaultPosition(0, wide);
+  const b = defaultPosition(1, wide);
+  assert.equal(a.left, 2600 - PANEL_GAP - PANEL_WIDTH);
+  assert.equal(b.left, a.left - PANEL_WIDTH - PANEL_GAP);          // two fit next to each other
+  const hd = { viewportWidth: 1920, viewportHeight: 1031, top: 64, minLeft: 384 };
+  const p0 = defaultPosition(0, hd);
+  assert.deepEqual(p0, { left: 1920 - PANEL_GAP - PANEL_WIDTH, top: 64 });
+  const p1 = defaultPosition(1, { ...hd, previous: { ...p0, height: 470 } });
+  assert.deepEqual(p1, { left: p0.left, top: 64 + 470 + PANEL_GAP });   // stacked below
+  const p2 = defaultPosition(2, { ...hd, previous: { ...p1, height: 470 } });
+  assert.ok(p2.top > p1.top && p2.left < p1.left && p2.top < hd.viewportHeight);  // no room: cascade
+  const small = defaultPosition(0, { viewportWidth: 900, top: 64, minLeft: 384 });
+  assert.ok(small.left >= 0);                                         // never off the left edge
 });
 
 test("dragging keeps the title bar reachable", () => {
@@ -228,6 +232,6 @@ test("dragging keeps the title bar reachable", () => {
 test("map padding covers the panels on the right only", () => {
   const vw = 1600;
   assert.equal(rightCoverage([], vw), 0);
-  assert.equal(rightCoverage([{ left: 1108, width: 480 }, { left: 616, width: 480 }], vw), 984);
+  assert.equal(rightCoverage([{ left: 588, width: 1000 }, { left: 588, width: 1000 }], vw), 1012);
   assert.equal(rightCoverage([{ left: 20, width: 480 }], vw), 0);   // moved to the left side
 });

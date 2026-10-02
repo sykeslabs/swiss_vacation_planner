@@ -1,4 +1,6 @@
 import { fetchLocations, postOptimize } from "./api.js";
+import { bringToFront, makeDraggable, storedPosition, storePosition } from "./draggable.js";
+import { renderLegend } from "./calendar-view.js";
 import { createSwissMap } from "./map.js";
 import { PANEL_GAP, PANEL_WIDTH, rightCoverage } from "./panel-layout.js";
 import { createSettingsPanel } from "./planner.js";
@@ -71,6 +73,30 @@ createSearchBox({
 
 const settingsRoot = $("settings");
 const settings = createSettingsPanel({ root: settingsRoot, store });
+$("settings-legend").append(renderLegend());
+
+// The "Jahr" panel (shared settings) moves like the town panels and remembers its spot.
+const SETTINGS_POSITION_KEY = "svp.settings-panel.v1";
+const narrowScreen = window.matchMedia("(max-width: 720px)");
+const settingsDrag = makeDraggable(settingsRoot, settingsRoot.querySelector(".panel-head"), {
+  enabled: () => !narrowScreen.matches,
+  onStart: () => bringToFront(settingsRoot),
+  onEnd: (pos) => storePosition(storage, SETTINGS_POSITION_KEY, pos),
+});
+settingsRoot.addEventListener("pointerdown", () => bringToFront(settingsRoot), true);
+settingsRoot.addEventListener("focusin", () => bringToFront(settingsRoot));
+function placeSettings() {
+  if (settingsRoot.hidden) return;
+  if (narrowScreen.matches) {
+    settingsRoot.style.left = settingsRoot.style.top = "";
+    return;
+  }
+  const below = document.querySelector(".search-panel").getBoundingClientRect();
+  const pos = storedPosition(storage, SETTINGS_POSITION_KEY) ?? { left: below.left, top: below.bottom + PANEL_GAP };
+  settingsDrag.place(pos.left, pos.top);
+}
+window.addEventListener("resize", placeSettings);
+narrowScreen.addEventListener?.("change", placeSettings);
 
 townPanels = createTownPanels({
   container: $("town-panels"),
@@ -125,7 +151,9 @@ function renderChrome(state) {
   const hasTowns = state.locations.length > 0;
   searchInput.placeholder = hasTowns ? PLACEHOLDER_ADD : PLACEHOLDER_SEARCH;
   searchLabel.textContent = hasTowns ? PLACEHOLDER_ADD : PLACEHOLDER_SEARCH;
+  const wasHidden = settingsRoot.hidden;
   settingsRoot.hidden = !hasTowns;
+  if (wasHidden && hasTowns) placeSettings();
   settings.render(state);
 }
 

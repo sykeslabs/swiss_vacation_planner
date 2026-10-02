@@ -11,9 +11,10 @@ export const IMAGERY_STYLE_URL = "https://vectortiles.geo.admin.ch/styles/ch.swi
 const ATTRIBUTION =
   '© <a href="https://www.swisstopo.admin.ch/de/home.html" target="_blank" rel="noopener">swisstopo</a>';
 
-// Switzerland, slightly padded so the border regions stay reachable.
-const SWISS_BOUNDS = [[45.6, 5.7], [48.0, 10.7]];
-const MAX_BOUNDS = [[44.8, 4.4], [48.9, 12.0]];
+// Bounding box of Switzerland (Chiasso–Schaffhausen, Geneva–Müstair). The view never
+// leaves it and can't zoom out further than the level at which it fills the window,
+// because swisstopo imagery and maps are blank outside Switzerland.
+export const SWISS_BOUNDS = [[45.818, 5.956], [47.808, 10.492]];
 
 export const DEFAULT_BASE_LAYER = "satellite";
 const TILE_ERROR_THRESHOLD = 6;
@@ -80,11 +81,12 @@ function satelliteLayer(watcher) {
  * `onNotice(text|null)` shows or clears a non-blocking message.
  */
 export function createSwissMap(el, { onNotice = () => {}, getRightCoverage = () => 0 } = {}) {
+  const swiss = L.latLngBounds(SWISS_BOUNDS);
   const map = L.map(el, {
     zoomControl: false,
-    maxBounds: MAX_BOUNDS,
-    maxBoundsViscosity: 0.8,
-    minZoom: 7,
+    maxBounds: swiss,
+    maxBoundsViscosity: 1.0,   // hard edge: no white beyond the box while panning
+    zoomSnap: 0.25,            // lets the "fill the window" zoom fit closely
     maxZoom: 19,
   });
   map.attributionControl.setPrefix(
@@ -92,7 +94,16 @@ export function createSwissMap(el, { onNotice = () => {}, getRightCoverage = () 
   );
   L.control.zoom({ position: "bottomright", zoomInTitle: "Hineinzoomen", zoomOutTitle: "Herauszoomen" })
     .addTo(map);
-  map.fitBounds(SWISS_BOUNDS);
+  // Smallest zoom at which the Swiss box covers the whole window ("inside" fit).
+  const coverZoom = () => map.getBoundsZoom(swiss, true);
+  function applyZoomFloor() {
+    const min = coverZoom();
+    map.setMinZoom(min);
+    if (map.getZoom() < min) map.setZoom(min, { animate: false });
+  }
+  map.setView(swiss.getCenter(), coverZoom(), { animate: false });
+  applyZoomFloor();
+  window.addEventListener("resize", applyZoomFloor);
 
   const watcher = () => watchErrors(
     () => onNotice("Kartenkacheln von swisstopo konnten nicht geladen werden."),
@@ -154,10 +165,14 @@ export function createSwissMap(el, { onNotice = () => {}, getRightCoverage = () 
   }
 
   function fitLocations(locations) {
-    const bounds = locations.length
-      ? L.latLngBounds(locations.map((l) => [l.latitude, l.longitude]))
-      : L.latLngBounds(SWISS_BOUNDS);
-    const options = locations.length ? { ...viewPadding(), maxZoom: 12 } : {};
+    if (!locations.length) {
+      // Back to the start view: Switzerland filling the window.
+      if (shouldAnimate()) map.flyTo(swiss.getCenter(), coverZoom(), { duration: 0.8 });
+      else map.setView(swiss.getCenter(), coverZoom(), { animate: false });
+      return;
+    }
+    const bounds = L.latLngBounds(locations.map((l) => [l.latitude, l.longitude]));
+    const options = { ...viewPadding(), maxZoom: 12 };
     if (shouldAnimate()) map.flyToBounds(bounds, { ...options, duration: 0.8 });
     else map.fitBounds(bounds, { ...options, animate: false });
   }

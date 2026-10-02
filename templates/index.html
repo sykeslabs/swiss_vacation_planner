@@ -25,38 +25,44 @@
       <ul id="location-results" class="results" role="listbox" aria-label="Suchergebnisse" hidden></ul>
       <p id="search-status" class="search-status" role="status" aria-live="polite" hidden></p>
     </div>
-    <details id="settings" class="settings" hidden>
-      <summary>Einstellungen</summary>
-      <div class="field">
-        <label for="planner-year">Jahr</label>
-        <select id="planner-year"></select>
-      </div>
-      <div class="field">
-        <span class="field-label" id="working-days-label">Arbeitstage</span>
-        <div id="working-days" class="wd-toggles" role="group" aria-labelledby="working-days-label"></div>
-        <p id="working-days-hint" class="hint" role="status" hidden></p>
-      </div>
-      <div class="field">
-        <span class="field-label">Halbe Arbeitstage
-          <span class="info">
-            <button type="button" class="info-btn" aria-label="Was sind halbe Arbeitstage?"
-                    aria-describedby="half-day-info">i</button>
-            <span id="half-day-info" class="info-tip" role="tooltip">An einem halben Arbeitstag arbeitest du nur einen halben Tag,
-              zum Beispiel am 24. und 31. Dezember. Der Tag gilt als Arbeitstag: Willst du ihn ganz frei nehmen,
-              brauchst du dafür nur einen halben Ferientag. Fällt ein halber Arbeitstag auf ein Wochenende
-              oder einen Feiertag, hat er keine Wirkung.</span>
-          </span>
-        </span>
-        <ul id="half-days" class="half-days"></ul>
-        <div class="half-day-add">
-          <label for="half-day-input" class="visually-hidden">Datum für halben Arbeitstag</label>
-          <input id="half-day-input" type="date">
-          <button id="half-day-add" type="button" class="btn-secondary">Hinzufügen</button>
-        </div>
-        <p id="half-day-hint" class="hint" role="status" hidden></p>
-      </div>
-    </details>
   </header>
+
+  <!-- Shared settings for all towns; movable like the town panels. -->
+  <section id="settings" class="glass panel settings-panel" aria-labelledby="settings-title" hidden>
+    <header class="panel-head" tabindex="0" title="Ziehen zum Verschieben"
+            aria-label="Jahr und Arbeitstage: Panel verschieben mit Ziehen oder Pfeiltasten">
+      <h2 id="settings-title" class="town-title"><label for="planner-year">Jahr</label></h2>
+      <select id="planner-year"></select>
+    </header>
+    <div class="field">
+      <span class="field-label" id="working-days-label">Arbeitstage</span>
+      <div id="working-days" class="wd-toggles" role="group" aria-labelledby="working-days-label"></div>
+      <p id="working-days-hint" class="hint" role="status" hidden></p>
+    </div>
+    <div class="field">
+      <span class="field-label">Halbe Arbeitstage
+        <span class="info">
+          <button type="button" class="info-btn" aria-label="Was sind halbe Arbeitstage?"
+                  aria-describedby="half-day-info">i</button>
+          <span id="half-day-info" class="info-tip" role="tooltip">An einem halben Arbeitstag arbeitest du nur einen halben Tag,
+            zum Beispiel am 24. und 31. Dezember. Der Tag gilt als Arbeitstag: Willst du ihn ganz frei nehmen,
+            brauchst du dafür nur einen halben Ferientag. Fällt ein halber Arbeitstag auf ein Wochenende
+            oder einen Feiertag, hat er keine Wirkung.</span>
+        </span>
+      </span>
+      <ul id="half-days" class="half-days"></ul>
+      <div class="half-day-add">
+        <label for="half-day-input" class="visually-hidden">Datum für halben Arbeitstag</label>
+        <input id="half-day-input" type="date">
+        <button id="half-day-add" type="button" class="btn-secondary">Hinzufügen</button>
+      </div>
+      <p id="half-day-hint" class="hint" role="status" hidden></p>
+    </div>
+    <details class="legend-box" open>
+      <summary>Legende</summary>
+      <div id="settings-legend"></div>
+    </details>
+  </section>
 
   <!-- One movable panel per selected town (built in town-panels.js). -->
   <div id="town-panels" class="town-panels" aria-label="Kalender der gewählten Orte" hidden></div>

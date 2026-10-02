@@ -1,17 +1,16 @@
 // One movable panel per selected town: title bar (drag handle, remove), status, legend
 // and the town's own calendar. Positions are remembered per town in the browser.
 import { createCalendarView, renderLegend } from "./calendar-view.js";
-import { makeDraggable } from "./draggable.js";
+import { bringToFront as raise, makeDraggable } from "./draggable.js";
 import { defaultPosition, PANEL_GAP } from "./panel-layout.js";
 import { locationLabel } from "./state.js";
 
-export const POSITIONS_KEY = "svp.panels.v1";
+export const POSITIONS_KEY = "svp.panels.v2";   // v2: 1000 px panels (v1 positions were for 480 px)
 const NARROW = "(max-width: 720px)";
-const Z_BASE = 1100;
+const EXPECTED_PANEL_HEIGHT = 470;   // header + legend + 2 rows of 7 months
 
 export function createTownPanels({ container, storage = null, onRemove, onLayoutChange = () => {}, searchPanel }) {
   const panels = new Map();          // id → { el, calendar, status, source, drag }
-  let z = Z_BASE;
   let positions = {};
   try {
     positions = JSON.parse(storage?.getItem(POSITIONS_KEY) ?? "{}") ?? {};
@@ -30,7 +29,7 @@ export function createTownPanels({ container, storage = null, onRemove, onLayout
 
   function bringToFront(id) {
     const p = panels.get(id);
-    if (p) p.el.style.zIndex = String(++z);
+    if (p) raise(p.el);
   }
 
   function place(id, index) {
@@ -42,10 +41,17 @@ export function createTownPanels({ container, storage = null, onRemove, onLayout
     }
     const saved = positions[id];
     const searchRect = searchPanel?.getBoundingClientRect();
+    // The previous panel's calendar may not be loaded yet, so assume at least its full height.
+    const prevEl = [...panels.values()][index - 1]?.el;
+    const prevRect = prevEl?.getBoundingClientRect();
+    const previous = prevRect && { left: prevRect.left, top: prevRect.top,
+      height: Math.max(prevRect.height, EXPECTED_PANEL_HEIGHT) };
     const pos = saved ?? defaultPosition(index, {
       viewportWidth: window.innerWidth,
+      viewportHeight: window.innerHeight,
       top: PANEL_GAP + 52,
       minLeft: searchRect ? Math.round(searchRect.right + PANEL_GAP) : PANEL_GAP,
+      previous,
     });
     p.drag.place(pos.left, pos.top);
   }

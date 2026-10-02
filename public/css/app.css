@@ -145,14 +145,15 @@ html, body {
 
 /* Town panels: one per selected town, movable by the title bar (left/top set inline) */
 .town-panel {
-  width: 480px;
+  width: min(1000px, calc(100vw - 2 * var(--gap)));
   max-height: calc(100vh - 52px - 3 * var(--gap) - 24px);
   overflow-y: auto;
   padding: 0 16px 14px;
   animation: panel-in 0.35s ease-out;
 }
 .town-panel.is-dragging { box-shadow: 0 14px 44px rgba(20, 30, 45, 0.35); opacity: 0.96; }
-.town-head {
+.town-head,
+.panel-head {
   position: sticky;
   top: 0;
   z-index: 2;
@@ -171,8 +172,32 @@ html, body {
   -webkit-backdrop-filter: blur(var(--glass-blur));
   backdrop-filter: blur(var(--glass-blur));
 }
-.town-panel.is-dragging .town-head { cursor: grabbing; }
-.town-head:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.town-panel.is-dragging .town-head,
+.settings-panel.is-dragging .panel-head { cursor: grabbing; }
+.town-head:focus-visible,
+.panel-head:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+/* "Jahr" panel: shared settings, movable, always expanded */
+.settings-panel {
+  width: min(360px, calc(100vw - 2 * var(--gap)));
+  max-height: calc(100vh - 2 * var(--gap) - 24px);
+  overflow-y: auto;
+  padding: 0 14px 10px;
+  animation: panel-in 0.35s ease-out;
+}
+.settings-panel.is-dragging { box-shadow: 0 14px 44px rgba(20, 30, 45, 0.35); }
+.settings-panel .panel-head { margin: 0 -14px 6px; padding-left: 14px; }
+.settings-panel .panel-head select {
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--text);
+  background: var(--field-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.settings-panel .town-title label { cursor: inherit; }
 .town-title { margin: 0; font-size: 0.95rem; font-weight: 600; }
 @keyframes panel-in {
   from { opacity: 0; transform: translateY(-6px); }
@@ -182,9 +207,7 @@ html, body {
   .town-panel { animation: none; }
 }
 
-/* Search panel grows with the shared settings; scroll if the window is short */
-.search-panel { max-height: calc(100vh - 2 * var(--gap) - 24px); overflow-y: auto; }
-.search-panel .settings { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--glass-border); }
+
 
 .chip-remove {
   font: inherit;
@@ -300,7 +323,7 @@ html, body {
 #calendar { position: relative; }
 .year-view {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px;
 }
 .month-box {
@@ -318,7 +341,7 @@ html, body {
 .month-title { font-size: 0.74rem; font-weight: 600; margin: 0 0 3px 2px; white-space: nowrap; }
 .month-grid { display: flex; flex-direction: column; gap: 2px; }
 .month-row { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
-.wd { font-size: 0.55rem; color: var(--text-muted); text-align: center; }
+.wd { font-size: 0.58rem; color: var(--text-muted); text-align: center; }
 
 .day {
   display: flex;
@@ -326,7 +349,7 @@ html, body {
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   line-height: 1;
   aspect-ratio: 1;
   min-width: 0;
@@ -376,6 +399,7 @@ html, body {
 .btn-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .legend { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 10px; }
+.town-panel .legend { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; }
 .legend-swatch { width: 14px; height: 14px; flex: none; aspect-ratio: auto; }
 
@@ -455,7 +479,14 @@ html, body {
   .search-panel { right: var(--gap); width: auto; }
   .search-panel h1 { font-size: 0.9rem; }
   .layer-switch { top: calc(var(--gap) + 92px); }
-  .search-panel { max-height: 40vh; }
+  .settings-panel {
+    top: calc(var(--gap) + 92px);
+    left: var(--gap);
+    right: var(--gap);
+    width: auto;
+    max-height: 30vh;
+  }
+  .settings-panel .panel-head { cursor: default; touch-action: auto; position: static; }
   .town-panels {
     position: fixed;
     z-index: 1000;
@@ -475,5 +506,7 @@ html, body {
     overflow: visible;
   }
   .town-head { cursor: default; touch-action: auto; position: static; }
+  .year-view { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .town-panel .legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .leaflet-control-zoom { display: none; }
 }

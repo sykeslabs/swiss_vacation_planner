@@ -45,10 +45,16 @@ def test_satellite_is_preselected_and_settings_start_collapsed(client):
     html = client.get("/").get_data(as_text=True)
     assert 'data-layer="satellite" aria-pressed="true"' in html
     assert 'data-layer="map" aria-pressed="false"' in html
-    # Shared settings live in the search panel, collapsed, shown once a town is selected
-    settings = html[html.index('<header class="glass panel search-panel">'):html.index("</header>")]
-    assert '<details id="settings" class="settings" hidden>' in settings      # no "open"
+    # Shared settings: own movable panel titled "Jahr", always expanded, shown once a town is selected
+    start = html.index('<section id="settings" class="glass panel settings-panel"')
+    settings = html[start:html.index("</section>", start)]
+    assert "hidden>" in settings[:120]
+    # always expanded: year, working days and half days aren't inside a collapsible block
+    assert "<details" not in settings[:settings.index('id="half-day-hint"')]
+    assert '<label for="planner-year">Jahr</label>' in settings and 'class="panel-head"' in settings
+    assert settings.index('id="planner-year"') < settings.index('id="working-days"') < settings.index('id="half-days"')
     assert 'role="tooltip"' in settings and "halben Arbeitstag" in settings
+    assert 'id="settings-legend"' in settings
     # Town panels (with legend above each calendar) are built in JS; no "+ Ort hinzufügen" button
     assert 'id="town-panels"' in html and "add-location" not in html
 

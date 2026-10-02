@@ -5,6 +5,29 @@ import { clampPosition } from "./panel-layout.js";
 const KEY_STEP = 16;
 const KEY_STEP_LARGE = 64;
 
+// One stacking order for all movable panels (above the fixed panels at z-index 1000).
+let topZ = 1100;
+export function bringToFront(el) {
+  el.style.zIndex = String(++topZ);
+}
+
+/** Saved {left, top} for one panel; storage failures are ignored (position is a convenience). */
+export function storedPosition(storage, key) {
+  try {
+    const pos = JSON.parse(storage?.getItem(key) ?? "null");
+    return pos && Number.isFinite(pos.left) && Number.isFinite(pos.top) ? pos : null;
+  } catch {
+    return null;
+  }
+}
+export function storePosition(storage, key, pos) {
+  try {
+    storage?.setItem(key, JSON.stringify(pos));
+  } catch {
+    // ignore
+  }
+}
+
 export function makeDraggable(el, handle, {
   onStart = () => {}, onMove = () => {}, onEnd = () => {}, enabled = () => true,
 } = {}) {
