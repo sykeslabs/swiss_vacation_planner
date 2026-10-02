@@ -42,3 +42,14 @@ export function effectLabel(day) {
     ? "Fällt auf einen arbeitsfreien Tag – du gewinnst dadurch keinen zusätzlichen freien Tag."
     : "Fällt auf einen deiner Arbeitstage – du hast frei, ohne einen Ferientag einzusetzen.";
 }
+
+/** How certain a holiday is, in plain German (provenance shown to the user). */
+export function confidenceLabel(holiday) {
+  if (holiday.confidence === "high") return "Bestätigt: Referenzkalender und Websuche stimmen überein.";
+  if (holiday.confidence === "low") {
+    return holiday.enabled === false
+      ? "Nur in der Websuche gefunden – du kannst diesen Feiertag selbst aktivieren."
+      : "Nur in der Websuche gefunden – von dir aktiviert.";
+  }
+  return "Quelle: kantonaler Referenzkalender (nicht durch die Websuche bestätigt).";
+}

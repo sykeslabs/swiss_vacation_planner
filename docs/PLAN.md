@@ -140,6 +140,8 @@ POST /api/travel/offers   (as SPEC §5)
 
 You.com is called only for the planned year; boundary months use the baseline only (warning shown).
 
+M4 as built: see DECISIONS.md (2026-10-02, M4 entries). Differences from the plan above: optional holidays come from classes 3/4 and "nur teilweise gültig" rows with ≥ 20 % share; unclassified rows only confirm; enabled optional holidays reach the optimizer as `extra_holidays`.
+
 ## 8. Optimizer outline (M5)
 
 - Build `DayInfo` for 1.12.(y-1) … 31.1.(y+1) per location.

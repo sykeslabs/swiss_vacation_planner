@@ -1,4 +1,4 @@
-import { fetchLocations, postOptimize } from "./api.js";
+import { fetchHolidays, fetchLocations, postOptimize } from "./api.js";
 import { bringToFront, makeDraggable, storedPosition, storePosition } from "./draggable.js";
 import { createHolidayModal } from "./holiday-modal.js";
 import { createSwissMap } from "./map.js";
@@ -95,6 +95,34 @@ function placeSettings() {
   settingsDrag.place(pos.left, pos.top);
 }
 window.addEventListener("resize", placeSettings);
+
+// Collapse the "Jahr" panel to its title bar (year badges stay usable); remembered.
+const SETTINGS_COLLAPSED_KEY = "svp.settings-collapsed.v1";
+const settingsToggle = $("settings-toggle");
+function setSettingsCollapsed(on) {
+  $("settings-body").hidden = on;
+  settingsRoot.classList.toggle("is-collapsed", on);
+  settingsToggle.textContent = on ? "▸" : "▾";
+  settingsToggle.setAttribute("aria-expanded", String(!on));
+  settingsToggle.setAttribute("aria-label", on ? "Arbeitstage ausklappen" : "Arbeitstage einklappen");
+  settingsToggle.title = on ? "Ausklappen" : "Einklappen";
+}
+let collapsedAtStart = false;
+try {
+  collapsedAtStart = storage?.getItem(SETTINGS_COLLAPSED_KEY) === "1";
+} catch {
+  // storage blocked: start expanded
+}
+setSettingsCollapsed(collapsedAtStart);
+settingsToggle.addEventListener("click", () => {
+  const on = !settingsRoot.classList.contains("is-collapsed");
+  setSettingsCollapsed(on);
+  try {
+    storage?.setItem(SETTINGS_COLLAPSED_KEY, on ? "1" : "0");
+  } catch {
+    // convenience only
+  }
+});
 narrowScreen.addEventListener?.("change", placeSettings);
 
 const holidayModal = createHolidayModal();
@@ -104,9 +132,59 @@ townPanels = createTownPanels({
   storage,
   searchPanel: document.querySelector(".search-panel"),
   onRemove: (id) => store.removeLocation(id),
-  onHolidayClick: ({ location, day, holidays, from }) =>
-    holidayModal.open({ day, holidays, from, town: `${locationLabel(location)} (${location.canton})` }),
+  onHolidayClick: ({ location, day, holidays, from }) => holidayModal.open({
+    day, from, town: `${locationLabel(location)} (${location.canton})`,
+    holidays: holidays.map((h) => withWebInfo(location.id, h)),
+  }),
 });
+
+// --- holidays checked against the web search (GET /api/holidays) ------------------------------
+
+const holidayData = new Map();      // "location_id|year" → response (or an error stand-in)
+const holidayInflight = new Set();
+const dataKey = (id, year) => `${id}|${year}`;
+
+function holidayLists(state) {
+  return Object.fromEntries(state.locations.map((l) => [l.id, holidayData.get(dataKey(l.id, state.year))?.holidays ?? []]));
+}
+
+/** Adds confidence, sources and notes from the web check to a holiday of the calendar. */
+function withWebInfo(locationId, holiday) {
+  const data = holidayData.get(dataKey(locationId, store.get().year));
+  const match = data?.holidays?.find((h) => h.date === holiday.date && h.name === holiday.name);
+  return match ? { ...holiday, ...match, enabled: holiday.source_title === "von dir aktiviert" ? true : match.enabled } : holiday;
+}
+
+function renderHolidaySections(state) {
+  for (const loc of state.locations) {
+    townPanels.setHolidayData(loc.id, holidayData.get(dataKey(loc.id, state.year)) ?? null, {
+      isEnabled: (key) => store.isHolidayEnabled(loc.id, key),
+      onToggle: (key) => store.toggleHoliday(loc.id, key),
+    });
+  }
+}
+
+function ensureHolidays(state) {
+  for (const loc of state.locations) {
+    const key = dataKey(loc.id, state.year);
+    if (holidayData.has(key) || holidayInflight.has(key)) continue;
+    holidayInflight.add(key);
+    fetchHolidays(loc, state.year)
+      .then((data) => holidayData.set(key, data))
+      .catch((err) => holidayData.set(key, {
+        location_id: loc.id, holidays: [], summary: { checked: false },
+        warnings: [{ code: "client_error", message: err.message }], failed: true,
+      }))
+      .finally(() => {
+        holidayInflight.delete(key);
+        const now = store.get();
+        renderHolidaySections(now);
+        if (now.year === state.year) scheduleRecalc();     // enabled optional holidays now known
+        // a failed check is retried on the next change
+        if (holidayData.get(key)?.failed) setTimeout(() => holidayData.delete(key), 0);
+      });
+  }
+}
 
 // --- calendars ------------------------------------------------------------------------------
 
@@ -138,7 +216,7 @@ async function recalculate() {
   const ctrl = new AbortController();
   inflight = ctrl;
   try {
-    latest = await postOptimize(optimizePayload(state), { signal: ctrl.signal });
+    latest = await postOptimize(optimizePayload(state, holidayLists(state)), { signal: ctrl.signal });
     renderCalendars();
   } catch (err) {
     if (err.name === "AbortError") return;
@@ -165,6 +243,8 @@ let openTimer = null;
 store.subscribe((state, change) => {
   renderChrome(state);
   townPanels.sync(state.locations);
+  ensureHolidays(state);
+  renderHolidaySections(state);
   if (change.type === "add" || change.type === "remove") {
     swissMap.setLocations(state.locations, locationLabel);
     swissMap.fitLocations(state.locations);
@@ -188,6 +268,8 @@ renderChrome(initial);
 if (initial.locations.length) {
   townPanels.show();
   townPanels.sync(initial.locations);
+  ensureHolidays(initial);
+  renderHolidaySections(initial);
   swissMap.setLocations(initial.locations, locationLabel);
   swissMap.fitLocations(initial.locations);
   recalculate();

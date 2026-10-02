@@ -3,6 +3,7 @@
 // town in the browser.
 import { createCalendarView, renderLegend } from "./calendar-view.js";
 import { bringToFront as raise, makeDraggable } from "./draggable.js";
+import { renderHolidaySection } from "./holiday-list.js";
 import { defaultPosition, PANEL_GAP } from "./panel-layout.js";
 import { locationLabel } from "./state.js";
 
@@ -112,6 +113,15 @@ export function createTownPanels({
     status.setAttribute("aria-live", "polite");
     status.textContent = "Kalender wird berechnet …";
 
+    const holidaysBox = document.createElement("details");
+    holidaysBox.className = "legend-box holidays-box";
+    holidaysBox.open = true;
+    const holidaysSummary = document.createElement("summary");
+    holidaysSummary.textContent = "Feiertage";
+    const holidaysBody = document.createElement("div");
+    holidaysBox.append(holidaysSummary, holidaysBody);
+    renderHolidaySection(holidaysBody, null, { isEnabled: () => false, onToggle: () => {} });
+
     const legend = document.createElement("details");
     legend.className = "legend-box";
     legend.open = false;            // collapsed by default
@@ -127,7 +137,7 @@ export function createTownPanels({
     const body = document.createElement("div");
     body.className = "town-body";
     body.id = bodyId;
-    body.append(status, legend, calendarEl, source);
+    body.append(status, holidaysBox, legend, calendarEl, source);
     el.append(head, body);
 
     function setCollapsed(on) {
@@ -161,7 +171,7 @@ export function createTownPanels({
         onLayoutChange();
       },
     });
-    const entry = { el, status, source, drag, holidays: [] };
+    const entry = { el, status, source, drag, holidays: [], holidaysBody };
     entry.calendar = createCalendarView(calendarEl, {
       onHolidayClick: (day, cell) => onHolidayClick({
         location: loc, day, from: cell,
@@ -208,6 +218,11 @@ export function createTownPanels({
       p.calendar.setDays(days, { fromMonth });
       p.status.textContent = statusText;
       p.source.textContent = sourceText;
+    },
+    /** Web-check result for the town (GET /api/holidays) with its on/off switches. */
+    setHolidayData(id, data, { isEnabled, onToggle }) {
+      const p = panels.get(id);
+      if (p) renderHolidaySection(p.holidaysBody, data, { isEnabled, onToggle });
     },
     setStatus(id, text) {
       const p = panels.get(id);

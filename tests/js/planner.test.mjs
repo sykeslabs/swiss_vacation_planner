@@ -269,3 +269,47 @@ test("holiday info loads once and retries after a failure", async () => {
   await loadHolidayInfo(ok);
   assert.equal(calls, 2);                       // second successful call served from cache
 });
+
+// --- M4: optional holidays ------------------------------------------------------------------
+
+import { holidaySummary } from "../../public/js/holiday-list.js";
+import { confidenceLabel } from "../../public/js/holiday-info.js";
+
+const SECHS = { key: "2026-04-20|Sechseläuten", date: "2026-04-20", name: "Sechseläuten", enabled: false, work_fraction: 0 };
+const KF = { key: "2026-04-03|Karfreitag", date: "2026-04-03", name: "Karfreitag", enabled: true, work_fraction: 0 };
+
+test("optional holidays: toggle, persist, send only enabled ones", () => {
+  const storage = memoryStorage();
+  const store = createPlannerStore({ storage, today: TODAY });
+  store.addLocation(ZH);
+  assert.equal(optimizePayload(store.get(), { "bfs-261": [SECHS, KF] }).extra_holidays, undefined);
+  assert.equal(store.toggleHoliday("bfs-261", SECHS.key), true);
+  assert.equal(store.isHolidayEnabled("bfs-261", SECHS.key), true);
+  const p = optimizePayload(store.get(), { "bfs-261": [SECHS, KF] });
+  assert.deepEqual(p.extra_holidays, { "bfs-261": [{ date: "2026-04-20", name: "Sechseläuten", work_fraction: 0 }] });
+  assert.equal(optimizePayload(store.get(), {}).extra_holidays, undefined);   // list not loaded yet
+  const reloaded = createPlannerStore({ storage, today: TODAY });
+  assert.deepEqual(reloaded.get().enabledHolidays, { "bfs-261": [SECHS.key] });
+  store.toggleHoliday("bfs-261", SECHS.key);
+  assert.deepEqual(store.get().enabledHolidays, {});
+  assert.equal(store.toggleHoliday("bfs-999", SECHS.key), false);             // unknown town
+  store.toggleHoliday("bfs-261", SECHS.key);
+  store.removeLocation("bfs-261");
+  assert.deepEqual(store.get().enabledHolidays, {});
+});
+
+test("restore drops malformed or orphaned holiday keys", () => {
+  const raw = JSON.stringify({ v: 1, year: 2026, locations: [ZH],
+    enabledHolidays: { "bfs-261": ["2026-04-20|Sechseläuten", "nope", 5], "bfs-999": ["2026-01-01|X"] } });
+  assert.deepEqual(restoreState(raw, TODAY).enabledHolidays, { "bfs-261": ["2026-04-20|Sechseläuten"] });
+});
+
+test("holiday summary and confidence texts", () => {
+  assert.match(holidaySummary(null), /geprüft/);
+  assert.equal(holidaySummary({ summary: { checked: true, confirmed: 9, optional: 3 }, warnings: [] }),
+    "9 Feiertage durch die Websuche bestätigt · 3 optionale lokale Feiertage");
+  assert.equal(holidaySummary({ summary: { checked: false }, warnings: [{ message: "Tageslimit erreicht." }] }), "Tageslimit erreicht.");
+  assert.match(confidenceLabel({ confidence: "high" }), /stimmen überein/);
+  assert.match(confidenceLabel({ confidence: "medium" }), /Referenzkalender/);
+  assert.match(confidenceLabel({ confidence: "low", enabled: false }), /selbst aktivieren/);
+});

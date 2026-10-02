@@ -195,6 +195,18 @@ html, body {
 }
 .settings-panel.is-dragging { box-shadow: 0 14px 44px rgba(20, 30, 45, 0.35); }
 .settings-panel .panel-head { margin: 0 -14px 6px; padding-left: 14px; }
+.settings-panel.is-collapsed { padding-bottom: 0; }
+.settings-panel.is-collapsed .panel-head { margin-bottom: 0; border-bottom: 0; border-radius: var(--radius); }
+
+/* "Feiertage" section of a town panel */
+.holidays-box > summary { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); margin: 6px 0 4px; }
+.holiday-summary { margin: 0 0 4px; }
+.holiday-warning { margin: 2px 0; }
+.optional-holidays { list-style: none; margin: 4px 0 6px; padding: 0; display: grid; gap: 4px; }
+.optional-holiday { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; font-size: 0.82rem; align-items: baseline; }
+.optional-holiday input { margin: 0; accent-color: var(--toggle-on-bg); }
+.optional-note, .optional-source { grid-column: 2; font-size: 0.74rem; color: var(--text-muted); }
+.optional-source { color: var(--text); }
 /* Year badges in the "Jahr" title bar (one per selectable year, side by side) */
 .year-badges { display: flex; gap: 4px; }
 .year-badge {

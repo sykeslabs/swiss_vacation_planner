@@ -5,6 +5,7 @@ from pathlib import Path
 from flask import Flask
 
 from app.errors import register_error_handlers
+from app.routes.holidays import bp as holidays_bp
 from app.routes.locations import bp as locations_bp
 from app.routes.pages import bp as pages_bp
 from app.routes.planner import bp as planner_bp
@@ -29,4 +30,5 @@ def create_app(config: dict | None = None) -> Flask:
     app.register_blueprint(pages_bp)
     app.register_blueprint(locations_bp)
     app.register_blueprint(planner_bp)
+    app.register_blueprint(holidays_bp)
     return app

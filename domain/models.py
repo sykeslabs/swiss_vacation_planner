@@ -3,10 +3,15 @@
 from dataclasses import asdict, dataclass, field
 from datetime import date
 
-CANTONS = frozenset({
-    "AG", "AI", "AR", "BE", "BL", "BS", "FR", "GE", "GL", "GR", "JU", "LU", "NE",
-    "NW", "OW", "SG", "SH", "SO", "SZ", "TG", "TI", "UR", "VD", "VS", "ZG", "ZH",
-})
+CANTON_NAMES = {
+    "AG": "Aargau", "AI": "Appenzell Innerrhoden", "AR": "Appenzell Ausserrhoden", "BE": "Bern",
+    "BL": "Basel-Landschaft", "BS": "Basel-Stadt", "FR": "Freiburg", "GE": "Genf", "GL": "Glarus",
+    "GR": "Graubünden", "JU": "Jura", "LU": "Luzern", "NE": "Neuenburg", "NW": "Nidwalden",
+    "OW": "Obwalden", "SG": "St. Gallen", "SH": "Schaffhausen", "SO": "Solothurn", "SZ": "Schwyz",
+    "TG": "Thurgau", "TI": "Tessin", "UR": "Uri", "VD": "Waadt", "VS": "Wallis", "ZG": "Zug",
+    "ZH": "Zürich",
+}
+CANTONS = frozenset(CANTON_NAMES)
 
 
 @dataclass(frozen=True)
@@ -52,11 +57,33 @@ class Holiday:
     confidence: str            # "high" | "medium" | "low"
     conflict: str | None = None
     work_fraction: float = 0.0  # share of the day still worked: 0 = whole day off, 0.5 = afternoon off
+    enabled: bool = True        # False: shown, but not used by the optimizer until the user enables it
+    corroborated_by: tuple[str, ...] = ()   # URLs of web pages that confirm this holiday
+    note: str | None = None     # short German explanation (e.g. why it's optional)
 
     def to_dict(self) -> dict:
         d = asdict(self)
         d["date"] = self.date.isoformat()
+        d["corroborated_by"] = list(self.corroborated_by)
         return d
+
+
+@dataclass(frozen=True)
+class FoundHoliday:
+    """A holiday row parsed from a web page (You.com search result), before merging.
+
+    kind: "legal" (gesetzlich / den Sonntagen gleichgestellt), "half" (halber Feiertag),
+          "unofficial" (gesetzlich nicht anerkannt, oft arbeitsfrei), "partial" (nur in
+          Teilen der Region gültig), "unclassified" (no class information on the page).
+    """
+
+    date: date
+    name: str
+    kind: str
+    share_percent: float | None
+    source_url: str
+    source_title: str
+    retrieved_at: str
 
 
 @dataclass(frozen=True)

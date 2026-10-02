@@ -52,7 +52,7 @@ function isValidLocation(loc) {
 
 export function defaultState(today = new Date()) {
   const year = selectableYears(today)[0];
-  return { year, workingDays: [...DEFAULT_WORKING_DAYS], halfDays: defaultHalfDays(year), locations: [] };
+  return { year, workingDays: [...DEFAULT_WORKING_DAYS], halfDays: defaultHalfDays(year), locations: [], enabledHolidays: {} };
 }
 
 /** Validates persisted data; anything unreadable falls back to defaults field by field. */
@@ -79,12 +79,24 @@ export function restoreState(raw, today = new Date()) {
   const locations = (Array.isArray(data.locations) ? data.locations : [])
     .filter((l) => isValidLocation(l) && !seen.has(townKey(l)) && seen.add(townKey(l)))
     .slice(0, MAX_LOCATIONS);
+  // Optional holidays the user enabled: { location_id: ["YYYY-MM-DD|Name", …] }
+  const enabledHolidays = {};
+  if (data.enabledHolidays && typeof data.enabledHolidays === "object") {
+    for (const loc of locations) {
+      const keys = data.enabledHolidays[loc.id];
+      if (Array.isArray(keys)) {
+        const valid = keys.filter((k) => typeof k === "string" && /^\d{4}-\d{2}-\d{2}\|.{1,100}$/.test(k));
+        if (valid.length) enabledHolidays[loc.id] = [...new Set(valid)];
+      }
+    }
+  }
 
   return {
     year,
     workingDays: workingDays.length ? workingDays : base.workingDays,
     halfDays,
     locations,
+    enabledHolidays,
   };
 }
 
@@ -133,7 +145,8 @@ export function createPlannerStore({ storage = null, today = new Date() } = {}) 
       const location = state.locations.find((l) => l.id === id);
       if (!location) return false;
       const locations = state.locations.filter((l) => l.id !== id);
-      commit({ ...state, locations }, { type: "remove", location });
+      const { [id]: _, ...enabledHolidays } = state.enabledHolidays;
+      commit({ ...state, locations, enabledHolidays }, { type: "remove", location });
       return true;
     },
 
@@ -169,6 +182,19 @@ export function createPlannerStore({ storage = null, today = new Date() } = {}) 
       return true;
     },
 
+    /** Switch an optional (web-only) holiday on or off for one location. */
+    toggleHoliday(locationId, key) {
+      if (!state.locations.some((l) => l.id === locationId)) return false;
+      const current = new Set(state.enabledHolidays[locationId] ?? []);
+      if (current.has(key)) current.delete(key);
+      else current.add(key);
+      const enabledHolidays = { ...state.enabledHolidays, [locationId]: [...current].sort() };
+      if (!current.size) delete enabledHolidays[locationId];
+      commit({ ...state, enabledHolidays }, { type: "config" });
+      return true;
+    },
+    isHolidayEnabled: (locationId, key) => (state.enabledHolidays[locationId] ?? []).includes(key),
+
     subscribe(fn) {
       listeners.add(fn);
       return () => listeners.delete(fn);
@@ -195,13 +221,25 @@ export function locationDetail(location) {
   return `Gemeinde · ${location.canton}${plz ? ` · PLZ ${plz}` : ""}`;
 }
 
-/** Request body for POST /api/optimize. vacation_type is deliberately not part of it. */
-export function optimizePayload(state) {
-  return {
+/**
+ * Request body for POST /api/optimize. vacation_type is deliberately not part of it.
+ * `holidayLists` = { location_id: holidays from GET /api/holidays }; only optional holidays
+ * the user enabled (and that exist in the fetched list for the planned year) are sent.
+ */
+export function optimizePayload(state, holidayLists = {}) {
+  const extra = {};
+  for (const loc of state.locations) {
+    const enabled = new Set(state.enabledHolidays?.[loc.id] ?? []);
+    const list = (holidayLists[loc.id] ?? []).filter((h) => !h.enabled && enabled.has(h.key));
+    if (list.length) extra[loc.id] = list.map((h) => ({ date: h.date, name: h.name, work_fraction: h.work_fraction }));
+  }
+  const payload = {
     year: state.year,
     locations: state.locations,
     working_days: state.workingDays,
     half_days: state.halfDays,
     vacation_budget: null,
   };
+  if (Object.keys(extra).length) payload.extra_holidays = extra;
+  return payload;
 }

@@ -12,6 +12,7 @@ from domain.working_days import WEEKDAY_CODES
 
 MAX_LOCATIONS = 10
 MAX_HALF_DAYS = 100
+MAX_EXTRA_HOLIDAYS = 30
 SELECTABLE_YEARS_AHEAD = 2      # D9: current year … current year + 2
 
 
@@ -50,6 +51,15 @@ class LocationIn(BaseModel):
         return Location(**data)
 
 
+class ExtraHolidayIn(BaseModel):
+    """An optional (web-only) holiday the user enabled for one location."""
+    model_config = ConfigDict(extra="forbid")
+
+    date: date
+    name: Annotated[str, Field(min_length=1, max_length=100)]
+    work_fraction: Annotated[float, Field(ge=0, le=0.5)] = 0.0
+
+
 class OptimizeIn(BaseModel):
     # extra="forbid": e.g. vacation_type must never reach the optimizer (CLAUDE.md rule 5).
     model_config = ConfigDict(extra="forbid")
@@ -59,6 +69,7 @@ class OptimizeIn(BaseModel):
     working_days: list[str]
     half_days: dict[date, float] = Field(default_factory=dict)
     vacation_budget: Annotated[float, Field(ge=0, le=366)] | None = None
+    extra_holidays: dict[str, Annotated[list[ExtraHolidayIn], Field(max_length=MAX_EXTRA_HOLIDAYS)]] =         Field(default_factory=dict)
 
 
 # User-facing messages per field (Swiss Standard German).
@@ -68,6 +79,7 @@ _FIELD_MESSAGES = {
     "working_days": "Bitte wähle mindestens einen gültigen Arbeitstag.",
     "half_days": "Ungültige halbe Arbeitstage.",
     "vacation_budget": "Ungültige Anzahl Ferientage.",
+    "extra_holidays": "Ungültige zusätzliche Feiertage.",
 }
 
 
@@ -102,7 +114,42 @@ def parse_optimize(payload) -> OptimizeIn:
             _fail("invalid_half_days", "Halbe Arbeitstage müssen im angezeigten Zeitraum liegen.")
         if not 0 < fraction < 1:
             _fail("invalid_half_days", "Ein halber Arbeitstag muss zwischen 0 und 1 liegen.")
+    ids = {loc.id for loc in req.locations}
+    for loc_id, extras in req.extra_holidays.items():
+        if loc_id not in ids or any(not start <= x.date <= end for x in extras):
+            _fail("invalid_extra_holidays", _FIELD_MESSAGES["extra_holidays"])
     towns = {loc.to_domain().town_key() for loc in req.locations}
     if len({loc.id for loc in req.locations}) != len(req.locations) or len(towns) != len(req.locations):
         _fail("invalid_locations", "Jeder Ort darf nur einmal vorkommen.")
     return req
+
+
+class HolidaysQuery(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    year: int
+    location_id: Annotated[str, Field(pattern=r"^bfs-\d{1,5}(-plz-\d{4})?$")]
+    canton: str
+    municipality_id: Annotated[int, Field(ge=1, lt=9000)]
+    municipality: Annotated[str, Field(min_length=1, max_length=100)]
+
+    @field_validator("canton")
+    @classmethod
+    def known_canton(cls, v: str) -> str:
+        if v not in CANTONS:
+            raise ValueError("unknown canton")
+        return v
+
+
+def parse_holidays_query(args) -> HolidaysQuery:
+    try:
+        q = HolidaysQuery.model_validate(dict(args))
+    except ValidationError as exc:
+        field = str(exc.errors()[0]["loc"][0]) if exc.errors()[0]["loc"] else ""
+        messages = {"year": "Ungültiges Jahr.", "canton": "Unbekannter Kanton."}
+        _fail(f"invalid_{field}" if field else "invalid_request",
+              messages.get(field, "Ungültiger Ort."))
+    if q.year not in selectable_years():
+        years = selectable_years()
+        _fail("invalid_year", f"Das Jahr muss zwischen {years[0]} und {years[-1]} liegen.")
+    return q

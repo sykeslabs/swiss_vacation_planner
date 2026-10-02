@@ -3,7 +3,7 @@
 import { bringToFront, makeDraggable } from "./draggable.js";
 import { formatDateWithWeekday } from "./format.js";
 import {
-  effectLabel, jurisdictionLabel, loadHolidayInfo, lookupHoliday, wikipediaSearchUrl,
+  confidenceLabel, effectLabel, jurisdictionLabel, loadHolidayInfo, lookupHoliday, wikipediaSearchUrl,
 } from "./holiday-info.js";
 
 const el = (tag, className, text) => {
@@ -54,8 +54,25 @@ export function createHolidayModal({ parent = document.body } = {}) {
     const block = el("article", "holiday-entry");
     block.append(el("h3", "holiday-name", holiday.name));
     const facts = el("ul", "holiday-facts");
-    facts.append(el("li", "", jurisdictionLabel(holiday)), el("li", "", effectLabel(day)));
+    facts.append(el("li", "", jurisdictionLabel(holiday)), el("li", "", effectLabel(day)),
+      el("li", "", confidenceLabel(holiday)));
+    if (holiday.note) facts.append(el("li", "", holiday.note));
+    if (holiday.conflict && holiday.confidence !== "low") facts.append(el("li", "", `⚠ ${holiday.conflict}`));
     block.append(facts);
+    const pages = [...new Set([...(holiday.corroborated_by ?? []),
+      ...(holiday.source_url?.startsWith("https://") && holiday.confidence === "low" ? [holiday.source_url] : [])])];
+    if (pages.length) {
+      const p = el("p", "source-note", "Websuche: ");
+      pages.forEach((url, i) => {
+        const a = el("a", "", new URL(url).hostname.replace(/^www\./, ""));
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        if (i) p.append(", ");
+        p.append(a);
+      });
+      block.append(p);
+    }
     const entry = lookupHoliday(info, holiday.name);
     block.append(el("p", "holiday-text", entry?.text
       ?? (info ? "Für diesen Feiertag ist noch kein Hintergrundtext hinterlegt."

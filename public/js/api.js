@@ -50,3 +50,18 @@ export async function postOptimize(payload, { signal } = {}) {
     fallbackMessage: "Der Kalender konnte nicht berechnet werden. Bitte versuche es erneut.",
   });
 }
+
+/** GET /api/holidays: baseline holidays of the planned year, checked against the web search. */
+export async function fetchHolidays(location, year, { signal } = {}) {
+  const q = new URLSearchParams({
+    year: String(year),
+    location_id: location.id,
+    canton: location.canton,
+    municipality_id: String(location.municipality_id),
+    municipality: location.municipality,
+  });
+  return requestJson(`/api/holidays?${q}`, {
+    signal,
+    fallbackMessage: "Die Feiertage konnten nicht geprüft werden. Es gilt der kantonale Referenzkalender.",
+  });
+}

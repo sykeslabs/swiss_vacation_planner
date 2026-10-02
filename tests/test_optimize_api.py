@@ -33,7 +33,7 @@ def test_returns_days_per_location(client):
     assert zh["days"][0]["date"] == f"{YEAR - 1}-12-01"
     assert zh["days"][-1]["date"] == f"{YEAR + 1}-01-31"
     assert zh["candidates"] == [] and zh["summary"] is None
-    assert zh["warnings"][0]["code"] == "baseline_only"
+    assert zh["warnings"] == []          # holiday warnings come from GET /api/holidays
     assert {h["source"] for h in zh["holidays"]} == {"Referenzkalender (Python-Paket holidays)"}
     day = next(d for d in zh["days"] if d["date"] == f"{YEAR}-12-24")
     assert set(day) == {"date", "weekday", "in_planned_year", "is_working_day", "is_weekend",
@@ -88,6 +88,10 @@ def test_identical_requests_give_identical_responses(client):
     ({"half_days": {f"{YEAR}-12-24": 1.5}}, "invalid_half_days"),
     ({"vacation_budget": -1}, "invalid_vacation_budget"),
     ({"vacation_type": "beach"}, "unknown_field"),
+    ({"extra_holidays": {"bfs-999": [{"date": f"{YEAR}-04-19", "name": "X"}]}}, "invalid_extra_holidays"),
+    ({"extra_holidays": {"bfs-261": [{"date": f"{YEAR + 3}-04-19", "name": "X"}]}}, "invalid_extra_holidays"),
+    ({"extra_holidays": {"bfs-261": [{"date": f"{YEAR}-04-19", "name": "X", "work_fraction": 0.9}]}},
+     "invalid_extra_holidays"),
 ])
 def test_invalid_input_returns_400(client, overrides, code):
     res = post(client, payload(**overrides))
@@ -99,3 +103,19 @@ def test_invalid_input_returns_400(client, overrides, code):
 def test_non_json_body(client):
     res = client.post("/api/optimize", data="nope", content_type="text/plain")
     assert res.status_code == 400
+
+
+def test_enabled_optional_holiday_frees_the_day(client):
+    # 3rd Monday of April in YEAR — a working day without a baseline holiday in ZH
+    from datetime import date, timedelta
+    d = date(YEAR, 4, 15)
+    while d.weekday() != 0:
+        d += timedelta(days=1)
+    body = payload(extra_holidays={"bfs-261": [{"date": d.isoformat(), "name": "Sechseläuten"}]})
+    data = post(client, body).get_json()["per_location"]["bfs-261"]
+    day = next(x for x in data["days"] if x["date"] == d.isoformat())
+    assert day["is_holiday"] and day["is_free"] and day["holiday_names"] == ["Sechseläuten"]
+    extra = next(h for h in data["holidays"] if h["name"] == "Sechseläuten")
+    assert extra["confidence"] == "low" and extra["source"] == "Websuche (You.com)"
+    without = post(client, payload()).get_json()["per_location"]["bfs-261"]
+    assert not next(x for x in without["days"] if x["date"] == d.isoformat())["is_holiday"]
