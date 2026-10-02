@@ -17,3 +17,9 @@ One line per decision: date — decision — reason. Status: **accepted** (owner
 - 2026-10-02 — accepted — D15: no persistent cache in v1 (in-memory TTL only).
 - 2026-10-02 — proposed — OpenRouter timeout 25 s and Vercel `maxDuration` 30 s (all other services ≤ 8 s) — the spike call took 8.27 s, above the SPEC §5 limit.
 - 2026-10-02 — proposed — The API passes location fields (canton, BFS, lat/lon, elevation) alongside `location_id`; `/api/optimize` receives holidays from the client — the server is stateless on Vercel.
+- 2026-10-02 — accepted — Vercel CLI 62.2.0 installed locally (≥ 48.2.10 required for Flask `vercel dev`).
+- 2026-10-02 — proposed — You.com is on the free tier (100 queries/day, per owner): at most 1 You.com call per uncached `(municipality_id, canton, year)`; treat HTTP 429/402 as "quota exhausted" → baseline holidays + warning; tests and dev use fixtures, not live calls — the quota is shared by all users and in-memory caches are lost on cold starts.
+- 2026-10-02 — accepted — Static assets in `public/**`; Flask serves `public/` with `static_url_path=""` locally, so URLs match Vercel — M1 approved by owner; verified on `vercel dev`.
+- 2026-10-02 — accepted — Python 3.13 (`.python-version`), local `.venv`, `requirements.txt` (runtime) + `requirements-dev.txt` (pytest) — owner chose venv option (a).
+- 2026-10-02 — accepted — Leaflet 1.9.4 from unpkg with SHA-384 SRI; no frontend build step — spec allows vanilla JS; SRI hashes computed from the served files.
+- 2026-10-02 — accepted — Base map `ch.swisstopo.pixelkarte-farbe` / satellite `ch.swisstopo.swissimage` via WMTS EPSG:3857 (JPEG), attribution "© swisstopo", map limited to minZoom 7 and padded Swiss bounds — SPEC §7.

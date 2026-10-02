@@ -7,3 +7,5 @@ venv/
 .pytest_cache/
 .vercel/
 node_modules/
+
+.vercel

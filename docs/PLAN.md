@@ -70,7 +70,7 @@ Observations relevant to D1/D2:
 - Many result pages (ferienwiki.ch, stadt-zuerich.ch) have tables with `dd.mm.` dates without a year, or employer-specific rules (Stadt Zürich "Betriebsferientage").
 - In practice one third-party site (feiertagskalender.ch, "Irrtümer vorbehalten") carries the parsable data.
 - Prototype parser (regex on markdown rows with `dd.mm.yyyy`) extracted the 9 ZH and the AI rows correctly, including `St. Mauritius` (22.9., inner district only) and `Mariä Himmelfahrt`.
-- **You.com pricing per call was not visible in the API response.** [OWNER] Please check the dashboard.
+- **Pricing:** free tier, 100 queries/day (owner, 2026-10-02). The quota is shared by all users; in-memory caches reset on cold starts. Quota errors (429/402) degrade to baseline + warning. A persistent cache (D15 follow-up, Upstash/Vercel KV) would protect the quota and needs owner approval.
 
 ### 4.3 MeteoSwiss Open Government Data (weather) — no key, licence CC BY
 

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ferienplaner Schweiz</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H"
+        crossorigin="anonymous">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <div id="map" role="application" aria-label="Karte der Schweiz"></div>
+
+  <header class="glass panel brand">
+    <h1>Ferienplaner Schweiz</h1>
+  </header>
+
+  <div class="glass panel layer-switch" role="group" aria-label="Kartenhintergrund">
+    <button type="button" class="seg" data-layer="map" aria-pressed="true">Karte</button>
+    <button type="button" class="seg" data-layer="satellite" aria-pressed="false">Satellit</button>
+  </div>
+
+  <div id="map-notice" class="glass panel notice" role="status" hidden></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH"
+          crossorigin="anonymous"></script>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
