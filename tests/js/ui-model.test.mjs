@@ -330,3 +330,16 @@ test("'Über Adam' links to the to-do list (static, movable, incl. the school-ho
   assert.match(modal, /movable: true/);
   assert.doesNotMatch(modal, /fetch\(|innerHTML/);
 });
+
+test("hovering a period in the calendar highlights its list entry (and its days)", () => {
+  const item = (key) => {
+    const classes = new Set();
+    return { dataset: { period: key }, classes, classList: { toggle: (c, on) => (on ? classes.add(c) : classes.delete(c)) } };
+  };
+  const list = [item("a|b"), item("c|d")];
+  assert.equal(markHover(list, "c|d", "period"), 1);
+  assert.deepEqual(list.map((i) => i.classes.has("is-hover")), [false, true]);
+  const panels = readFileSync(new URL("../../public/js/town-panels.js", import.meta.url), "utf8");
+  assert.match(panels, /calendarEl\.addEventListener\("pointerover", previewFrom\)/);
+  assert.match(panels, /markHover\(p\.periodList\.querySelectorAll\("\.candidate-btn"\), key, "period"\)/);
+});

@@ -26,10 +26,10 @@ export function cellAction(view, { holiday = false, plan = false } = {}) {
  * month view alike, via data-plan) and unmarks all others; `key` null clears. Returns the
  * number of marked cells. Works on anything with `dataset` and `classList`.
  */
-export function markHover(cells, key) {
+export function markHover(cells, key, attr = "plan") {
   let n = 0;
   for (const cell of cells) {
-    const on = key !== null && cell.dataset.plan === key;
+    const on = key !== null && cell.dataset[attr] === key;
     cell.classList.toggle("is-hover", on);
     if (on) n += 1;
   }

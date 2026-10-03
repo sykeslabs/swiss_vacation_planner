@@ -140,6 +140,19 @@ export function createTownPanels({
 
     const calendarEl = document.createElement("div");
     calendarEl.className = "calendar";
+    // Hovering (or focusing) a recommended day previews its period, also in the list.
+    const planKeyAt = (target) => target.closest?.("[data-plan]")?.dataset.plan ?? null;
+    const previewFrom = (e) => {
+      const entry = panels.get(loc.id);
+      const key = planKeyAt(e.target);
+      if (entry && key !== entry.hoverKey) setHover(entry, key);
+    };
+    calendarEl.addEventListener("pointerover", previewFrom);
+    calendarEl.addEventListener("focusin", previewFrom);
+    calendarEl.addEventListener("pointerleave", () => {
+      const entry = panels.get(loc.id);
+      if (entry?.hoverKey) setHover(entry, null);
+    });
 
     // "So setzt du deine Ferientage clever ein": the recommended periods, chronological.
     // A click selects the period exactly like a turquoise day in the month detail.
@@ -221,9 +234,12 @@ export function createTownPanels({
   }
 
   /** Highlight a period's days in the calendar while its list entry is hovered or focused. */
+  /** Hover preview in both directions: the period's days in the calendar and its entry in
+   * the list below (list → calendar and calendar → list). */
   function setHover(p, key) {
     p.hoverKey = key;
     markHover(p.el.querySelectorAll(".calendar [data-plan]"), key);
+    markHover(p.periodList.querySelectorAll(".candidate-btn"), key, "period");
   }
 
   /** Period list below the calendar (filtered to the open month, if any). */

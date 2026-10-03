@@ -278,6 +278,8 @@ html, body {
 }
 .candidate-btn:hover { border-color: var(--text-muted); }
 .candidate-btn[aria-pressed="true"] { border-color: var(--period-ring); box-shadow: inset 0 0 0 1px var(--period-ring); }
+/* hover preview from the calendar: dashed like the calendar preview */
+.candidate-btn.is-hover { border: 1px dashed var(--period-ring); }
 .candidate-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .candidate-title { font-size: 0.84rem; font-weight: 600; }
 .candidate-range { font-size: 0.8rem; color: var(--text-muted); }
