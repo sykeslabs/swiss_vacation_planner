@@ -28,6 +28,26 @@ And after all the time we’ve spent learning about AI...
 
 ## Project Reflection
 
+ADAM is designed for **people working in Switzerland who want to make the most of their limited vacation days**. Instead of manually checking calendars and trying different combinations, ADAM finds combinations that maximize consecutive days off.
+
+The problem is quite simple: planning holidays around Swiss public holidays and weekends can be surprisingly complicated.
+
+The main challenge was turning what sounds like a simple optimization problem into something that actually works for real-world holiday planning.
+
+There are many constraints: different Swiss cantons have different holidays, holidays can fall on weekends, vacation periods can overlap, and users may have personal restrictions.
+
+So the challenge was not just building the optimizer — it was **defining the problem correctly**.
+
+I built a web-based prototype where users can enter their **working town location, available vacation days, desired vacation periods, travelling preferences, and other constraints**.
+
+ADAM then analyzes weekends and Swiss public holidays, generates an optimized vacation plan when to take vacation days to get the most time off and suggests several travel iternaries including the possibility to directly book the holiday.
+
+**it’s about time we optimized something that really matters.**
+
+---
+
+## Project Reflection
+
 ### What problem are you trying to solve, and for whom?
 
 The problem is quite simple: planning holidays around Swiss public holidays and weekends can be surprisingly complicated.
