@@ -259,3 +259,30 @@ test("holiday details: web-search links styled like the Wikipedia link, no 'Datu
   assert.ok(src.indexOf('el("hr", "holiday-sep")') > src.indexOf('"holiday-sources"'));
   assert.ok(src.indexOf('el("hr", "holiday-sep")') < src.indexOf('el("p", "holiday-text"'));
 });
+
+test("holiday details: date and town in the title bar, holiday name only for several holidays", () => {
+  const src = readFileSync(new URL("../../public/js/holiday-modal.js", import.meta.url), "utf8");
+  assert.match(src, /title\.textContent = `\$\{formatDateWithWeekday\(day\.date\)\} · \$\{town\}`/);
+  assert.match(src, /if \(withName\) block\.append\(el\("h3", "holiday-name"/);
+  assert.match(src, /const withName = holidays\.length > 1;/);
+  assert.doesNotMatch(src, /holiday-meta/);
+  const css = readFileSync(new URL("../../public/css/app.css", import.meta.url), "utf8");
+  const rule = (sel) => css.match(new RegExp(`\.${sel} \{([^}]*)\}`))[1];
+  for (const sel of ["holiday-facts", "holiday-sources"]) {
+    assert.match(rule(sel), /font-size: 0\.88rem/);
+    assert.match(rule(sel), /color: var\(--text\)/);
+  }
+});
+
+test("preferences and help modals are movable", () => {
+  for (const f of ["prefs-modal.js", "help-modal.js", "town-modal.js", "holiday-days-modal.js"]) {
+    const src = readFileSync(new URL(`../../public/js/${f}`, import.meta.url), "utf8");
+    assert.match(src, /createDialog\(\{[^}]*movable: true/, f);
+  }
+});
+
+test("a drag that ends over the backdrop does not close a dialog", () => {
+  const src = readFileSync(new URL("../../public/js/dialog.js", import.meta.url), "utf8");
+  assert.match(src, /pressedOutside = e\.target === root/);
+  assert.match(src, /if \(e\.target === root && pressedOutside\) hide\("outside"\)/);
+});

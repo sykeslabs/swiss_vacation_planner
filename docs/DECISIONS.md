@@ -139,3 +139,6 @@ One line per decision: date — decision — reason. Status: **accepted** (owner
 - 2026-10-03 — accepted — Period list entries in two lines ("1 Ferientag → 4 Tage frei" / "6.–9. Mai 2027"); the year split ("Davon … im 2027 …") is no longer shown in the list, only in the period details — owner request.
 - 2026-10-03 — accepted — Holiday details: web-search links ("Websuche: feiertagskalender.ch ↗") use the same style as "Mehr dazu auf Wikipedia ↗"; removed the line "Datum: <source>. Text: <source>." — owner request.
 - 2026-10-03 — accepted — Holiday details: a separator line between facts/web sources and the background text — owner request.
+- 2026-10-03 — accepted — Holiday details: the title bar shows "Fr, 1. Januar 2027 · 5400 Baden (AG)"; the holiday name heading is shown only when several holidays fall on that day; facts and web sources use the same type (size, colour) as the background text — owner request.
+- 2026-10-03 — accepted — ⚙ Präferenzen and "Über Adam" are movable like the town modal (title bar drag, arrow keys) — owner request.
+- 2026-10-03 — accepted — Fixed: dragging a movable modal and releasing over the backdrop closed it; a click outside now closes only if the press also started outside.

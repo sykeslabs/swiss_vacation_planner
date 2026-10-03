@@ -28,7 +28,7 @@ function link(node, { href, text }, newTab) {
 }
 
 export function createHelpModal({ config = {} } = {}) {
-  const dialog = createDialog({ title: "Über Adam", className: "help-modal" });
+  const dialog = createDialog({ title: "Über Adam", className: "help-modal", movable: true });
   const links = aboutLinks(config);
 
   const steps = el("ol", "help-steps");

@@ -52,9 +52,10 @@ export function createHolidayModal({ parent = document.body } = {}) {
     }
   });
 
-  function holidayBlock(holiday, day, info) {
+  function holidayBlock(holiday, day, info, { withName = false } = {}) {
     const block = el("article", "holiday-entry");
-    block.append(el("h3", "holiday-name", holiday.name));
+    // The title bar shows date and town; a name heading only when several holidays share the day.
+    if (withName) block.append(el("h3", "holiday-name", holiday.name));
     const facts = el("ul", "holiday-facts");
     facts.append(el("li", "", jurisdictionLabel(holiday)), el("li", "", effectLabel(day)),
       el("li", "", confidenceLabel(holiday)));
@@ -96,9 +97,9 @@ export function createHolidayModal({ parent = document.body } = {}) {
       returnFocus = from ?? null;
       ownerId = locationId;
       const info = await loadHolidayInfo();
-      title.textContent = holidays.map((h) => h.name).join(" · ") || "Feiertag";
-      const meta = el("p", "hint holiday-meta", `${formatDateWithWeekday(day.date)} · ${town}`);
-      body.replaceChildren(meta, ...holidays.map((h) => holidayBlock(h, day, info)));
+      title.textContent = `${formatDateWithWeekday(day.date)} · ${town}`;
+      const withName = holidays.length > 1;
+      body.replaceChildren(...holidays.map((h) => holidayBlock(h, day, info, { withName })));
       const wasHidden = root.hidden;
       root.hidden = false;
       if (wasHidden) {

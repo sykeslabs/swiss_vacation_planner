@@ -664,10 +664,12 @@ dialog.modal.is-movable.is-dragging .modal-head { cursor: grabbing; }
 .holiday-meta { margin: 0 0 8px; }
 .holiday-entry + .holiday-entry { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--glass-border); }
 .holiday-name { margin: 0 0 4px; font-size: 0.9rem; }
-.holiday-facts { margin: 0 0 8px; padding-left: 18px; font-size: 0.82rem; color: var(--text-muted); }
+/* Facts and sources use the same type as the background text (owner request). */
+.holiday-facts { margin: 4px 0 8px; padding-left: 18px; font-size: 0.88rem; line-height: 1.45; color: var(--text); }
 .holiday-text { margin: 0 0 6px; font-size: 0.88rem; line-height: 1.45; }
 .holiday-link { font-size: 0.82rem; color: var(--text); }
-.holiday-sources { margin: 0 0 6px; font-size: 0.82rem; color: var(--text-muted); }
+.holiday-sources { margin: 0 0 6px; font-size: 0.88rem; line-height: 1.45; color: var(--text); }
+.holiday-sources .holiday-link { font-size: inherit; }
 .holiday-sep { border: 0; border-top: 1px solid var(--glass-border); margin: 8px 0; }
 
 .day-note {

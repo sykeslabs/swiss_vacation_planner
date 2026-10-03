@@ -4,7 +4,7 @@ import { createDialog, el } from "./dialog.js";
 import { budgetField, workingDaysField, yearField } from "./preference-fields.js";
 
 export function createPrefsModal({ store }) {
-  const dialog = createDialog({ title: "Präferenzen", className: "prefs-modal" });
+  const dialog = createDialog({ title: "Präferenzen", className: "prefs-modal", movable: true });
   const year = yearField(store);
   const days = workingDaysField(store);
   const budget = budgetField(store);

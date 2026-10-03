@@ -74,8 +74,15 @@ export function createDialog({ title = "", className = "", closeLabel = "Schlies
     hide("escape");
   });
   // Outside click: the backdrop belongs to the <dialog> element itself, the content to the frame.
+  // It counts only if the press also started outside: a drag that ends over the backdrop
+  // (pointer faster than the moving dialog) must not close it.
+  let pressedOutside = false;
+  root.addEventListener("pointerdown", (e) => {
+    pressedOutside = e.target === root;
+  });
   root.addEventListener("click", (e) => {
-    if (e.target === root) hide("outside");
+    if (e.target === root && pressedOutside) hide("outside");
+    pressedOutside = false;
   });
   root.addEventListener("keydown", (e) => {
     if (e.key !== "Tab") return;
