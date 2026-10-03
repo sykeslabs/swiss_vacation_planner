@@ -366,3 +366,47 @@ def test_api_at_point(client, monkeypatch):
     monkeypatch.setattr(geoadmin, "locate", down)
     res = client.get("/api/locations/at?lat=47.47&lon=8.30")
     assert res.status_code == 503 and "ReadTimeout" not in res.get_data(as_text=True)
+
+
+# --- lakeside postcode: the zipcode point lies in a lake (owner report: 8590 Romanshorn) --------
+
+LAKE = json.loads((FIXTURES / "geoadmin_8590_lake.json").read_text(encoding="utf-8"))
+
+
+def lake_api(calls, gg25_error=None):
+    def api(service, url, params=None, **kwargs):
+        p = dict(params or {})
+        calls.append((url, p.get("origins")))
+        if url == geoadmin.IDENTIFY_URL:
+            return LAKE["identify_lake"]
+        if p.get("origins") == "zipcode":
+            return LAKE["zipcode_8590"]
+        if p.get("origins") == "gg25":
+            if gg25_error:
+                raise gg25_error
+            return LAKE["gg25_romanshorn"]
+        if p.get("origins") == "gazetteer":
+            return LAKE["gazetteer_romanshorn"]
+        raise AssertionError(url)
+    return api
+
+
+def test_postcode_in_a_lake_falls_back_to_the_named_municipality(monkeypatch):
+    calls = []
+    monkeypatch.setattr(http, "get_json", lake_api(calls))
+    [loc] = geoadmin.search_locations("8590")
+    assert (loc.id, loc.name, loc.postcode, loc.municipality, loc.canton) == \
+        ("bfs-4436-plz-8590", "Romanshorn", "8590", "Romanshorn", "TG")
+    # placed on land (settlement / municipality point), not on the lake point
+    assert (loc.latitude, loc.longitude) != (47.60099411010742, 9.400177001953125)
+    assert 47.5 < loc.latitude < 47.6 and 9.3 < loc.longitude < 9.45
+    assert ("gg25" in [o for _, o in calls])
+
+
+def test_lake_fallback_outage_is_not_cached(monkeypatch):
+    calls = []
+    monkeypatch.setattr(http, "get_json", lake_api(calls, gg25_error=http.UpstreamError("geoadmin", "down")))
+    with pytest.raises(http.UpstreamError):
+        geoadmin.search_locations("8590")
+    monkeypatch.setattr(http, "get_json", lake_api(calls))
+    assert [l.postcode for l in geoadmin.search_locations("8590")] == ["8590"]

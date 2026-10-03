@@ -58,7 +58,7 @@ export function renderMonth(month, { detail = false } = {}) {
     const category = dayCategory(day);
     const cell = el("span", `day cat-${category}`);
     cell.setAttribute("role", "gridcell");
-    if (!day.in_planned_year) cell.classList.add("outside");
+    // Boundary months (Dec before, Jan after) look like the planned year (owner request).
     if (day.in_selected_period) cell.classList.add("in-period");
     cell.dataset.date = day.date;
     cell.title = dayTitle(day, category);
@@ -98,9 +98,6 @@ export function renderLegend() {
     item.append(el("span", `legend-swatch day cat-${key}`), el("span", "", label));
     list.append(item);
   }
-  const outside = el("li", "legend-item");
-  outside.append(el("span", "legend-swatch day cat-workday outside"), el("span", "", "Ausserhalb des Planjahres"));
-  list.append(outside);
   return list;
 }
 

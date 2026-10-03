@@ -196,7 +196,8 @@ def _postcode_location(attrs: dict, retrieved_at: str) -> Location | type[_Looku
         log.warning("GeoAdmin identify failed for %s: %s", plz, exc.reason)
         return _LookupFailed
     if not muni:
-        return None
+        # Lakeside postcodes (8590 Romanshorn): the zipcode point can lie in the lake.
+        return _postcode_by_name(plz, place, retrieved_at)
     bfs, municipality, canton = muni
     return Location(
         id=f"bfs-{bfs}-plz-{plz}",
@@ -211,6 +212,28 @@ def _postcode_location(attrs: dict, retrieved_at: str) -> Location | type[_Looku
         source_url=SEARCH_URL,
         retrieved_at=retrieved_at,
     )
+
+
+def _postcode_by_name(plz: str, place: str, retrieved_at: str) -> Location | type[_LookupFailed] | None:
+    """Fallback when the zipcode point lies in no municipality (a lake): the municipality
+    named like the locality whose official postcodes include `plz`, placed on its
+    settlement point (on land)."""
+    try:
+        body = http.get_json(SERVICE, SEARCH_URL, {
+            "searchText": place, "type": "locations", "origins": "gg25", "sr": "4326", "limit": "16",
+        })
+    except http.UpstreamError as exc:
+        log.warning("GeoAdmin name lookup failed for %s %s: %s", plz, place, exc.reason)
+        return _LookupFailed
+    by_bfs = postcodes_by_bfs()
+    for r in (body or {}).get("results") or []:
+        attrs = r.get("attrs") or {}
+        loc = normalise_municipality(attrs, retrieved_at) if attrs.get("origin") == "gg25" else None
+        if loc and plz in by_bfs.get(str(loc.municipality_id), ()):
+            settlements = _settlements(place) or []
+            loc = _at_settlement(loc, settlements)
+            return replace(loc, id=f"bfs-{loc.municipality_id}-plz-{plz}", name=place, postcode=plz, postcodes=())
+    return None
 
 
 def _settlements(q: str) -> list[tuple] | None:

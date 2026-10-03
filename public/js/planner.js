@@ -1,20 +1,12 @@
-// Planner panel (after onboarding): town chips (click → town modal, × → remove) and the
-// vacation type. The vacation type is stored for travel discovery only (CLAUDE.md rule 5).
+// "Deine Orte" panel (after onboarding): town chips (click → town modal, × → remove).
+// The "+" button in its title bar is wired in main.js.
 import { el } from "./dialog.js";
-import { locationLabel, VACATION_TYPES } from "./state.js";
+import { locationLabel } from "./state.js";
 
 export function createPlannerPanel({ root, store, onOpenTown }) {
   const chips = root.querySelector("#town-chips");
-  const select = root.querySelector("#vacation-type");
-  for (const t of VACATION_TYPES) {
-    const o = el("option", "", t.label);
-    o.value = t.key;
-    select.append(o);
-  }
-  select.addEventListener("change", () => store.setVacationType(select.value));
 
   function render(state) {
-    select.value = state.vacationType;
     chips.replaceChildren(...state.locations.map((loc) => {
       const li = el("li", "chip");
       const name = `${locationLabel(loc)} (${loc.canton})`;

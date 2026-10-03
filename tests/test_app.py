@@ -54,23 +54,26 @@ def test_page_layout_after_the_scope_change(client):
     assert "<title>Adam" in html
     # Onboarding wizard container (steps built in wizard.js)
     assert '<section id="wizard"' in html
-    # Top right, left to right: "+", ⚙, ?, Reset; with aria-labels and tooltips.
+    # Top right, left to right: ⚙, ?, Reset; with aria-labels and tooltips.
     start = html.index('id="top-controls"')
     controls = html[start:html.index("</nav>", start)]
-    ids = ["btn-add", "btn-prefs", "btn-help", "btn-reset"]
+    ids = ["btn-prefs", "btn-help", "btn-reset"]
     assert [controls.index(f'id="{i}"') for i in ids] == sorted(controls.index(f'id="{i}"') for i in ids)
-    for label in ("Ort hinzufügen", "Präferenzen", "Über Adam", "Alles zurücksetzen"):
+    for label in ("Präferenzen", "Über Adam", "Alles zurücksetzen"):
         assert re.search(rf'aria-label="{label}"\s+title="{label}"', controls), label
-    # "?" is always visible; "+", ⚙ and Reset only after onboarding (hidden at first).
+    # "?" is always visible; ⚙ and Reset only after onboarding (hidden at first).
     help_tag = re.search(r'<button id="btn-help"[^>]*>', controls).group(0)
     assert "hidden" not in help_tag
-    for i in ("btn-add", "btn-prefs", "btn-reset"):
+    assert 'id="btn-add"' not in controls
+    for i in ("btn-prefs", "btn-reset"):
         assert re.search(rf'<button id="{i}"[^>]*hidden>', controls), i
-    # Planner panel: town chips and vacation type only; no preferences, no "+ Ort hinzufügen".
+    # "Deine Orte": "+" (in the title bar) and the town chips only; no vacation type, no preferences.
     start = html.index('<section id="planner"')
     planner = html[start:html.index("</section>", start)]
-    assert 'id="town-chips"' in planner and 'id="vacation-type"' in planner
-    for gone in ("working-days", "half-day", "planner-budget", "year-badges", "Ort hinzufügen"):
+    assert 'id="town-chips"' in planner
+    assert re.search(r'<button id="btn-add"[^>]*aria-label="Ort hinzufügen"', planner)
+    assert planner.index('id="btn-add"') < planner.index('id="planner-body"')
+    for gone in ("vacation-type", "Was für Ferien", "working-days", "half-day", "planner-budget", "year-badges"):
         assert gone not in planner, gone
     assert 'id="town-panels"' in html
 

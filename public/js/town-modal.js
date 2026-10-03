@@ -30,7 +30,7 @@ const ADD_MESSAGES = {
 
 export function createTownModal({ store, getHolidayData, onClose = () => {} }) {
   let locationId = null;
-  const dialog = createDialog({ className: "town-modal", onClose: (why) => {
+  const dialog = createDialog({ className: "town-modal", movable: true, onClose: (why) => {
     const id = locationId;
     locationId = null;
     onClose({ locationId: id, why });

@@ -1,0 +1,651 @@
+{
+ "note": "Live GeoAdmin responses 2026-10-03: the 8590 zipcode point lies in Lake Constance.",
+ "zipcode_8590": {
+  "results": [
+   {
+    "attrs": {
+     "detail": "8590",
+     "featureId": "4926",
+     "geom_quadindex": "0",
+     "geom_st_box2d": "BOX(9.325701 47.547592,9.454581 47.621433)",
+     "label": "<b>8590 - Romanshorn</b>",
+     "lat": 47.60099411010742,
+     "lon": 9.400177001953125,
+     "num": 1,
+     "objectclass": "",
+     "origin": "zipcode",
+     "rank": 1,
+     "x": 9.400177001953125,
+     "y": 47.60099411010742,
+     "zoomlevel": 4294967295
+    },
+    "id": 4926,
+    "weight": 100
+   }
+  ]
+ },
+ "identify_lake": {
+  "results": [
+   {
+    "layerBodId": "ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill",
+    "layerName": "Gemeindegrenzen",
+    "featureId": "9329",
+    "id": "9329",
+    "attributes": {
+     "gemname": "Bodensee (TG)",
+     "gemflaeche": 13080.0,
+     "gde_hist_id": 10293,
+     "gde_nr": 9329,
+     "jahr": 2026,
+     "perimeter": 130878.2848430353,
+     "kanton": "TG",
+     "objektart": 1,
+     "is_current_jahr": true,
+     "objektart_lookup": "kantonsgebiet",
+     "link_de": "https://www.agvchapp.bfs.admin.ch/de/communes/results?BfsNr=9329&EntriesFrom=12.09.1848&EntriesTo=01.01.2026&IncludeUnassignedEntities=True\n\n",
+     "link_fr": "https://www.agvchapp.bfs.admin.ch/fr/communes/results?BfsNr=9329&EntriesFrom=12.09.1848&EntriesTo=01.01.2026&IncludeUnassignedEntities=True\n\n",
+     "link_it": "https://www.agvchapp.bfs.admin.ch/it/communes/results?BfsNr=9329&EntriesFrom=12.09.1848&EntriesTo=01.01.2026&IncludeUnassignedEntities=True\n\n",
+     "label": "Bodensee (TG)"
+    }
+   }
+  ]
+ },
+ "gg25_romanshorn": {
+  "results": [
+   {
+    "attrs": {
+     "detail": "romanshorn tg",
+     "featureId": "4436",
+     "geom_quadindex": "0",
+     "geom_st_box2d": "BOX(9.325701 47.548736,9.386109 47.581393)",
+     "label": "<b>Romanshorn (TG)</b>",
+     "lat": 47.564979553222656,
+     "lon": 9.359646797180176,
+     "num": 1,
+     "objectclass": "",
+     "origin": "gg25",
+     "rank": 2,
+     "x": 9.359646797180176,
+     "y": 47.564979553222656,
+     "zoomlevel": 4294967295
+    },
+    "id": 1459,
+    "weight": 100
+   }
+  ]
+ },
+ "gazetteer_romanshorn": {
+  "results": [
+   {
+    "attrs": {
+     "detail": "romanshorn romanshorn",
+     "geom_quadindex": "012323323233301223023",
+     "geom_st_box2d": "BOX(9.368648 47.565443,9.368648 47.565443)",
+     "label": "<i>Ort</i> <b>Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.56543731689453,
+     "lon": 9.368656158447266,
+     "num": 1,
+     "objectclass": "TLM_SIEDLUNGSNAME",
+     "origin": "gazetteer",
+     "rank": 5,
+     "x": 9.368656158447266,
+     "y": 47.56543731689453,
+     "zoomlevel": 10
+    },
+    "id": 138100,
+    "weight": 100
+   },
+   {
+    "attrs": {
+     "detail": "romanshorn-friedrichshafen _d_ romanshorn,bodensee _tg_",
+     "geom_quadindex": "0123",
+     "geom_st_box2d": "BOX(9.381056 47.562986,9.484497 47.652715)",
+     "label": "<i>Autofaehre</i> <b>Romanshorn-Friedrichshafen (D)</b> (TG) - Romanshorn,Bodensee (TG)",
+     "lat": 47.604644775390625,
+     "lon": 9.4360990524292,
+     "num": 1,
+     "objectclass": "TLM_SCHIFFFAHRT",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.4360990524292,
+     "y": 47.604644775390625,
+     "zoomlevel": 9
+    },
+    "id": 19534,
+    "weight": 1
+   },
+   {
+    "attrs": {
+     "detail": "romanshorn romanshorn",
+     "geom_quadindex": "012323323311333312031",
+     "geom_st_box2d": "BOX(9.38234 47.570822,9.38234 47.570822)",
+     "label": "<i>Aussichtspunkt</i> <b>Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.57081604003906,
+     "lon": 9.382349014282227,
+     "num": 1,
+     "objectclass": "TLM_EINZELOBJEKT",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.382349014282227,
+     "y": 47.57081604003906,
+     "zoomlevel": 9
+    },
+    "id": 98755,
+    "weight": 100
+   },
+   {
+    "attrs": {
+     "detail": "romanshorn spitz 30m romanshorn",
+     "geom_quadindex": "030101101000012303132",
+     "geom_st_box2d": "BOX(9.358318 47.564367,9.358318 47.564367)",
+     "label": "<i>Gebaeude</i> <b>Romanshorn Spitz 30m</b> (TG) - Romanshorn",
+     "lat": 47.564361572265625,
+     "lon": 9.35832691192627,
+     "num": 1,
+     "objectclass": "TLM_GEBAEUDE",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.35832691192627,
+     "y": 47.564361572265625,
+     "zoomlevel": 9
+    },
+    "id": 128929,
+    "weight": 100
+   },
+   {
+    "attrs": {
+     "detail": "romanshorn romanshorn",
+     "geom_quadindex": "012323323333321222310",
+     "geom_st_box2d": "BOX(9.381063 47.564707,9.381063 47.564707)",
+     "label": "<i><i>Verladestation</i></i> <b>Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.564701080322266,
+     "lon": 9.381072044372559,
+     "num": 1,
+     "objectclass": "TLM_STRASSENINFO",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.381072044372559,
+     "y": 47.564701080322266,
+     "zoomlevel": 9
+    },
+    "id": 151545,
+    "weight": 100
+   },
+   {
+    "attrs": {
+     "detail": "romanshorn romanshorn",
+     "geom_quadindex": "030101101111301330012",
+     "geom_st_box2d": "BOX(9.381271 47.563165,9.381271 47.563165)",
+     "label": "<i>Zollamt 24h 24h</i> <b>Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.56315994262695,
+     "lon": 9.381279945373535,
+     "num": 1,
+     "objectclass": "TLM_STRASSENINFO",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.381279945373535,
+     "y": 47.56315994262695,
+     "zoomlevel": 9
+    },
+    "id": 317624,
+    "weight": 100
+   },
+   {
+    "attrs": {
+     "detail": "romanshorn romanshorn",
+     "geom_quadindex": "03010110112",
+     "geom_st_box2d": "BOX(9.372066 47.556636,9.374811 47.557701)",
+     "label": "<i>Abwasserreinigungsareal</i> <b>Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.55714797973633,
+     "lon": 9.373513221740723,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.373513221740723,
+     "y": 47.55714797973633,
+     "zoomlevel": 9
+    },
+    "id": 409453,
+    "weight": 100
+   },
+   {
+    "attrs": {
+     "detail": "romanshorn spitz 30m romanshorn",
+     "geom_quadindex": "030101101000012303132",
+     "geom_st_box2d": "BOX(9.35832 47.564367,9.35832 47.564367)",
+     "label": "<i>Gebaeude Einzelhaus</i> <b>Romanshorn Spitz 30m</b> (TG) - Romanshorn",
+     "lat": 47.564361572265625,
+     "lon": 9.358328819274902,
+     "num": 1,
+     "objectclass": "tlm_gebaeude",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.358328819274902,
+     "y": 47.564361572265625,
+     "zoomlevel": 10
+    },
+    "id": 443501,
+    "weight": 100
+   },
+   {
+    "attrs": {
+     "detail": "aach romanshorn",
+     "geom_quadindex": "030101100321210010321",
+     "geom_st_box2d": "BOX(9.348345 47.551238,9.348345 47.551238)",
+     "label": "<i>Ort</i> <b>Aach</b> (TG) - Romanshorn",
+     "lat": 47.55123519897461,
+     "lon": 9.34835433959961,
+     "num": 1,
+     "objectclass": "TLM_SIEDLUNGSNAME",
+     "origin": "gazetteer",
+     "rank": 5,
+     "x": 9.34835433959961,
+     "y": 47.55123519897461,
+     "zoomlevel": 10
+    },
+    "id": 135129,
+    "weight": 7
+   },
+   {
+    "attrs": {
+     "detail": "straubenhaus romanshorn",
+     "geom_quadindex": "030101100231102110001",
+     "geom_st_box2d": "BOX(9.343099 47.552142,9.343099 47.552142)",
+     "label": "<i>Ort</i> <b>Straubenhaus</b> (TG) - Romanshorn",
+     "lat": 47.55213928222656,
+     "lon": 9.343108177185059,
+     "num": 1,
+     "objectclass": "TLM_SIEDLUNGSNAME",
+     "origin": "gazetteer",
+     "rank": 5,
+     "x": 9.343108177185059,
+     "y": 47.55213928222656,
+     "zoomlevel": 10
+    },
+    "id": 301394,
+    "weight": 7
+   },
+   {
+    "attrs": {
+     "detail": "sekundarschule romanshorn-salmsach romanshorn",
+     "geom_quadindex": "01232332332",
+     "geom_st_box2d": "BOX(9.37171 47.567346,9.373536 47.56863)",
+     "label": "<i>Schul- und Hochschulareal</i> <b>Sekundarschule Romanshorn-Salmsach</b> (TG) - Romanshorn",
+     "lat": 47.567996978759766,
+     "lon": 9.372682571411133,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.372682571411133,
+     "y": 47.567996978759766,
+     "zoomlevel": 9
+    },
+    "id": 24028,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "primarschule romanshorn romanshorn",
+     "geom_quadindex": "03010110110",
+     "geom_st_box2d": "BOX(9.372653 47.562069,9.374315 47.563227)",
+     "label": "<i>Schul- und Hochschulareal</i> <b>Primarschule Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.56264877319336,
+     "lon": 9.373488426208496,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.373488426208496,
+     "y": 47.56264877319336,
+     "zoomlevel": 9
+    },
+    "id": 24219,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "primarschule romanshorn romanshorn",
+     "geom_quadindex": "03010110110",
+     "geom_st_box2d": "BOX(9.372369 47.562738,9.373616 47.563614)",
+     "label": "<i>Schul- und Hochschulareal</i> <b>Primarschule Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.56317138671875,
+     "lon": 9.372970581054688,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.372970581054688,
+     "y": 47.56317138671875,
+     "zoomlevel": 9
+    },
+    "id": 51882,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "sekundarschule romanshorn-salmsach romanshorn",
+     "geom_quadindex": "01232332330",
+     "geom_st_box2d": "BOX(9.371436 47.570164,9.373187 47.571118)",
+     "label": "<i>Schul- und Hochschulareal</i> <b>Sekundarschule Romanshorn-Salmsach</b> (TG) - Romanshorn",
+     "lat": 47.57063674926758,
+     "lon": 9.372330665588379,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.372330665588379,
+     "y": 47.57063674926758,
+     "zoomlevel": 9
+    },
+    "id": 103255,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "primarschule romanshorn romanshorn",
+     "geom_quadindex": "0123233232",
+     "geom_st_box2d": "BOX(9.363156 47.566018,9.364033 47.56727)",
+     "label": "<i>Schul- und Hochschulareal</i> <b>Primarschule Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.566673278808594,
+     "lon": 9.363568305969238,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.363568305969238,
+     "y": 47.566673278808594,
+     "zoomlevel": 9
+    },
+    "id": 158603,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "sprachheilschule thurgau, standort romanshorn romanshorn",
+     "geom_quadindex": "012323323312",
+     "geom_st_box2d": "BOX(9.37631 47.569011,9.377173 47.569956)",
+     "label": "<i>Schul- und Hochschulareal</i> <b>Sprachheilschule Thurgau, Standort Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.569496154785156,
+     "lon": 9.376738548278809,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.376738548278809,
+     "y": 47.569496154785156,
+     "zoomlevel": 9
+    },
+    "id": 162258,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "primarschule romanshorn romanshorn",
+     "geom_quadindex": "01232332332",
+     "geom_st_box2d": "BOX(9.371943 47.566825,9.373724 47.568092)",
+     "label": "<i>Schul- und Hochschulareal</i> <b>Primarschule Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.567291259765625,
+     "lon": 9.373000144958496,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.373000144958496,
+     "y": 47.567291259765625,
+     "zoomlevel": 9
+    },
+    "id": 241290,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "p+rail romanshorn romanshorn",
+     "geom_quadindex": "0123233233312",
+     "geom_st_box2d": "BOX(9.379151 47.566687,9.379444 47.56719)",
+     "label": "<i>Oeffentliches Parkplatzareal</i> <b>P+Rail Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.56690216064453,
+     "lon": 9.379315376281738,
+     "num": 1,
+     "objectclass": "TLM_VERKEHRSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.379315376281738,
+     "y": 47.56690216064453,
+     "zoomlevel": 9
+    },
+    "id": 271690,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "primarschule romanshorn romanshorn",
+     "geom_quadindex": "030101100",
+     "geom_st_box2d": "BOX(9.343741 47.558499,9.345164 47.559277)",
+     "label": "<i>Schul- und Hochschulareal</i> <b>Primarschule Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.55888748168945,
+     "lon": 9.344427108764648,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.344427108764648,
+     "y": 47.55888748168945,
+     "zoomlevel": 9
+    },
+    "id": 272834,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "heilpaedagogisches zentrum romanshorn romanshorn",
+     "geom_quadindex": "0301011011",
+     "geom_st_box2d": "BOX(9.375824 47.561516,9.377091 47.562345)",
+     "label": "<i>Schul- und Hochschulareal</i> <b>Heilpädagogisches Zentrum Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.561927795410156,
+     "lon": 9.376492500305176,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.376492500305176,
+     "y": 47.561927795410156,
+     "zoomlevel": 9
+    },
+    "id": 382826,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "waldschenke romanshorn romanshorn",
+     "geom_quadindex": "030101100002123003021",
+     "geom_st_box2d": "BOX(9.334263 47.562263,9.334263 47.562263)",
+     "label": "<i>Gebaeude</i> <b>Waldschenke Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.562259674072266,
+     "lon": 9.334271430969238,
+     "num": 1,
+     "objectclass": "TLM_GEBAEUDE",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.334271430969238,
+     "y": 47.562259674072266,
+     "zoomlevel": 9
+    },
+    "id": 432310,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "primarschule romanshorn romanshorn",
+     "geom_quadindex": "012323323323",
+     "geom_st_box2d": "BOX(9.374024 47.565106,9.375229 47.565686)",
+     "label": "<i>Schul- und Hochschulareal</i> <b>Primarschule Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.56541061401367,
+     "lon": 9.374622344970703,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.374622344970703,
+     "y": 47.56541061401367,
+     "zoomlevel": 9
+    },
+    "id": 437947,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "waldschenke romanshorn romanshorn",
+     "geom_quadindex": "030101100002123003021",
+     "geom_st_box2d": "BOX(9.334262 47.56226,9.334262 47.56226)",
+     "label": "<i>Gebaeude Einzelhaus</i> <b>Waldschenke Romanshorn</b> (TG) - Romanshorn",
+     "lat": 47.562255859375,
+     "lon": 9.334270477294922,
+     "num": 1,
+     "objectclass": "tlm_gebaeude",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.334270477294922,
+     "y": 47.562255859375,
+     "zoomlevel": 10
+    },
+    "id": 444692,
+    "weight": 13
+   },
+   {
+    "attrs": {
+     "detail": "chlosterholz romanshorn",
+     "geom_quadindex": "012323322213203221211",
+     "geom_st_box2d": "BOX(9.342334 47.569862,9.342334 47.569862)",
+     "label": "<i>Flurname swisstopo</i> <b>Chlosterholz</b> (TG) - Romanshorn",
+     "lat": 47.56985855102539,
+     "lon": 9.342342376708984,
+     "num": 1,
+     "objectclass": "TLM_FLURNAME",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.342342376708984,
+     "y": 47.56985855102539,
+     "zoomlevel": 10
+    },
+    "id": 13247,
+    "weight": 7
+   },
+   {
+    "attrs": {
+     "detail": "obere beffert romanshorn",
+     "geom_quadindex": "030101100202330003202",
+     "geom_st_box2d": "BOX(9.334318 47.553022,9.334318 47.553022)",
+     "label": "<i>Flurname swisstopo</i> <b>Obere Beffert</b> (TG) - Romanshorn",
+     "lat": 47.553016662597656,
+     "lon": 9.33432674407959,
+     "num": 1,
+     "objectclass": "TLM_FLURNAME",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.33432674407959,
+     "y": 47.553016662597656,
+     "zoomlevel": 10
+    },
+    "id": 14392,
+    "weight": 7
+   },
+   {
+    "attrs": {
+     "detail": "oberi eierle romanshorn",
+     "geom_quadindex": "030101100022233110201",
+     "geom_st_box2d": "BOX(9.33354 47.557024,9.33354 47.557024)",
+     "label": "<i>Flurname swisstopo</i> <b>Oberi Eierle</b> (TG) - Romanshorn",
+     "lat": 47.5570182800293,
+     "lon": 9.333548545837402,
+     "num": 1,
+     "objectclass": "TLM_FLURNAME",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.333548545837402,
+     "y": 47.5570182800293,
+     "zoomlevel": 10
+    },
+    "id": 15087,
+    "weight": 7
+   },
+   {
+    "attrs": {
+     "detail": "aacherwinggel romanshorn",
+     "geom_quadindex": "030101100302311130001",
+     "geom_st_box2d": "BOX(9.347424 47.553323,9.347424 47.553323)",
+     "label": "<i>Flurname swisstopo</i> <b>Aacherwinggel</b> (TG) - Romanshorn",
+     "lat": 47.55331802368164,
+     "lon": 9.347433090209961,
+     "num": 1,
+     "objectclass": "TLM_FLURNAME",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.347433090209961,
+     "y": 47.55331802368164,
+     "zoomlevel": 10
+    },
+    "id": 15138,
+    "weight": 7
+   },
+   {
+    "attrs": {
+     "detail": "wiitezaelg romanshorn",
+     "geom_quadindex": "012323323231111221112",
+     "geom_st_box2d": "BOX(9.369568 47.568634,9.369568 47.568634)",
+     "label": "<b>Wiitezälg</b> (TG) - Romanshorn",
+     "lat": 47.56863021850586,
+     "lon": 9.369577407836914,
+     "num": 1,
+     "objectclass": "TLM_FLURNAME",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.369577407836914,
+     "y": 47.56863021850586,
+     "zoomlevel": 9
+    },
+    "id": 16959,
+    "weight": 7
+   },
+   {
+    "attrs": {
+     "detail": "underi eierle romanshorn",
+     "geom_quadindex": "030101100200323330301",
+     "geom_st_box2d": "BOX(9.334261 47.554708,9.334261 47.554708)",
+     "label": "<i>Flurname swisstopo</i> <b>Underi Eierle</b> (TG) - Romanshorn",
+     "lat": 47.55470275878906,
+     "lon": 9.334269523620605,
+     "num": 1,
+     "objectclass": "TLM_FLURNAME",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.334269523620605,
+     "y": 47.55470275878906,
+     "zoomlevel": 10
+    },
+    "id": 17428,
+    "weight": 7
+   },
+   {
+    "attrs": {
+     "detail": "sbw brueckenangebot romanshorn",
+     "geom_quadindex": "012323323331",
+     "geom_st_box2d": "BOX(9.380313 47.5677,9.380989 47.568202)",
+     "label": "<i>Schul- und Hochschulareal</i> <b>SBW Brückenangebot</b> (TG) - Romanshorn",
+     "lat": 47.567935943603516,
+     "lon": 9.380691528320312,
+     "num": 1,
+     "objectclass": "TLM_NUTZUNGSAREAL",
+     "origin": "gazetteer",
+     "rank": 6,
+     "x": 9.380691528320312,
+     "y": 47.567935943603516,
+     "zoomlevel": 9
+    },
+    "id": 20232,
+    "weight": 7
+   }
+  ]
+ }
+}

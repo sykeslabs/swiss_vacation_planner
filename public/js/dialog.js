@@ -1,5 +1,7 @@
 // Modal glass dialog on the native <dialog> element: × button, Esc and a click outside
-// close it; Tab stays inside; focus returns to the element that opened it.
+// close it; Tab stays inside; focus returns to the element that opened it. With
+// `movable`, the title bar drags it (mouse, touch, arrow keys) like the other panels.
+import { makeDraggable } from "./draggable.js";
 
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea, [tabindex="0"]';
 
@@ -12,7 +14,7 @@ export const el = (tag, className, text) => {
 
 let idCounter = 0;
 
-export function createDialog({ title = "", className = "", closeLabel = "Schliessen", onClose = () => {} } = {}) {
+export function createDialog({ title = "", className = "", closeLabel = "Schliessen", onClose = () => {}, movable = false } = {}) {
   const root = el("dialog", `glass modal ${className}`.trim());
   const titleId = `dialog-title-${++idCounter}`;
   root.setAttribute("aria-labelledby", titleId);
@@ -31,6 +33,23 @@ export function createDialog({ title = "", className = "", closeLabel = "Schlies
   frame.append(head, body, footer);
   root.append(frame);
   document.body.append(root);
+
+  // Movable: absolute left/top instead of the centred default (margin: auto).
+  let drag = null;
+  let position = null;            // where the user left it (kept while the page is open)
+  if (movable) {
+    root.classList.add("is-movable");
+    head.tabIndex = 0;
+    head.title = "Ziehen zum Verschieben";
+    head.setAttribute("aria-label", "Fenster verschieben mit Ziehen oder Pfeiltasten");
+    drag = makeDraggable(root, head, { onEnd: (pos) => { position = pos; } });
+  }
+  function placeOnOpen() {
+    if (!drag) return;
+    const r = root.getBoundingClientRect();
+    const pos = position ?? { left: (window.innerWidth - r.width) / 2, top: Math.max(24, (window.innerHeight - r.height) / 3) };
+    drag.place(pos.left, pos.top);
+  }
 
   let returnFocus = null;
   let reason = null;
@@ -80,7 +99,10 @@ export function createDialog({ title = "", className = "", closeLabel = "Schlies
     },
     open(from = document.activeElement) {
       returnFocus = from instanceof HTMLElement ? from : null;
-      if (!root.open) root.showModal();
+      if (!root.open) {
+        root.showModal();
+        placeOnOpen();
+      }
       (root.querySelector("[autofocus]") ?? close).focus({ preventScroll: true });
     },
     close: hide,

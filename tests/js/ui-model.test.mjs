@@ -183,3 +183,10 @@ test("town panel title: holidays and the plan in one line", () => {
   assert.equal(townHeadline({ holidays_total: 9, plan: [], plan_vacation_days: 0, plan_days_free: 0 }), "9 Feiertage");
   assert.equal(townHeadline(null), "");
 });
+
+test("boundary months are not shaded (no 'outside' class, no legend entry)", () => {
+  const view = readFileSync(new URL("../../public/js/calendar-view.js", import.meta.url), "utf8");
+  const css = readFileSync(new URL("../../public/css/app.css", import.meta.url), "utf8");
+  assert.doesNotMatch(view, /classList\.add\("outside"\)|Ausserhalb des Planjahres/);
+  assert.doesNotMatch(css, /\.day\.outside/);
+});

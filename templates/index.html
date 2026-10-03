@@ -18,10 +18,9 @@
   <!-- Onboarding: 1 Jahr → 2 Arbeitsort → 3 Präferenzen (built in wizard.js). -->
   <section id="wizard" class="glass panel wizard" aria-label="Einrichtung" hidden></section>
 
-  <!-- Top right, left to right: "+", ⚙, ?, Reset. "?" is always there, the others after onboarding. -->
+  <!-- Top right, left to right: ⚙, ?, Reset. "?" is always there, the others after onboarding.
+       "+" (add a town) lives in the "Deine Orte" panel. -->
   <nav id="top-controls" class="glass panel top-controls" aria-label="Steuerung">
-    <button id="btn-add" type="button" class="icon-btn" aria-label="Ort hinzufügen" title="Ort hinzufügen"
-            aria-controls="add-search" aria-expanded="false" hidden>+</button>
     <button id="btn-prefs" type="button" class="icon-btn" aria-label="Präferenzen" title="Präferenzen"
             aria-haspopup="dialog" hidden>⚙</button>
     <button id="btn-help" type="button" class="icon-btn" aria-label="Über Adam" title="Über Adam"
@@ -43,22 +42,20 @@
             title="Schliessen">×</button>
   </section>
 
-  <!-- Planner panel (after onboarding): town chips and vacation type; movable. -->
+  <!-- "Deine Orte" (after onboarding): "+" and the town chips; movable. -->
   <section id="planner" class="glass panel settings-panel planner-panel" aria-labelledby="planner-title" hidden>
     <header class="panel-head" tabindex="0" title="Ziehen zum Verschieben"
             aria-label="Planer: Panel verschieben mit Ziehen oder Pfeiltasten">
       <h2 id="planner-title" class="town-title">Deine Orte</h2>
       <span class="head-actions">
+        <button id="btn-add" type="button" class="chip-remove add-btn" aria-label="Ort hinzufügen"
+                title="Ort hinzufügen" aria-controls="add-search" aria-expanded="false">+</button>
         <button id="planner-toggle" type="button" class="chip-remove panel-toggle" aria-controls="planner-body"
                 aria-expanded="true" aria-label="Planer einklappen" title="Einklappen">▾</button>
       </span>
     </header>
     <div id="planner-body">
       <ul id="town-chips" class="chips" aria-label="Gewählte Orte"></ul>
-      <div class="field">
-        <label for="vacation-type">Was für Ferien suchst du?</label>
-        <select id="vacation-type" class="text-input"></select>
-      </div>
     </div>
   </section>
 

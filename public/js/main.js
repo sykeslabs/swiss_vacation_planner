@@ -147,6 +147,12 @@ const addSearch = $("add-search");
 const searchStatus = $("search-status");
 function setAddSearch(open) {
   addSearch.hidden = !open;
+  if (open) {
+    // opens right below the "Deine Orte" panel that holds the "+" button
+    const r = plannerRoot.getBoundingClientRect();
+    addSearch.style.left = `${Math.round(r.left)}px`;
+    addSearch.style.top = `${Math.round(r.bottom + PANEL_GAP)}px`;
+  }
   $("btn-add").setAttribute("aria-expanded", String(open));
   if (open) $("location-search").focus();
 }
@@ -347,7 +353,7 @@ const scheduleRecalc = debounce(recalculate, RECALC_DEBOUNCE_MS);
 
 function renderChrome(state) {
   const done = state.onboarding === DONE;
-  for (const id of ["btn-add", "btn-prefs", "btn-reset"]) $(id).hidden = !done;
+  for (const id of ["btn-prefs", "btn-reset"]) $(id).hidden = !done;
   if (!done) setAddSearch(false);
   if (done) plannerPanel.show();
   else plannerPanel.hide();
