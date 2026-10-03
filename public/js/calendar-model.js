@@ -7,11 +7,13 @@ export const CATEGORIES = [
   { key: "weekend", label: "Wochenende / arbeitsfrei" },
   { key: "holiday", label: "Feiertag" },
   { key: "vacation", label: "Ferientag" },
+  { key: "vacation_half", label: "Halber Ferientag" },
   { key: "free_run", label: "Frei am Stück" },
 ];
 
 export function dayCategory(day) {
-  if (day.is_vacation) return "vacation";
+  // A vacation day on a half working day (e.g. 31.12.) costs only ½ Ferientag.
+  if (day.is_vacation) return day.work_fraction > 0 && day.work_fraction < 1 ? "vacation_half" : "vacation";
   // A holiday is red also on a weekend / day off (owner request); the holiday details
   // still say that it brings no extra day off.
   if (day.is_holiday && (day.work_fraction === 0 || !day.is_working_day)) return "holiday";

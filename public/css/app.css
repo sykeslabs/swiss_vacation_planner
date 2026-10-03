@@ -29,6 +29,7 @@
   --cat-free-run-bg: rgba(17, 168, 160, 0.25);
   /* half day: holiday red in the lower-right half, split diagonally */
   --cat-half-day-bg: linear-gradient(135deg, var(--cat-workday-bg) 50%, var(--cat-holiday-bg) 50%);
+  --cat-vacation-half-bg: linear-gradient(135deg, var(--cat-workday-bg) 50%, var(--cat-vacation-bg) 50%);
   --period-ring: #0b7f79;
 }
 
@@ -631,6 +632,8 @@ dialog.modal.is-movable.is-dragging .modal-head { cursor: grabbing; }
 .cat-weekend { background: var(--cat-weekend-bg); color: var(--text-muted); }
 .cat-holiday { background: var(--cat-holiday-bg); color: var(--cat-holiday-text); font-weight: 600; }
 .cat-vacation { background: var(--cat-vacation-bg); color: var(--cat-vacation-text); font-weight: 600; }
+/* Half vacation day (vacation on a half working day): split diagonally like half holidays. */
+.cat-vacation_half { background: var(--cat-vacation-half-bg); font-weight: 600; text-shadow: 0 0 2px var(--field-bg); }
 .cat-free_run { background: var(--cat-free-run-bg); }
 .day.in-period { box-shadow: 0 0 0 2px var(--period-ring); }
 /* Hover preview from the period list: dashed ring, distinct from the selection ring. */

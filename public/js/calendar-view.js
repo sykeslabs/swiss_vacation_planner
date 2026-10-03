@@ -98,6 +98,7 @@ export function renderMonth(month, { detail = false } = {}) {
         cell.title += " · Klicken für Hintergrund";
       }
       else if (category === "half_day") cell.append(el("span", "day-note", "½ Tag"));
+      else if (category === "vacation_half") cell.append(el("span", "day-note", "½ Ferientag"));
     }
     row.append(cell);
   }

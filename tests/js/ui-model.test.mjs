@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { aboutLinks, readAboutConfig } from "../../public/js/about-view.js";
-import { applyPlan, holidayDays, periodKey } from "../../public/js/calendar-model.js";
+import { applyPlan, dayCategory, holidayDays, periodKey } from "../../public/js/calendar-model.js";
 import { cellAction, markHover } from "../../public/js/calendar-view.js";
 import { overlapsMonth, periodListItems, townHeadline } from "../../public/js/candidate-list.js";
 import { createPlannerStore } from "../../public/js/state.js";
@@ -285,4 +285,19 @@ test("a drag that ends over the backdrop does not close a dialog", () => {
   const src = readFileSync(new URL("../../public/js/dialog.js", import.meta.url), "utf8");
   assert.match(src, /pressedOutside = e\.target === root/);
   assert.match(src, /if \(e\.target === root && pressedOutside\) hide\("outside"\)/);
+});
+
+test("turquoise days add up to the shown vacation days (half day 31.12. counts ½)", () => {
+  // Granges 2027: 25.12.2026–10.1.2027, 9 turquoise days for 8½ Ferientage
+  const wd = (date, wf = 1) => ({ date, is_working_day: true, is_holiday: false, holiday_names: [], work_fraction: wf });
+  const days = ["2026-12-28", "2026-12-29", "2026-12-30"].map((d) => wd(d)).concat([wd("2026-12-31", 0.5)],
+    ["2027-01-04", "2027-01-05", "2027-01-06", "2027-01-07", "2027-01-08"].map((d) => wd(d)));
+  const plan = [{ start: "2026-12-25", end: "2027-01-10", vacation_days_required: 8.5, days_free: 17,
+    vacation_dates: days.map((d) => d.date), vacation_days_by_year: {} }];
+  const cats = applyPlan(days, plan).map(dayCategory);
+  const cost = cats.reduce((n, c) => n + (c === "vacation" ? 1 : c === "vacation_half" ? 0.5 : 0), 0);
+  assert.equal(cats[3], "vacation_half");
+  assert.equal(cost, 8.5);
+  const css = readFileSync(new URL("../../public/css/app.css", import.meta.url), "utf8");
+  assert.match(css, /\.cat-vacation_half \{/);
 });

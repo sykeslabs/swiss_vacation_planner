@@ -24,13 +24,14 @@ test("dayCategory derives every category from attributes", () => {
     [{ is_vacation: true, work_fraction: 0, is_free: true, in_selected_period: true }, "vacation"],
     [{ is_working_day: false, work_fraction: 0, is_free: true, in_selected_period: true }, "free_run"],
     [{ is_holiday: true, work_fraction: 0.5 }, "half_day"],                            // partial holiday
+    [{ is_vacation: true, work_fraction: 0.5, is_free: true }, "vacation_half"],        // vacation on 31.12. costs ½
   ];
   for (const [attrs, expected] of cases) assert.equal(dayCategory({ ...base, ...attrs }), expected, JSON.stringify(attrs));
 });
 
 test("every category has a legend label", () => {
   assert.deepEqual(CATEGORIES.map((c) => c.key).sort(),
-    ["free_run", "half_day", "holiday", "vacation", "weekend", "workday"]);
+    ["free_run", "half_day", "holiday", "vacation", "vacation_half", "weekend", "workday"]);
   assert.ok(CATEGORIES.every((c) => c.label && !c.label.includes("ß")));
 });
 
