@@ -11,9 +11,9 @@ from domain.models import CANTONS, Location
 from domain.working_days import WEEKDAY_CODES
 
 MAX_LOCATIONS = 10
-MAX_HALF_DAYS = 100
+MAX_HALF_DAYS = 430          # at most every day of the calendar window (~14 months)
 MAX_EXTRA_HOLIDAYS = 30
-MAX_CUSTOM_HOLIDAYS = 100
+MAX_CUSTOM_HOLIDAYS = 430    # own periods up to 31 days, also yearly
 SELECTABLE_YEARS_AHEAD = 2      # D9: current year … current year + 2
 
 

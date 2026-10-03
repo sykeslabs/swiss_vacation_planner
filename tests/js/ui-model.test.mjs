@@ -301,3 +301,31 @@ test("turquoise days add up to the shown vacation days (half day 31.12. counts �
   const css = readFileSync(new URL("../../public/css/app.css", import.meta.url), "utf8");
   assert.match(css, /\.cat-vacation_half \{/);
 });
+
+test("town modal labels for periods", () => {
+  const store = onboarded();
+  store.addCustomDay({ date: "2026-12-21", endDate: "2026-12-23", name: "Betriebsferien", kind: "full", recurring: false });
+  store.addCustomDay({ date: "2026-07-20", endDate: "2026-07-24", name: "Sommerpause", kind: "half", recurring: true });
+  const m = townHolidayModel(null, store.get(), () => false);
+  const bf = m.switches.find((s) => s.label.includes("Betriebsferien"));
+  assert.equal(bf.label, "21.–23. Dezember 2026: Betriebsferien");
+  assert.equal(bf.tag, "freie Tage");
+  assert.match(bf.info, /jeder Tag im Zeitraum ist arbeitsfrei.*Nur in diesem Zeitraum/);
+  const sp = m.switches.find((s) => s.label.includes("Sommerpause"));
+  assert.equal(sp.label, "20. Juli – 24. Juli: Sommerpause");
+  assert.equal(sp.tag, "halbe Tage · jährlich");
+});
+
+import { TODOS } from "../../public/js/todos.js";
+
+test("'Über Adam' links to the to-do list (static, movable, incl. the school-holidays idea)", () => {
+  assert.ok(TODOS.length >= 2 && TODOS.every((g) => g.group && g.items.length));
+  const all = TODOS.flatMap((g) => g.items).join(" ");
+  assert.match(all, /Schulferien/);
+  assert.doesNotMatch(all, /ß/);
+  const help = readFileSync(new URL("../../public/js/help-modal.js", import.meta.url), "utf8");
+  assert.match(help, /Was ist geplant\? \(To-dos\)/);
+  const modal = readFileSync(new URL("../../public/js/todo-modal.js", import.meta.url), "utf8");
+  assert.match(modal, /movable: true/);
+  assert.doesNotMatch(modal, /fetch\(|innerHTML/);
+});

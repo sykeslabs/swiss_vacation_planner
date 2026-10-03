@@ -4,6 +4,7 @@ import { applyPlan, periodKey } from "./calendar-model.js";
 import { createDialog, el } from "./dialog.js";
 import { makeFloatingPanel } from "./floating-panel.js";
 import { createHelpModal } from "./help-modal.js";
+import { createTodoModal } from "./todo-modal.js";
 import { createHolidayDaysModal } from "./holiday-days-modal.js";
 import { createHolidayModal } from "./holiday-modal.js";
 import { createSwissMap } from "./map.js";
@@ -107,7 +108,11 @@ const openTown = (id, from = null) => {
 };
 
 const prefsModal = createPrefsModal({ store });
-const helpModal = createHelpModal({ config: readAboutConfig($("about-config")?.textContent) });
+const todoModal = createTodoModal();
+const helpModal = createHelpModal({
+  config: readAboutConfig($("about-config")?.textContent),
+  onOpenTodos: (from) => todoModal.open(from),
+});
 const holidayModal = createHolidayModal();
 const holidayDaysModal = createHolidayDaysModal();
 

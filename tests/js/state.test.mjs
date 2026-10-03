@@ -312,3 +312,48 @@ test("optimize payload never contains a vacation type", () => {
   assert.deepEqual(Object.keys(p).sort(), ["half_days", "locations", "vacation_budget", "working_days", "year"]);
   assert.equal(p.vacation_budget, 25);
 });
+
+// --- custom periods "von–bis" -------------------------------------------------------------------
+
+test("a one-off period counts every day from–to (full days → custom holidays)", () => {
+  const store = onboarded();
+  assert.equal(store.addCustomDay({ date: "2026-12-21", endDate: "2026-12-23", name: "Betriebsferien", kind: "full", recurring: false }), "added");
+  const p = optimizePayload(store.get());
+  assert.deepEqual(p.custom_holidays, ["2026-12-21", "2026-12-22", "2026-12-23"].map((date) => ({ date, name: "Betriebsferien" })));
+  assert.equal(store.addCustomDay({ date: "2026-12-21", endDate: "2026-12-23", name: "Nochmals", kind: "full", recurring: false }), "duplicate");
+  // the same start as a single day is a different entry
+  assert.equal(store.addCustomDay({ date: "2026-12-21", name: "Einzeltag", kind: "full", recurring: false }), "added");
+});
+
+test("period validation: end before start, longer than 31 days, end = start is a single day", () => {
+  const store = onboarded();
+  assert.equal(store.addCustomDay({ date: "2026-12-10", endDate: "2026-12-01", name: "X", kind: "full", recurring: false }), "invalid_range");
+  assert.equal(store.addCustomDay({ date: "2026-11-01", endDate: "2026-12-15", name: "X", kind: "full", recurring: false }), "too_long");
+  assert.equal(store.addCustomDay({ date: "2026-11-01", endDate: "2026-12-01", name: "X", kind: "full", recurring: false }), "added");   // 31 days
+  assert.equal(store.addCustomDay({ date: "2026-06-01", endDate: "2026-06-01", name: "Y", kind: "half", recurring: false }), "added");
+  assert.equal(store.get().customDays.at(-1).endDate, undefined);
+  assert.equal(store.addCustomDay({ date: "2026-06-02", endDate: "kaputt", name: "Z", kind: "half", recurring: false }), "invalid");
+});
+
+test("half-day periods give half days; yearly periods over New Year repeat in every year of the window", () => {
+  const store = onboarded();
+  store.toggleCustomDay(store.get().customDays[0].id);    // built-in 24.12. off, to see the period alone
+  store.toggleCustomDay(store.get().customDays[1].id);    // built-in 31.12. off
+  assert.equal(store.addCustomDay({ date: "2026-12-30", endDate: "2027-01-02", name: "Jahreswechsel", kind: "half", recurring: true }), "added");
+  const d = store.get().customDays.at(-1);
+  assert.deepEqual([d.month, d.day, d.endMonth, d.endDay], [12, 30, 1, 2]);
+  assert.deepEqual(Object.keys(optimizePayload(store.get()).half_days).sort(),
+    ["2025-12-30", "2025-12-31", "2026-01-01", "2026-01-02", "2026-12-30", "2026-12-31", "2027-01-01", "2027-01-02"]);
+  store.setYear(2027);
+  assert.ok(optimizePayload(store.get()).half_days["2027-12-31"] === 0.5 && optimizePayload(store.get()).half_days["2028-01-02"] === 0.5);
+});
+
+test("restore keeps valid periods and drops broken ones", () => {
+  const raw = JSON.stringify({ v: 2, onboarding: 3, year: 2026, locations: [ZH], budget: 25, customDays: [
+    { id: "a", name: "Ok", kind: "full", recurring: false, date: "2026-07-01", endDate: "2026-07-03" },
+    { id: "b", name: "Rückwärts", kind: "full", recurring: false, date: "2026-07-03", endDate: "2026-07-01" },
+    { id: "c", name: "Zu lang", kind: "full", recurring: false, date: "2026-01-01", endDate: "2026-03-01" },
+    { id: "d", name: "Jährlich", kind: "half", recurring: true, month: 12, day: 30, endMonth: 1, endDay: 2 },
+  ] });
+  assert.deepEqual(restoreState(raw, TODAY).customDays.map((d) => d.id), ["a", "d"]);
+});

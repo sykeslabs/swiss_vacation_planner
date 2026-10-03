@@ -38,6 +38,7 @@ class VacationCandidate:
     anchor_holidays: tuple[str, ...]
     vacation_days_by_year: dict[int, float] = field(default_factory=dict)
     vacation_dates: tuple[date, ...] = ()
+    holidays_in_run: tuple[str, ...] = ()   # every holiday in the free run (also on weekends)
 
     def to_dict(self) -> dict:
         return {
@@ -79,6 +80,14 @@ def _anchors(days: list[DayInfo]) -> tuple[str, ...]:
         for n in d.holiday_names:
             if n not in names:
                 names.append(n)
+    return tuple(names)
+
+
+def _holiday_names(days: list[DayInfo]) -> tuple[str, ...]:
+    names = []
+    for d in days:
+        if d.is_holiday:
+            names.extend(n for n in d.holiday_names if n not in names)
     return tuple(names)
 
 
@@ -131,6 +140,7 @@ def find_candidates(days: list[DayInfo], *, location_id: str, year: int, today: 
                 anchor_holidays=_anchors(days[left:right + 1]),
                 vacation_days_by_year=by_year,
                 vacation_dates=tuple(d.date for d in vacation),
+                holidays_in_run=_holiday_names(days[left:right + 1]),
             )
             if key not in found or total < found[key].vacation_days_required:
                 found[key] = cand
@@ -184,14 +194,12 @@ def _overlaps(a: VacationCandidate, b: VacationCandidate) -> bool:
     return a.start <= b.end and b.start <= a.end
 
 
-def recommend_plan(candidates: list[VacationCandidate], *, year: int,
+def _anchored_plan(candidates: list[VacationCandidate], *, year: int,
                    budget: float | None) -> list[VacationCandidate]:
-    """The periods the optimizer recommends (owner decisions 2026-10-02/03): only periods in
-    which at least one holiday falls on a working day (an ordinary week is never
-    recommended), greedily the most efficient non-overlapping ones (ties: more free days,
-    earlier). With a budget, add periods while the planned-year vacation days still fit;
-    without one, take every such period with at least PLAN_MIN_EFFICIENCY free days per
-    vacation day. Chronological order; the budget may stay partly unused."""
+    """Step 1 (owner decisions 2026-10-02/03): periods in which at least one holiday falls on
+    a working day, greedily the most efficient non-overlapping ones (ties: more free days,
+    earlier), while the planned-year vacation days fit the budget; without a budget, every
+    such period with at least PLAN_MIN_EFFICIENCY free days per vacation day."""
     ranked = sorted((c for c in candidates if c.anchor_holidays),
                     key=lambda c: (-c.efficiency, -c.days_free, c.start))
     plan: list[VacationCandidate] = []
@@ -207,6 +215,65 @@ def recommend_plan(candidates: list[VacationCandidate], *, year: int,
             continue
         plan.append(c)
         used += cost
+    return plan
+
+
+def _fill_budget(candidates: list[VacationCandidate], plan: list[VacationCandidate], *, year: int,
+                 left: float) -> list[VacationCandidate]:
+    """Step 2 (owner request 2026-10-03: use up the vacation days whenever possible): with the
+    budget that is left, the set of non-overlapping periods with the most free days in total.
+    Only periods that contain a holiday (also one on a weekend, e.g. Christmas on a Saturday)
+    and don't touch the plan; an ordinary week without any holiday is never added.
+    Exact: weighted interval scheduling with a knapsack over half days (deterministic)."""
+    units = int(round(left * 2))
+    if units <= 0:
+        return []
+    pool = sorted((c for c in candidates
+                   if c.holidays_in_run and not any(_overlaps(c, p) for p in plan)
+                   and 0 < c.vacation_days_by_year.get(year, 0.0) <= left),
+                  key=lambda c: (c.end, c.start))
+    if not pool:
+        return []
+    cost = [int(round(c.vacation_days_by_year.get(year, 0.0) * 2)) for c in pool]
+    # prev[i]: number of pool items that end before item i starts (they can precede it)
+    prev = []
+    for c in pool:
+        k = 0
+        while k < len(pool) and pool[k].end < c.start:
+            k += 1
+        prev.append(k)
+    # best[i][u]: (free days, -vacation used) with the first i items and at most u half days
+    n = len(pool)
+    best = [[(0, 0)] * (units + 1) for _ in range(n + 1)]
+    for i, c in enumerate(pool, start=1):
+        row, before = best[i], best[i - 1]
+        for u in range(units + 1):
+            row[u] = before[u]
+            if cost[i - 1] <= u:
+                f, neg = best[prev[i - 1]][u - cost[i - 1]]
+                cand = (f + c.days_free, neg - cost[i - 1])
+                if cand > row[u]:
+                    row[u] = cand
+    chosen, i, u = [], n, units
+    while i > 0:
+        if best[i][u] == best[i - 1][u]:
+            i -= 1
+            continue
+        chosen.append(pool[i - 1])
+        u -= cost[i - 1]
+        i = prev[i - 1]
+    return chosen
+
+
+def recommend_plan(candidates: list[VacationCandidate], *, year: int,
+                   budget: float | None) -> list[VacationCandidate]:
+    """The periods the optimizer recommends, chronological: step 1 periods anchored on a
+    holiday that falls on a working day; step 2 fills the rest of the budget with periods
+    around holidays (see _fill_budget). Without a budget only step 1 runs."""
+    plan = _anchored_plan(candidates, year=year, budget=budget)
+    if budget is not None:
+        used = sum(c.vacation_days_by_year.get(year, 0.0) for c in plan)
+        plan += _fill_budget(candidates, plan, year=year, left=budget - used)
     return sorted(plan, key=lambda c: c.start)
 
 

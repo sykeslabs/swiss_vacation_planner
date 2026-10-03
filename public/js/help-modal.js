@@ -27,7 +27,7 @@ function link(node, { href, text }, newTab) {
   return a;
 }
 
-export function createHelpModal({ config = {} } = {}) {
+export function createHelpModal({ config = {}, onOpenTodos = null } = {}) {
   const dialog = createDialog({ title: "Über Adam", className: "help-modal", movable: true });
   const links = aboutLinks(config);
 
@@ -49,6 +49,14 @@ export function createHelpModal({ config = {} } = {}) {
     el("p", "hint", "Wetterangaben sind historische Durchschnittswerte, keine Prognose. Ferienideen sind "
       + "KI-Vorschläge, keine bestätigten Preise oder Verfügbarkeiten."),
   ];
+  if (onOpenTodos) {
+    // "Was ist geplant?" opens the to-do list (static, see todos.js)
+    const todo = el("button", "btn-link help-todo", "Was ist geplant? (To-dos)");
+    todo.type = "button";
+    todo.setAttribute("aria-haspopup", "dialog");
+    todo.addEventListener("click", () => onOpenTodos(todo));
+    nodes.push(el("h3", "help-heading", "Weiterentwicklung"), todo);
+  }
 
   if (links.contact || links.website) {
     const contact = el("p", "help-contact");

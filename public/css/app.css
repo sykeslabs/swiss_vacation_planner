@@ -493,6 +493,7 @@ dialog.modal.is-movable.is-dragging .modal-head { cursor: grabbing; }
 .custom-add { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--glass-border); }
 .custom-add-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 6px; }
 .custom-add-row input[type="text"] { flex: 1 1 160px; }
+.range-label { font-size: 0.82rem; color: var(--text-muted); }
 .check { display: inline-flex; align-items: center; gap: 4px; font-size: 0.85rem; cursor: pointer; }
 .check input { accent-color: var(--toggle-on-bg); }
 .help-heading { margin: 14px 0 4px; font-size: 0.9rem; font-weight: 600; }

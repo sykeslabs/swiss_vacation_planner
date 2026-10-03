@@ -182,3 +182,12 @@ def test_custom_holiday_changes_the_recommended_plan(client):
     summary = own.get_json()["per_location"]["bfs-261"]["summary"]
     assert summary["holidays_total"] == plain["holidays_total"] + 1
     assert summary["plan"] != plain["plan"]
+
+
+def test_custom_period_of_31_days_yearly_fits_the_limits(client):
+    from datetime import date, timedelta
+    days = [date(YEAR - 1, 12, 1) + timedelta(days=i) for i in range(400)]
+    days = [d for d in days if d <= date(YEAR + 1, 1, 31)]
+    body = payload(custom_holidays=[{"date": d.isoformat(), "name": "Betriebsferien"} for d in days[:120]],
+                   half_days={d.isoformat(): 0.5 for d in days[200:330]})
+    assert post(client, body).status_code == 200

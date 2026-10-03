@@ -71,6 +71,31 @@ function validMonthDay(month, day) {
 }
 
 /** Validates one custom day; returns a clean copy or null. */
+export const MAX_PERIOD_DAYS = 31;          // a custom period "von–bis" covers at most 31 days
+const DAY_MS = 86400000;
+
+function daysBetween(fromIso, toIso_) {
+  return Math.round((parseIso(toIso_).time - parseIso(fromIso).time) / DAY_MS);
+}
+
+/** Dates from `fromIso` to `toIso_` (inclusive). */
+function datesFromTo(fromIso, toIso_) {
+  const out = [];
+  for (let t = parseIso(fromIso).time; t <= parseIso(toIso_).time; t += DAY_MS) {
+    const d = new Date(t);
+    out.push(toIso(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate()));
+  }
+  return out;
+}
+
+/** End of a recurring period that starts in `year` (it may run into the next year). */
+function recurringEnd(d, year) {
+  const sameYear = toIso(year, d.endMonth, d.endDay);
+  return sameYear >= toIso(year, d.month, d.day) ? sameYear : toIso(year + 1, d.endMonth, d.endDay);
+}
+
+/** Validates one custom day or period; returns a clean copy or null. A period has
+ * `endDate` (one-off) or `endMonth`/`endDay` (yearly, may run over New Year). */
 export function cleanCustomDay(d) {
   if (!d || typeof d !== "object" || typeof d.id !== "string") return null;
   const kind = d.kind === "full" ? "full" : d.kind === "half" ? "half" : null;
@@ -78,9 +103,31 @@ export function cleanCustomDay(d) {
   if (!kind || !name) return null;
   const base = { id: d.id, name, kind, active: d.active !== false, builtin: d.builtin === true };
   if (d.recurring) {
-    return validMonthDay(d.month, d.day) ? { ...base, recurring: true, month: d.month, day: d.day } : null;
+    if (!validMonthDay(d.month, d.day)) return null;
+    const entry = { ...base, recurring: true, month: d.month, day: d.day };
+    if (d.endMonth === undefined && d.endDay === undefined) return entry;
+    if (!validMonthDay(d.endMonth, d.endDay) || (d.endMonth === d.month && d.endDay === d.day)) return null;
+    const span = daysBetween(toIso(2027, d.month, d.day), recurringEnd({ ...d }, 2027));
+    return span < MAX_PERIOD_DAYS ? { ...entry, endMonth: d.endMonth, endDay: d.endDay } : null;
   }
-  return parseIso(d.date) ? { ...base, recurring: false, date: d.date } : null;
+  if (!parseIso(d.date)) return null;
+  const entry = { ...base, recurring: false, date: d.date };
+  if (d.endDate === undefined || d.endDate === d.date) return entry;
+  if (!parseIso(d.endDate) || d.endDate < d.date || daysBetween(d.date, d.endDate) >= MAX_PERIOD_DAYS) return null;
+  return { ...entry, endDate: d.endDate };
+}
+
+/** All concrete dates of one custom entry that start in the years `years`. */
+function entryDates(d, years) {
+  if (!d.recurring) return d.endDate ? datesFromTo(d.date, d.endDate) : [d.date];
+  const out = [];
+  for (const y of years) {
+    const start = toIso(y, d.month, d.day);
+    if (!parseIso(start)) continue;                              // 29.2. outside leap years
+    if (d.endMonth === undefined) out.push(start);
+    else out.push(...datesFromTo(start, recurringEnd(d, y)).filter((iso) => parseIso(iso)));
+  }
+  return out;
 }
 
 /** Concrete dates of the active custom days for the calendar window of `year`:
@@ -92,10 +139,8 @@ export function expandCustomDays(customDays, year) {
   const holidays = [];
   for (const d of customDays ?? []) {
     if (!d.active) continue;
-    const dates = d.recurring
-      ? [year - 1, year, year + 1].map((y) => toIso(y, d.month, d.day)).filter((iso) => parseIso(iso))
-      : [d.date];
-    for (const iso of dates) {
+    // year - 2: a yearly period over New Year can reach into the window's December
+    for (const iso of new Set(entryDates(d, [year - 2, year - 1, year, year + 1]))) {
       if (iso < start || iso > end) continue;
       if (d.kind === "half") halfDays[iso] = 0.5;
       else holidays.push({ date: iso, name: d.name });
@@ -310,17 +355,25 @@ export function createPlannerStore({ storage = null, today = new Date() } = {}) 
     },
 
     // --- custom days (global) --------------------------------------------------------------
-    /** { date, name, kind: "full"|"half", recurring } → "added" | "invalid" | "duplicate". */
-    addCustomDay({ date, name, kind, recurring }) {
+    /** { date, endDate?, name, kind: "full"|"half", recurring } → "added" | "invalid" |
+     * "invalid_range" (end before start) | "too_long" (over 31 days) | "duplicate". */
+    addCustomDay({ date, endDate = "", name, kind, recurring }) {
       const p = parseIso(date);
       if (!p) return "invalid";
+      const e = endDate ? parseIso(endDate) : null;
+      if (endDate && !e) return "invalid";
+      if (e && endDate < date) return "invalid_range";
+      if (e && daysBetween(date, endDate) >= MAX_PERIOD_DAYS) return "too_long";
+      const period = e && endDate !== date;
       const entry = cleanCustomDay(recurring
-        ? { id: newCustomId(), name, kind, recurring: true, month: p.month, day: p.day, active: true }
-        : { id: newCustomId(), name, kind, recurring: false, date, active: true });
+        ? { id: newCustomId(), name, kind, recurring: true, month: p.month, day: p.day, active: true,
+          ...(period ? { endMonth: e.month, endDay: e.day } : {}) }
+        : { id: newCustomId(), name, kind, recurring: false, date, active: true, ...(period ? { endDate } : {}) });
       if (!entry) return "invalid";
       const same = (d) => d.kind === entry.kind && (entry.recurring
         ? d.recurring && d.month === entry.month && d.day === entry.day
-        : !d.recurring && d.date === entry.date);
+          && d.endMonth === entry.endMonth && d.endDay === entry.endDay
+        : !d.recurring && d.date === entry.date && d.endDate === entry.endDate);
       if (state.customDays.some(same)) return "duplicate";
       commit({ ...state, customDays: [...state.customDays, entry] }, { type: "config" });
       return "added";

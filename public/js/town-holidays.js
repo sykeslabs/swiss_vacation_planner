@@ -3,7 +3,7 @@
 // "Optionale Feiertage und halbe Tage": one list with on/off switches for disputed and
 //   optional holidays of THIS town plus the global custom days (24.12., 31.12., own dates).
 // Provenance and conflicts are not shown inline, only as ⓘ tooltip text built from the data.
-import { formatDateWithWeekday, MONTHS, toIso } from "./format.js";
+import { formatDateWithWeekday, formatRange, MONTHS, toIso } from "./format.js";
 
 function hostOf(url) {
   try {
@@ -44,16 +44,25 @@ export function holidayInfoText(h) {
   return parts.join(" ");
 }
 
-function customLabel(d, year) {
-  if (d.recurring) return `${d.day}. ${MONTHS[d.month - 1]} – ${d.name}`;
-  return `${formatDateWithWeekday(d.date)} – ${d.name}`;
+function customLabel(d) {
+  if (d.recurring) {
+    const from = `${d.day}. ${MONTHS[d.month - 1]}`;
+    return d.endMonth ? `${from} – ${d.endDay}. ${MONTHS[d.endMonth - 1]}: ${d.name}` : `${from} – ${d.name}`;
+  }
+  return d.endDate ? `${formatRange(d.date, d.endDate)}: ${d.name}` : `${formatDateWithWeekday(d.date)} – ${d.name}`;
 }
 
 function customInfo(d) {
   const kind = d.kind === "half" ? "Halber Tag: du arbeitest nur einen halben Tag." : "Ganzer freier Tag.";
-  const when = d.recurring ? "Jedes Jahr am selben Datum." : "Nur an diesem Datum.";
+  const period = d.endDate || d.endMonth;
+  const when = d.recurring ? (period ? "Jedes Jahr im selben Zeitraum." : "Jedes Jahr am selben Datum.")
+    : (period ? "Nur in diesem Zeitraum." : "Nur an diesem Datum.");
+  const kindText = period
+    ? (d.kind === "half" ? "Halbe Tage: an jedem Arbeitstag im Zeitraum arbeitest du nur einen halben Tag."
+      : "Freie Tage: jeder Tag im Zeitraum ist arbeitsfrei.")
+    : null;
   const who = d.builtin ? "Voreinstellung, gilt für alle Orte." : "Von dir hinzugefügt, gilt für alle Orte.";
-  return `${kind} ${when} ${who}`;
+  return `${kindText ?? kind} ${when} ${who}`;
 }
 
 /**
@@ -72,8 +81,9 @@ export function townHolidayModel(data, state, isActive) {
     })),
     ...(state.customDays ?? []).map((d) => ({
       kind: "custom", key: d.id, sort: d.recurring ? toIso(state.year, d.month, d.day) : d.date,
-      label: customLabel(d, state.year),
-      tag: [d.kind === "half" ? "halber Tag" : "ganzer Feiertag", d.recurring ? "jährlich" : null].filter(Boolean).join(" · "),
+      label: customLabel(d),
+      tag: [d.endDate || d.endMonth ? (d.kind === "half" ? "halbe Tage" : "freie Tage")
+        : (d.kind === "half" ? "halber Tag" : "ganzer Feiertag"), d.recurring ? "jährlich" : null].filter(Boolean).join(" · "),
       active: d.active, info: customInfo(d), removable: !d.builtin,
     })),
   ].sort((a, b) => a.sort.localeCompare(b.sort) || a.label.localeCompare(b.label));

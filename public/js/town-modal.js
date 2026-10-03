@@ -26,6 +26,8 @@ function infoTip(text, label) {
 const ADD_MESSAGES = {
   invalid: "Bitte gib ein gültiges Datum im angezeigten Zeitraum und einen Namen ein.",
   duplicate: "Dieses Datum ist bereits eingetragen.",
+  invalid_range: "Das Enddatum («bis») liegt vor dem Startdatum («von»).",
+  too_long: "Ein Zeitraum darf höchstens 31 Tage umfassen.",
 };
 
 export function createTownModal({ store, getHolidayData, onClose = () => {} }) {
@@ -45,11 +47,22 @@ export function createTownModal({ store, getHolidayData, onClose = () => {} }) {
   // "Datum hinzufügen" (global custom day)
   const form = el("form", "custom-add");
   form.noValidate = true;
-  const formTitle = el("h4", "field-label", "Datum hinzufügen");
+  const formTitle = el("h4", "field-label", "Datum oder Zeitraum hinzufügen");
+  // "von" (required) and "bis" (optional: empty = a single day)
   const dateInput = document.createElement("input");
   dateInput.type = "date";
   dateInput.className = "text-input";
-  dateInput.setAttribute("aria-label", "Datum");
+  dateInput.setAttribute("aria-label", "Datum, von");
+  dateInput.title = "von";
+  const endInput = document.createElement("input");
+  endInput.type = "date";
+  endInput.className = "text-input";
+  endInput.setAttribute("aria-label", "bis (optional, für einen Zeitraum)");
+  endInput.title = "bis (optional)";
+  // picking "von" suggests the same month for "bis"
+  dateInput.addEventListener("change", () => {
+    if (dateInput.value) endInput.min = dateInput.value;
+  });
   const nameInput = document.createElement("input");
   nameInput.type = "text";
   nameInput.maxLength = 60;
@@ -74,18 +87,23 @@ export function createTownModal({ store, getHolidayData, onClose = () => {} }) {
   formHint.setAttribute("role", "alert");
   formHint.hidden = true;
   const formRow = el("div", "custom-add-row");
-  formRow.append(dateInput, kindSelect, recurringLabel);
+  formRow.append(el("span", "range-label", "von"), dateInput, el("span", "range-label", "bis"), endInput);
+  const formRowKind = el("div", "custom-add-row");
+  formRowKind.append(kindSelect, recurringLabel);
   const formRow2 = el("div", "custom-add-row");
   formRow2.append(nameInput, addBtn);
-  form.append(formTitle, formRow, formRow2, formHint);
+  form.append(formTitle, formRow, formRowKind, formRow2,
+    el("p", "hint", "«bis» leer lassen für einen einzelnen Tag."), formHint);
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const result = store.addCustomDay({ date: dateInput.value, name: nameInput.value, kind: kindSelect.value,
-      recurring: recurring.checked });
+    const result = store.addCustomDay({ date: dateInput.value, endDate: endInput.value, name: nameInput.value,
+      kind: kindSelect.value, recurring: recurring.checked });
     formHint.textContent = ADD_MESSAGES[result] ?? "";
     formHint.hidden = result === "added";
     if (result === "added") {
       dateInput.value = "";
+      endInput.value = "";
+      endInput.removeAttribute("min");
       nameInput.value = "";
       recurring.checked = false;
     }
@@ -150,6 +168,7 @@ export function createTownModal({ store, getHolidayData, onClose = () => {} }) {
     const { start, end } = calendarWindow(state.year);
     dateInput.min = start;
     dateInput.max = end;
+    endInput.max = end;
   }
 
   store.subscribe(() => {
