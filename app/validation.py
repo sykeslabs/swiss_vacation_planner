@@ -13,6 +13,7 @@ from domain.working_days import WEEKDAY_CODES
 MAX_LOCATIONS = 10
 MAX_HALF_DAYS = 100
 MAX_EXTRA_HOLIDAYS = 30
+MAX_CUSTOM_HOLIDAYS = 100
 SELECTABLE_YEARS_AHEAD = 2      # D9: current year … current year + 2
 
 
@@ -63,6 +64,14 @@ class ExtraHolidayIn(BaseModel):
     work_fraction: Annotated[float, Field(ge=0, le=0.5)] = 0.0
 
 
+class CustomHolidayIn(BaseModel):
+    """A whole day off the user added (global: applies to every location)."""
+    model_config = ConfigDict(extra="forbid")
+
+    date: date
+    name: Annotated[str, Field(min_length=1, max_length=100)]
+
+
 class OptimizeIn(BaseModel):
     # extra="forbid": e.g. vacation_type must never reach the optimizer (CLAUDE.md rule 5).
     model_config = ConfigDict(extra="forbid")
@@ -73,7 +82,9 @@ class OptimizeIn(BaseModel):
     half_days: dict[date, float] = Field(default_factory=dict)
     vacation_budget: Annotated[float, Field(ge=0, le=366)] | None = None
     extra_holidays: dict[str, Annotated[list[ExtraHolidayIn], Field(max_length=MAX_EXTRA_HOLIDAYS)]] =         Field(default_factory=dict)
-    # Baseline holidays the user switched off (disputed ones): {location_id: ["YYYY-MM-DD|Name"]}
+    custom_holidays: Annotated[list[CustomHolidayIn], Field(max_length=MAX_CUSTOM_HOLIDAYS)] = Field(
+        default_factory=list)
+    # Disputed baseline holidays that are not switched on (D1: not a holiday): {location_id: ["YYYY-MM-DD|Name"]}
     disabled_holidays: dict[str, Annotated[list[HolidayKey], Field(max_length=MAX_EXTRA_HOLIDAYS)]] = Field(
         default_factory=dict)
 
@@ -87,6 +98,7 @@ _FIELD_MESSAGES = {
     "vacation_budget": "Ungültige Anzahl Ferientage.",
     "extra_holidays": "Ungültige zusätzliche Feiertage.",
     "disabled_holidays": "Ungültige ausgeschaltete Feiertage.",
+    "custom_holidays": "Ungültige eigene Feiertage.",
 }
 
 
@@ -102,7 +114,7 @@ def parse_optimize(payload) -> OptimizeIn:
     except ValidationError as exc:
         first = exc.errors()[0]
         field = str(first["loc"][0]) if first["loc"] else ""
-        if first["type"] == "extra_forbidden":
+        if first["type"] == "extra_forbidden" and len(first["loc"]) == 1:
             _fail("unknown_field", f"Unbekanntes Feld: {field}.")
         _fail(f"invalid_{field}" if field else "invalid_request",
               _FIELD_MESSAGES.get(field, "Ungültige Anfrage."))
@@ -125,6 +137,8 @@ def parse_optimize(payload) -> OptimizeIn:
     for loc_id, extras in req.extra_holidays.items():
         if loc_id not in ids or any(not start <= x.date <= end for x in extras):
             _fail("invalid_extra_holidays", _FIELD_MESSAGES["extra_holidays"])
+    if any(not start <= x.date <= end for x in req.custom_holidays):
+        _fail("invalid_custom_holidays", "Eigene Feiertage müssen im angezeigten Zeitraum liegen.")
     if any(loc_id not in ids for loc_id in req.disabled_holidays):
         _fail("invalid_disabled_holidays", _FIELD_MESSAGES["disabled_holidays"])
     towns = {loc.to_domain().town_key() for loc in req.locations}

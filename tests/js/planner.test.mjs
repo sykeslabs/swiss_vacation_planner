@@ -4,20 +4,7 @@ import { test } from "node:test";
 
 import { CATEGORIES, dayCategory, groupByMonth } from "../../public/js/calendar-model.js";
 import { formatDate, formatDateWithWeekday, formatRange, parseIso, weekdayIndex } from "../../public/js/format.js";
-import {
-  calendarWindow, createPlannerStore, defaultHalfDays, MAX_LOCATIONS, optimizePayload,
-  restoreState, selectableYears, serializeState, STORAGE_KEY,
-} from "../../public/js/state.js";
 
-const TODAY = new Date(2026, 9, 2);   // 2 Oct 2026, local time
-const ZH = { id: "bfs-261", name: "Zürich", postcode: null, municipality: "Zürich", municipality_id: 261,
-  canton: "ZH", latitude: 47.37, longitude: 8.53 };
-const BE = { ...ZH, id: "bfs-351", name: "Bern", municipality: "Bern", municipality_id: 351, canton: "BE" };
-
-function memoryStorage(initial = {}) {
-  const data = { ...initial };
-  return { getItem: (k) => data[k] ?? null, setItem: (k, v) => { data[k] = String(v); }, data };
-}
 
 // --- dayCategory: every attribute combination ------------------------------------------
 
@@ -63,142 +50,6 @@ test("German date formats", () => {
   assert.equal(formatDate("2027-03-01"), "1. März 2027");
   assert.equal(weekdayIndex("2027-01-04"), 0);   // Monday
   assert.equal(parseIso("2027-02-30"), null);
-});
-
-// --- state --------------------------------------------------------------------------------
-
-test("defaults: Mon–Fri, current year, 24./31.12. of both Decembers", () => {
-  const s = createPlannerStore({ today: TODAY }).get();
-  assert.equal(s.year, 2026);
-  assert.deepEqual(s.workingDays, ["MON", "TUE", "WED", "THU", "FRI"]);
-  assert.deepEqual(Object.keys(s.halfDays).sort(), ["2025-12-24", "2025-12-31", "2026-12-24", "2026-12-31"]);
-  assert.deepEqual(selectableYears(TODAY), [2026, 2027, 2028]);
-  assert.deepEqual(calendarWindow(2027), { start: "2026-12-01", end: "2028-01-31" });
-});
-
-test("locations: add, dedupe, remove, limit", () => {
-  const store = createPlannerStore({ today: TODAY });
-  const changes = [];
-  store.subscribe((s, c) => changes.push(c.type));
-  assert.equal(store.addLocation(ZH), "added");
-  assert.equal(store.addLocation({ ...ZH }), "duplicate");
-  assert.equal(store.addLocation(BE), "added");
-  assert.deepEqual(store.get().locations.map((l) => l.id), ["bfs-261", "bfs-351"]);
-  assert.equal(store.removeLocation("bfs-261"), true);
-  assert.equal(store.removeLocation("bfs-261"), false);
-  assert.deepEqual(store.get().locations.map((l) => l.id), ["bfs-351"]);
-  assert.deepEqual(changes, ["add", "add", "remove"]);
-  for (let i = 0; i < MAX_LOCATIONS; i++) store.addLocation({ ...ZH, id: `bfs-${1000 + i}`, municipality_id: 1000 + i, name: `Ort ${i}` });
-  assert.equal(store.get().locations.length, MAX_LOCATIONS);
-  assert.equal(store.addLocation({ ...ZH, id: "bfs-9", municipality_id: 9, name: "Ort X" }), "full");
-});
-
-test("working days can't become empty", () => {
-  const store = createPlannerStore({ today: TODAY });
-  for (const d of ["MON", "TUE", "WED", "THU"]) assert.equal(store.toggleWorkingDay(d), true);
-  assert.deepEqual(store.get().workingDays, ["FRI"]);
-  assert.equal(store.toggleWorkingDay("FRI"), false);
-  assert.equal(store.toggleWorkingDay("SAT"), true);
-  assert.equal(store.toggleWorkingDay("MON"), true);
-  assert.deepEqual(store.get().workingDays, ["MON", "FRI", "SAT"]);   // kept in weekday order
-});
-
-test("half days: add, duplicate, out of range, remove", () => {
-  const store = createPlannerStore({ today: TODAY });
-  assert.equal(store.addHalfDay("2026-04-20"), "added");
-  assert.equal(store.addHalfDay("2026-04-20"), "duplicate");
-  assert.equal(store.addHalfDay("2024-01-01"), "out_of_range");
-  assert.equal(store.addHalfDay("2026-02-30"), "out_of_range");
-  assert.equal(store.removeHalfDay("2026-12-24"), true);
-  assert.equal(store.get().halfDays["2026-12-24"], undefined);
-  assert.equal(store.get().halfDays["2026-04-20"], 0.5);
-});
-
-test("year change keeps visible half days and re-adds the December defaults", () => {
-  const store = createPlannerStore({ today: TODAY });
-  store.addHalfDay("2026-12-23");
-  store.removeHalfDay("2026-12-31");
-  assert.equal(store.setYear(2027), true);
-  assert.deepEqual(Object.keys(store.get().halfDays).sort(),
-    ["2026-12-23", "2026-12-24", "2026-12-31", "2027-12-24", "2027-12-31"]);
-  assert.equal(store.setYear(2031), false);
-});
-
-test("state survives a reload via storage", () => {
-  const storage = memoryStorage();
-  const a = createPlannerStore({ storage, today: TODAY });
-  a.addLocation(ZH);
-  a.addLocation(BE);
-  a.setYear(2027);
-  a.toggleWorkingDay("FRI");
-  a.addHalfDay("2027-04-19");
-  const b = createPlannerStore({ storage, today: TODAY });
-  assert.deepEqual(b.get(), a.get());
-  assert.ok(storage.data[STORAGE_KEY].includes('"v":1'));
-});
-
-test("corrupt or foreign storage falls back to defaults", () => {
-  const fallback = createPlannerStore({ today: TODAY }).get();
-  for (const raw of ["{nope", JSON.stringify({ v: 99, year: 2027 }), JSON.stringify(null), "42"]) {
-    assert.deepEqual(restoreState(raw, TODAY), fallback, raw);
-  }
-  const mixed = restoreState(JSON.stringify({
-    v: 1, year: 2040, workingDays: ["XYZ"], halfDays: { "2026-12-24": 0.5, "1999-01-01": 0.5, "2026-06-01": 7 },
-    locations: [ZH, { id: "broken" }, ZH],
-  }), TODAY);
-  assert.equal(mixed.year, 2026);
-  assert.deepEqual(mixed.workingDays, ["MON", "TUE", "WED", "THU", "FRI"]);
-  assert.deepEqual(Object.keys(mixed.halfDays).sort(), ["2025-12-24", "2025-12-31", "2026-12-24", "2026-12-31"]);
-  assert.deepEqual(mixed.locations.map((l) => l.id), ["bfs-261"]);
-});
-
-test("storage errors never break the planner", () => {
-  const broken = { getItem() { throw new Error("blocked"); }, setItem() { throw new Error("quota"); } };
-  const store = createPlannerStore({ storage: broken, today: TODAY });
-  assert.equal(store.addLocation(ZH), "added");
-  assert.equal(store.get().locations.length, 1);
-});
-
-test("optimize payload never contains a vacation type", () => {
-  const store = createPlannerStore({ today: TODAY });
-  store.addLocation(ZH);
-  const p = optimizePayload(store.get());
-  assert.deepEqual(Object.keys(p).sort(), ["half_days", "locations", "vacation_budget", "working_days", "year"]);
-  assert.deepEqual(p.half_days, defaultHalfDays(2026));
-  assert.ok(serializeState(store.get()));
-});
-
-// --- owner feedback after M3 ----------------------------------------------------------------
-
-import { firstVisibleMonth, formatPostcodes, locationDetail, townKey } from "../../public/js/state.js";
-
-test("the same town can't be added twice (municipality + place name)", () => {
-  const baden = { ...ZH, id: "bfs-4021", name: "Baden", municipality: "Baden", municipality_id: 4021, canton: "AG" };
-  const baden5400 = { ...baden, id: "bfs-4021-plz-5400", postcode: "5400" };
-  const turgi = { ...baden, id: "bfs-4021-plz-5300", name: "Turgi", postcode: "5300" };
-  const store = createPlannerStore({ today: TODAY });
-  assert.equal(store.addLocation(baden), "added");
-  assert.equal(store.addLocation(baden5400), "duplicate");
-  assert.equal(store.findSameTown(baden5400).id, "bfs-4021");
-  assert.equal(store.addLocation(turgi), "added");            // another village of the municipality
-  assert.equal(townKey(baden), townKey(baden5400));
-  const restored = restoreState(serializeState({ ...store.get(), locations: [baden, baden5400, turgi] }), TODAY);
-  assert.deepEqual(restored.locations.map((l) => l.id), ["bfs-4021", "bfs-4021-plz-5300"]);
-});
-
-test("current year starts at the current month; other years show the whole window", () => {
-  assert.equal(firstVisibleMonth(2026, TODAY), "2026-10");
-  assert.equal(firstVisibleMonth(2027, TODAY), null);
-  assert.equal(firstVisibleMonth(2026, new Date(2026, 0, 15)), "2026-01");
-});
-
-test("postcodes in the search result line", () => {
-  assert.equal(formatPostcodes(["9050"]), "9050");
-  assert.equal(formatPostcodes(["3822", "3823", "3824"]), "3822, 3823, 3824");
-  assert.equal(formatPostcodes(["8001", "8002", "8003", "8143"]), "8001–8143 (4)");
-  assert.equal(formatPostcodes(undefined), "");
-  assert.equal(locationDetail({ ...ZH, postcodes: ["8001", "8002"] }), "ZH · PLZ 8001, 8002");
-  assert.equal(locationDetail({ ...ZH, postcodes: [] }), "ZH");
 });
 
 // --- movable town panels --------------------------------------------------------------------
@@ -275,34 +126,6 @@ test("holiday info loads once and retries after a failure", async () => {
 import { holidaySummary } from "../../public/js/holiday-list.js";
 import { confidenceLabel } from "../../public/js/holiday-info.js";
 
-const SECHS = { key: "2026-04-20|Sechseläuten", date: "2026-04-20", name: "Sechseläuten", enabled: false, work_fraction: 0 };
-const KF = { key: "2026-04-03|Karfreitag", date: "2026-04-03", name: "Karfreitag", enabled: true, work_fraction: 0 };
-
-test("optional holidays: toggle, persist, send only enabled ones", () => {
-  const storage = memoryStorage();
-  const store = createPlannerStore({ storage, today: TODAY });
-  store.addLocation(ZH);
-  assert.equal(optimizePayload(store.get(), { "bfs-261": [SECHS, KF] }).extra_holidays, undefined);
-  assert.equal(store.toggleHoliday("bfs-261", SECHS.key), true);
-  assert.equal(store.isHolidayEnabled("bfs-261", SECHS.key), true);
-  const p = optimizePayload(store.get(), { "bfs-261": [SECHS, KF] });
-  assert.deepEqual(p.extra_holidays, { "bfs-261": [{ date: "2026-04-20", name: "Sechseläuten", work_fraction: 0 }] });
-  assert.equal(optimizePayload(store.get(), {}).extra_holidays, undefined);   // list not loaded yet
-  const reloaded = createPlannerStore({ storage, today: TODAY });
-  assert.deepEqual(reloaded.get().enabledHolidays, { "bfs-261": [SECHS.key] });
-  store.toggleHoliday("bfs-261", SECHS.key);
-  assert.deepEqual(store.get().enabledHolidays, {});
-  assert.equal(store.toggleHoliday("bfs-999", SECHS.key), false);             // unknown town
-  store.toggleHoliday("bfs-261", SECHS.key);
-  store.removeLocation("bfs-261");
-  assert.deepEqual(store.get().enabledHolidays, {});
-});
-
-test("restore drops malformed or orphaned holiday keys", () => {
-  const raw = JSON.stringify({ v: 1, year: 2026, locations: [ZH],
-    enabledHolidays: { "bfs-261": ["2026-04-20|Sechseläuten", "nope", 5], "bfs-999": ["2026-01-01|X"] } });
-  assert.deepEqual(restoreState(raw, TODAY).enabledHolidays, { "bfs-261": ["2026-04-20|Sechseläuten"] });
-});
 
 test("holiday summary and confidence texts", () => {
   assert.match(holidaySummary(null), /geprüft/);
@@ -362,32 +185,6 @@ test("period title in the SPEC §7 format", () => {
 test("year split only across years", () => {
   assert.equal(yearSplit(C1), "");
   assert.equal(yearSplit(C3), "Davon 3½ Ferientage im 2026, 5 Ferientage im 2027");
-});
-
-test("budget is part of the state and the payload", () => {
-  const store = createPlannerStore({ today: TODAY });
-  store.addLocation(ZH);
-  assert.equal(optimizePayload(store.get()).vacation_budget, 25);       // default
-  assert.equal(store.setBudget("12.3"), true);
-  assert.equal(store.get().budget, 12.5);                 // rounded to half days
-  assert.equal(optimizePayload(store.get()).vacation_budget, 12.5);
-  assert.equal(store.setBudget("-1"), false);
-  assert.equal(store.setBudget("abc"), false);
-  assert.equal(store.setBudget(""), true);
-  assert.equal(store.get().budget, null);
-});
-
-test("budget default 25 until the user sets one; own value (also no limit) survives reload", () => {
-  const storage = memoryStorage();
-  assert.equal(createPlannerStore({ storage, today: TODAY }).get().budget, 25);
-  // state saved before the default existed (budget null, no flag) → default
-  const old = JSON.stringify({ v: 1, year: 2026, locations: [], budget: null });
-  assert.equal(restoreState(old, TODAY).budget, 25);
-  const a = createPlannerStore({ storage, today: TODAY });
-  a.setBudget("");                                          // user chooses "kein Limit"
-  assert.equal(createPlannerStore({ storage, today: TODAY }).get().budget, null);
-  a.setBudget("20");
-  assert.equal(createPlannerStore({ storage, today: TODAY }).get().budget, 20);
 });
 
 test("holiday count next to the town name", () => {

@@ -283,7 +283,7 @@ def test_baden_catholic_holidays_are_flagged_not_removed():
     assert any(f.page_scope == "municipality" for f in found)
     for name in ("Mariä Empfängnis", "Mariä Himmelfahrt", "Allerheiligen", "Berchtoldstag"):
         h = merged[name]
-        assert h.disputed and h.enabled and h.confidence == "medium"       # flag only: stays on
+        assert h.disputed and h.enabled and h.confidence == "medium"       # flagged; the planner treats it as off
         assert "Gemeinde Baden" in h.conflict
     assert "11.6 %" in merged["Mariä Empfängnis"].conflict
     assert merged["Fronleichnam"].confidence == "high" and not merged["Fronleichnam"].disputed
@@ -293,3 +293,17 @@ def test_baden_catholic_holidays_are_flagged_not_removed():
 def test_no_municipality_page_no_flags():
     merged = by_name(merged_for("youcom_zuerich_2027.json", "Zürich", "ZH"))
     assert not any(h.disputed for h in merged.values())
+
+
+def test_municipality_page_without_classes_contradicts_nothing():
+    # Live crawl 2026-10-03: the Gemeinde Baden page came back without classes and only
+    # from October on. It must not turn every holiday into a disputed one.
+    data = json.loads((FIXTURES / "youcom_baden_ag_2026_unclassified.json").read_text(encoding="utf-8"))
+    found = youcom.parse_pages(data["pages"], year=2026, municipality="Baden", canton="AG", retrieved_at="t")
+    municipal = [f for f in found if f.page_scope == "municipality"]
+    assert municipal and all(f.kind == "unclassified" for f in municipal)
+    merged = by_name(merge_holidays(baseline_holidays("AG", [2026], "t"), found, year=2026, canton="AG",
+                                    municipality="Baden"))
+    for name in ("Neujahrstag", "Karfreitag", "Weihnachten", "Stephanstag"):
+        assert not any("Gemeinde Baden" in (h.conflict or "") for h in [merged[name]]), name
+    assert not merged["Weihnachten"].disputed

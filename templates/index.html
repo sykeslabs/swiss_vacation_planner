@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ferienplaner Schweiz</title>
+  <title>Adam – Ferien clever planen</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H"
         crossorigin="anonymous">
@@ -15,63 +15,52 @@
 <body>
   <div id="map" role="application" aria-label="Karte der Schweiz"></div>
 
-  <header class="glass panel search-panel">
-    <h1>Ferienplaner Schweiz</h1>
+  <!-- Onboarding: 1 Jahr → 2 Arbeitsort → 3 Präferenzen (built in wizard.js). -->
+  <section id="wizard" class="glass panel wizard" aria-label="Einrichtung" hidden></section>
+
+  <!-- Top right, left to right: "+", ⚙, ?, Reset. "?" is always there, the others after onboarding. -->
+  <nav id="top-controls" class="glass panel top-controls" aria-label="Steuerung">
+    <button id="btn-add" type="button" class="icon-btn" aria-label="Ort hinzufügen" title="Ort hinzufügen"
+            aria-controls="add-search" aria-expanded="false" hidden>+</button>
+    <button id="btn-prefs" type="button" class="icon-btn" aria-label="Präferenzen" title="Präferenzen"
+            aria-haspopup="dialog" hidden>⚙</button>
+    <button id="btn-help" type="button" class="icon-btn" aria-label="Über Adam" title="Über Adam"
+            aria-haspopup="dialog">?</button>
+    <button id="btn-reset" type="button" class="icon-btn text-btn" aria-label="Alles zurücksetzen"
+            title="Alles zurücksetzen" aria-haspopup="dialog" hidden>Reset</button>
+  </nav>
+
+  <!-- "+": search for another town. -->
+  <section id="add-search" class="glass panel add-search" aria-label="Ort hinzufügen" hidden>
     <div class="search">
-      <label id="location-search-label" for="location-search" class="visually-hidden">Ort oder PLZ suchen</label>
       <input id="location-search" type="search" role="combobox" aria-autocomplete="list"
-             aria-expanded="false" aria-controls="location-results"
+             aria-expanded="false" aria-controls="location-results" aria-label="Ort oder PLZ suchen"
              placeholder="Ort oder PLZ suchen" autocomplete="off" spellcheck="false">
       <ul id="location-results" class="results" role="listbox" aria-label="Suchergebnisse" hidden></ul>
       <p id="search-status" class="search-status" role="status" aria-live="polite" hidden></p>
     </div>
-  </header>
-
-  <!-- Shared settings for all towns; movable like the town panels. -->
-  <section id="settings" class="glass panel settings-panel" aria-labelledby="settings-title" hidden>
-    <header class="panel-head" tabindex="0" title="Ziehen zum Verschieben"
-            aria-label="Jahr und Arbeitstage: Panel verschieben mit Ziehen oder Pfeiltasten">
-      <h2 id="settings-title" class="town-title">Jahr</h2>
-      <span class="head-actions">
-        <span id="planner-year" class="year-badges" role="group" aria-labelledby="settings-title"></span>
-        <button id="settings-toggle" type="button" class="chip-remove panel-toggle" aria-controls="settings-body"
-                aria-expanded="true" aria-label="Arbeitstage einklappen" title="Einklappen">▾</button>
-      </span>
-    </header>
-    <div id="settings-body">
-    <div class="field">
-      <span class="field-label" id="working-days-label">Arbeitstage</span>
-      <div id="working-days" class="wd-toggles" role="group" aria-labelledby="working-days-label"></div>
-      <p id="working-days-hint" class="hint" role="status" hidden></p>
-    </div>
-    <div class="field">
-      <span class="field-label">Halbe Arbeitstage
-        <span class="info">
-          <button type="button" class="info-btn" aria-label="Was sind halbe Arbeitstage?"
-                  aria-describedby="half-day-info">i</button>
-          <span id="half-day-info" class="info-tip" role="tooltip">An einem halben Arbeitstag arbeitest du nur einen halben Tag,
-            zum Beispiel am 24. und 31. Dezember. Der Tag gilt als Arbeitstag: Willst du ihn ganz frei nehmen,
-            brauchst du dafür nur einen halben Ferientag. Fällt ein halber Arbeitstag auf ein Wochenende
-            oder einen Feiertag, hat er keine Wirkung.</span>
-        </span>
-      </span>
-      <ul id="half-days" class="half-days"></ul>
-      <div class="half-day-add">
-        <label for="half-day-input" class="visually-hidden">Datum für halben Arbeitstag</label>
-        <input id="half-day-input" type="date">
-        <button id="half-day-add" type="button" class="btn-secondary">Hinzufügen</button>
-      </div>
-      <p id="half-day-hint" class="hint" role="status" hidden></p>
-    </div>
-    <div class="field">
-      <label for="planner-budget">Ferientage pro Jahr</label>
-      <input id="planner-budget" type="number" min="0" max="366" step="0.5" inputmode="decimal"
-             placeholder="kein Limit">
-      <p id="budget-hint" class="hint" role="status" hidden></p>
-    </div>
-    </div>
+    <button id="add-search-close" type="button" class="chip-remove" aria-label="Suche schliessen"
+            title="Schliessen">×</button>
   </section>
 
+  <!-- Planner panel (after onboarding): town chips and vacation type; movable. -->
+  <section id="planner" class="glass panel settings-panel planner-panel" aria-labelledby="planner-title" hidden>
+    <header class="panel-head" tabindex="0" title="Ziehen zum Verschieben"
+            aria-label="Planer: Panel verschieben mit Ziehen oder Pfeiltasten">
+      <h2 id="planner-title" class="town-title">Deine Orte</h2>
+      <span class="head-actions">
+        <button id="planner-toggle" type="button" class="chip-remove panel-toggle" aria-controls="planner-body"
+                aria-expanded="true" aria-label="Planer einklappen" title="Einklappen">▾</button>
+      </span>
+    </header>
+    <div id="planner-body">
+      <ul id="town-chips" class="chips" aria-label="Gewählte Orte"></ul>
+      <div class="field">
+        <label for="vacation-type">Was für Ferien suchst du?</label>
+        <select id="vacation-type" class="text-input"></select>
+      </div>
+    </div>
+  </section>
 
   <!-- One movable panel per selected town (built in town-panels.js). -->
   <div id="town-panels" class="town-panels" aria-label="Kalender der gewählten Orte" hidden></div>
@@ -92,6 +81,8 @@
   <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.1.4/leaflet-maplibre-gl.js"
           integrity="sha384-tXYNKOHx4T02jMP7YYCtBxPIv1B5gaA5mcVPBzqMp6d7VzWzxJgI2aWF/nJLrQdS"
           crossorigin="anonymous"></script>
+  <!-- Contact and donation details for "Über Adam" (server environment, see README). -->
+  <script type="application/json" id="about-config">{{ about | tojson }}</script>
   <script type="module" src="/js/main.js"></script>
 </body>
 </html>

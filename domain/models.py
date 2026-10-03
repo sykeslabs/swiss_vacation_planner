@@ -46,8 +46,8 @@ class Location:
 class Holiday:
     date: date
     name: str
-    type: str                  # "public" (more types once You.com data arrives in M4)
-    jurisdiction: str          # "national" | "canton" | "municipality"
+    type: str                  # "public" | "local" | "custom" (added by the user)
+    jurisdiction: str          # "national" | "canton" | "municipality" | "user"
     canton: str | None
     municipality: str | None
     source: str
@@ -60,7 +60,7 @@ class Holiday:
     enabled: bool = True        # False: shown, but not used by the optimizer until the user enables it
     corroborated_by: tuple[str, ...] = ()   # URLs of web pages that confirm this holiday
     note: str | None = None     # short German explanation (e.g. why it's optional)
-    disputed: bool = False      # baseline holiday the web search contradicts (stays on; user may switch it off)
+    disputed: bool = False      # baseline holiday the web search contradicts (D1: off until the user switches it on)
 
     def to_dict(self) -> dict:
         d = asdict(self)

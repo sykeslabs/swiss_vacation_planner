@@ -1,7 +1,9 @@
 """POST /api/optimize — per-location day model, vacation candidates and summary.
 
-Holidays: the deterministic baseline, plus the optional (web-only) holidays the user
-enabled (`extra_holidays`, from GET /api/holidays). This route makes no network calls.
+Holidays: the deterministic baseline without the disputed holidays the user did not switch
+on (`disabled_holidays`), plus the optional (web-only) holidays the user switched on
+(`extra_holidays`, from GET /api/holidays), plus the user's own whole days off
+(`custom_holidays`, global for every location). This route makes no network calls.
 """
 
 from datetime import UTC, datetime
@@ -10,7 +12,7 @@ from flask import Blueprint, jsonify, request
 
 from app.validation import parse_optimize
 from domain.calendar import build_days, window_years
-from domain.holidays import WEB_SOURCE, baseline_holidays, holiday_key
+from domain.holidays import USER_SOURCE, WEB_SOURCE, baseline_holidays, holiday_key
 from domain.models import CalendarConfig, Holiday
 from domain.vacation_optimizer import find_candidates, summarize, within_budget, zero_cost_runs
 from domain.working_days import parse_working_days
@@ -42,6 +44,11 @@ def optimize():
             source_title="von dir aktiviert", retrieved_at=retrieved_at, confidence="low",
             work_fraction=x.work_fraction, enabled=True,
         ) for x in req.extra_holidays.get(loc.id, [])]
+        holidays += [Holiday(
+            date=x.date, name=x.name, type="custom", jurisdiction="user",
+            canton=None, municipality=None, source=USER_SOURCE, source_url="",
+            source_title="von dir hinzugefügt", retrieved_at=retrieved_at, confidence="high",
+        ) for x in req.custom_holidays]
         days = build_days(config, holidays)
         candidates = find_candidates(days, location_id=loc.id, year=req.year, today=today)
         budget = req.vacation_budget

@@ -94,6 +94,9 @@ def test_identical_requests_give_identical_responses(client):
     ({"half_days": {f"{YEAR}-12-24": 1.5}}, "invalid_half_days"),
     ({"vacation_budget": -1}, "invalid_vacation_budget"),
     ({"vacation_type": "beach"}, "unknown_field"),
+    ({"custom_holidays": [{"date": f"{YEAR + 3}-03-01", "name": "X"}]}, "invalid_custom_holidays"),
+    ({"custom_holidays": [{"date": f"{YEAR}-03-01", "name": ""}]}, "invalid_custom_holidays"),
+    ({"custom_holidays": [{"date": f"{YEAR}-03-01", "name": "X", "work_fraction": 0.5}]}, "invalid_custom_holidays"),
     ({"extra_holidays": {"bfs-999": [{"date": f"{YEAR}-04-19", "name": "X"}]}}, "invalid_extra_holidays"),
     ({"extra_holidays": {"bfs-261": [{"date": f"{YEAR + 3}-04-19", "name": "X"}]}}, "invalid_extra_holidays"),
     ({"extra_holidays": {"bfs-261": [{"date": f"{YEAR}-04-19", "name": "X", "work_fraction": 0.9}]}},
@@ -151,3 +154,31 @@ def test_switched_off_baseline_holiday_is_a_working_day_again(client):
 def test_invalid_disabled_holidays(client, value):
     res = post(client, payload(disabled_holidays=value))
     assert res.status_code == 400
+
+
+def _first_monday(month: int):
+    from datetime import date, timedelta
+    d = date(YEAR, month, 1)
+    while d.weekday() != 0:
+        d += timedelta(days=1)
+    return d
+
+
+def test_custom_holiday_applies_to_every_location(client):
+    d = _first_monday(3)
+    body = payload(locations=[ZURICH, APPENZELL], custom_holidays=[{"date": d.isoformat(), "name": "Firmenjubiläum"}])
+    data = post(client, body).get_json()["per_location"]
+    for loc_id in ("bfs-261", "bfs-3101"):
+        day = next(x for x in data[loc_id]["days"] if x["date"] == d.isoformat())
+        assert day["is_holiday"] and day["is_free"] and "Firmenjubiläum" in day["holiday_names"]
+        own = next(h for h in data[loc_id]["holidays"] if h["name"] == "Firmenjubiläum")
+        assert own["type"] == "custom" and own["source"] == "Eigene Eingabe"
+
+
+def test_custom_holiday_changes_the_recommended_plan(client):
+    d = _first_monday(3)
+    plain = post(client, payload(vacation_budget=25)).get_json()["per_location"]["bfs-261"]["summary"]
+    own = post(client, payload(vacation_budget=25, custom_holidays=[{"date": d.isoformat(), "name": "Brückentag"}]))
+    summary = own.get_json()["per_location"]["bfs-261"]["summary"]
+    assert summary["holidays_total"] == plain["holidays_total"] + 1
+    assert summary["plan"] != plain["plan"]

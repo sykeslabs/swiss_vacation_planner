@@ -1,22 +1,21 @@
-// One movable panel per selected town: title bar (drag handle, collapse, remove), status,
-// legend and the town's own calendar. Position and collapsed state are remembered per
-// town in the browser.
+// One movable panel per selected town: title bar (drag handle; the name opens the town
+// modal; collapse, remove), status, legend, the town's own calendar and below it the list
+// of recommended periods. Position and collapsed state are remembered per town.
 import { createCalendarView, renderLegend } from "./calendar-view.js";
-import { holidayCountText, planSummary } from "./candidate-list.js";
+import { holidayCountText, periodListItems, planSummary } from "./candidate-list.js";
 import { bringToFront as raise, makeDraggable } from "./draggable.js";
-import { renderHolidaySection } from "./holiday-list.js";
 import { defaultPosition, PANEL_GAP } from "./panel-layout.js";
 import { locationLabel } from "./state.js";
 
-export const POSITIONS_KEY = "svp.panels.v3";   // v3: panels start left of the "Jahr" panel
+export const POSITIONS_KEY = "svp.panels.v4";   // v4: panels start right of the planner panel
 const NARROW = "(max-width: 720px)";
-const EXPECTED_PANEL_HEIGHT = 470;   // header + legend + 2 rows of 7 months
+const EXPECTED_PANEL_HEIGHT = 520;   // header + legend + 2 rows of 7 months + period list
 const MONTHS_PER_ROW = 7;
 export const COLLAPSED_KEY = "svp.panels-collapsed.v1";
 
 export function createTownPanels({
-  container, storage = null, onRemove, onLayoutChange = () => {}, searchPanel, onHolidayClick = () => {},
-  rightBoundary = () => window.innerWidth, onPeriodClick = () => {},
+  container, storage = null, onRemove, onLayoutChange = () => {}, leftPanel = null, onHolidayClick = () => {},
+  rightBoundary = () => window.innerWidth, onPeriodClick = () => {}, onOpenTown = () => {}, topOffset = () => PANEL_GAP,
 }) {
   const panels = new Map();          // id → { el, calendar, status, source, drag }
   let positions = {};
@@ -64,7 +63,7 @@ export function createTownPanels({
       p.drag.place(PANEL_GAP + index * 12, top);
       return;
     }
-    const searchRect = searchPanel?.getBoundingClientRect();
+    const leftRect = leftPanel && !leftPanel.hidden ? leftPanel.getBoundingClientRect() : null;
     // The previous panel's calendar may not be loaded yet, so assume at least its full height.
     const prevEl = [...panels.values()][index - 1]?.el;
     const prevRect = prevEl?.getBoundingClientRect();
@@ -73,8 +72,8 @@ export function createTownPanels({
     const pos = saved ?? defaultPosition(index, {
       viewportWidth: rightBoundary(),
       viewportHeight: window.innerHeight,
-      top: PANEL_GAP,
-      minLeft: searchRect ? Math.round(searchRect.right + PANEL_GAP) : PANEL_GAP,
+      top: topOffset(),
+      minLeft: leftRect ? Math.round(leftRect.right + PANEL_GAP) : PANEL_GAP,
       previous,
       width: p.el.offsetWidth || undefined,
     });
@@ -96,10 +95,17 @@ export function createTownPanels({
     const title = document.createElement("h2");
     title.id = titleId;
     title.className = "town-title";
-    title.textContent = `${locationLabel(loc)} (${loc.canton})`;
+    // The name opens the town modal (holidays, optional days); dragging uses the rest of the bar.
+    const nameBtn = document.createElement("button");
+    nameBtn.type = "button";
+    nameBtn.className = "town-name";
+    nameBtn.textContent = `${locationLabel(loc)} (${loc.canton})`;
+    nameBtn.title = "Feiertage dieses Orts anzeigen";
+    nameBtn.setAttribute("aria-haspopup", "dialog");
+    nameBtn.addEventListener("click", () => onOpenTown(loc.id, nameBtn));
     const count = document.createElement("span");
     count.className = "town-count";            // "· 9 Feiertage" (set with each result)
-    title.append(count);
+    title.append(nameBtn, count);
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "chip-remove";
@@ -122,25 +128,6 @@ export function createTownPanels({
     status.setAttribute("aria-live", "polite");
     status.textContent = "Kalender wird berechnet …";
 
-    const holidaysBox = document.createElement("details");
-    holidaysBox.className = "legend-box holidays-box";
-    holidaysBox.open = true;
-    const holidaysSummary = document.createElement("summary");
-    holidaysSummary.textContent = "Feiertage";
-    const holidaysBody = document.createElement("div");
-    holidaysBox.append(holidaysSummary, holidaysBody);
-    renderHolidaySection(holidaysBody, null, { isEnabled: () => false, onToggle: () => {} });
-
-    const tipsBox = document.createElement("details");
-    tipsBox.className = "legend-box tips-box";
-    tipsBox.open = true;
-    const tipsSummary = document.createElement("summary");
-    tipsSummary.textContent = "So setzt du deine Ferientage clever ein";
-    const tipsBody = document.createElement("p");
-    tipsBody.className = "hint plan-summary";
-    tipsBody.textContent = "Empfehlung wird berechnet …";
-    tipsBox.append(tipsSummary, tipsBody);
-
     const legend = document.createElement("details");
     legend.className = "legend-box";
     legend.open = false;            // collapsed by default
@@ -153,10 +140,24 @@ export function createTownPanels({
     const source = document.createElement("p");
     source.className = "source-note";
 
+    // "So setzt du deine Ferientage clever ein": the recommended periods, chronological.
+    // A click selects the period exactly like a turquoise day in the month detail.
+    const tipsBox = document.createElement("details");
+    tipsBox.className = "legend-box tips-box";
+    tipsBox.open = true;
+    const tipsSummary = document.createElement("summary");
+    tipsSummary.textContent = "So setzt du deine Ferientage clever ein";
+    const tipsBody = document.createElement("p");
+    tipsBody.className = "hint plan-summary";
+    tipsBody.textContent = "Empfehlung wird berechnet …";
+    const periodList = document.createElement("ol");
+    periodList.className = "period-list";
+    tipsBox.append(tipsSummary, tipsBody, periodList);
+
     const body = document.createElement("div");
     body.className = "town-body";
     body.id = bodyId;
-    body.append(status, holidaysBox, tipsBox, legend, calendarEl, source);
+    body.append(status, legend, calendarEl, tipsBox, source);
     el.append(head, body);
 
     function setCollapsed(on) {
@@ -189,7 +190,7 @@ export function createTownPanels({
         onLayoutChange();
       },
     });
-    const entry = { el, status, source, drag, holidays: [], holidaysBody, tipsBody, count };
+    const entry = { el, status, source, drag, holidays: [], tipsBody, periodList, count, location: loc };
     entry.calendar = createCalendarView(calendarEl, {
       onHolidayClick: (day, cell) => onHolidayClick({
         location: loc, day, from: cell,
@@ -250,18 +251,35 @@ export function createTownPanels({
       p.status.textContent = statusText;
       p.source.textContent = sourceText;
     },
-    /** One line about the recommended plan (the turquoise days in the calendar), and the
-     * number of public holidays of the planned year next to the town name. */
-    setPlan(id, summary) {
+    /** The recommended plan (turquoise days) as a list below the calendar, the selected
+     * period marked; and the number of public holidays next to the town name. */
+    setPlan(id, summary, selectedKey = null) {
       const p = panels.get(id);
       if (!p) return;
-      p.tipsBody.textContent = `${planSummary(summary)}. Klicke auf einen türkisen Tag für Details.`;
+      p.tipsBody.textContent = planSummary(summary);
+      p.periodList.replaceChildren(...periodListItems(summary, selectedKey).map((item) => {
+        const li = document.createElement("li");
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "candidate-btn";
+        btn.dataset.period = item.key;
+        btn.setAttribute("aria-pressed", String(item.selected));
+        btn.setAttribute("aria-haspopup", "dialog");
+        const t = document.createElement("span");
+        t.className = "candidate-title";
+        t.textContent = item.title;
+        btn.append(t);
+        if (item.split) {
+          const m = document.createElement("span");
+          m.className = "candidate-meta";
+          m.textContent = item.split;
+          btn.append(m);
+        }
+        btn.addEventListener("click", () => onPeriodClick({ location: p.location, key: item.key, from: btn }));
+        li.append(btn);
+        return li;
+      }));
       p.count.textContent = summary ? ` · ${holidayCountText(summary.holidays_total)}` : "";
-    },
-    /** Web-check result for the town (GET /api/holidays) with its on/off switches. */
-    setHolidayData(id, data, switches) {
-      const p = panels.get(id);
-      if (p) renderHolidaySection(p.holidaysBody, data, switches);
     },
     setStatus(id, text) {
       const p = panels.get(id);

@@ -1,22 +1,27 @@
+import { readAboutConfig } from "./about-view.js";
 import { fetchHolidays, fetchLocationAt, fetchLocations, postOptimize } from "./api.js";
 import { applyPlan, periodKey } from "./calendar-model.js";
+import { createDialog, el } from "./dialog.js";
 import { makeFloatingPanel } from "./floating-panel.js";
+import { createHelpModal } from "./help-modal.js";
 import { createHolidayModal } from "./holiday-modal.js";
 import { createSwissMap } from "./map.js";
 import { createPeriodModal } from "./period-modal.js";
 import { PANEL_GAP, PANEL_WIDTH, rightCoverage } from "./panel-layout.js";
-import { createSettingsPanel } from "./planner.js";
+import { createPlannerPanel } from "./planner.js";
+import { createPrefsModal } from "./prefs-modal.js";
 import { createSearchBox } from "./search.js";
 import {
-  createPlannerStore, firstVisibleMonth, locationDetail, locationLabel, MAX_LOCATIONS, optimizePayload,
+  canOptimize, createPlannerStore, DONE, firstVisibleMonth, locationDetail, locationLabel, MAX_LOCATIONS,
+  optimizePayload,
 } from "./state.js";
+import { createTownModal } from "./town-modal.js";
 import { createTownPanels } from "./town-panels.js";
 import { debounce } from "./util.js";
+import { createWizard } from "./wizard.js";
 
-const PANELS_OPEN_DELAY_MS = 1000;   // search → zoom → ~1 s → panel
+const TOWN_MODAL_DELAY_MS = 1000;   // choose a town → map zooms → ~1 s → town modal
 const RECALC_DEBOUNCE_MS = 200;
-const PLACEHOLDER_SEARCH = "Ort oder PLZ suchen";
-const PLACEHOLDER_ADD = "Ort hinzufügen";
 
 const $ = (id) => document.getElementById(id);
 
@@ -33,16 +38,16 @@ try {
   // storage blocked (e.g. privacy settings): the planner works, it just won't remember
 }
 
+const store = createPlannerStore({ storage });
+const isDone = () => store.get().onboarding === DONE;
+
 let townPanels = null;
+const plannerRoot = $("planner");
 const swissMap = createSwissMap($("map"), {
   onNotice: showNotice,
   onMapClick: (latlng) => pickOnMap(latlng),
-  // Before the first panel is visible, reserve room for one panel (and the "Jahr" panel).
-  getRightCoverage: () => {
-    const rects = [...(townPanels?.rects() ?? [])];
-    if (!settingsRoot.hidden) rects.push(settingsRoot.getBoundingClientRect());
-    return rightCoverage(rects, window.innerWidth) || PANEL_WIDTH + PANEL_GAP;
-  },
+  // Before the first panel is visible, reserve room for one panel.
+  getRightCoverage: () => rightCoverage([...(townPanels?.rects() ?? [])], window.innerWidth) || PANEL_WIDTH + PANEL_GAP,
 });
 
 const segButtons = document.querySelectorAll(".layer-switch .seg");
@@ -55,141 +60,21 @@ for (const btn of segButtons) {
   });
 }
 
-const store = createPlannerStore({ storage });
-
-const searchInput = $("location-search");
-const searchLabel = $("location-search-label");
-const searchStatus = $("search-status");
-function addTown(location) {
-  const result = store.addLocation(location);
-  if (result === "full") {
-    searchStatus.textContent = `Du kannst höchstens ${MAX_LOCATIONS} Orte vergleichen.`;
-    searchStatus.hidden = false;
-  }
-  if (result === "duplicate") {
-    const existing = store.findSameTown(location);
-    townPanels.bringToFront(existing.id);
-    swissMap.fitLocations([existing]);
-  }
-  return result;
-}
-
-createSearchBox({
-  input: searchInput,
-  list: $("location-results"),
-  status: searchStatus,
-  fetchLocations,
-  isSelected: (location) => store.findSameTown(location) !== null,
-  onSelect: addTown,
-});
-
-// Pick a place by clicking the map (e.g. on a town label): small panel with "hinzufügen".
-let pickRequest = null;
-function pickNode(lines, button = null) {
-  const box = document.createElement("div");
-  box.className = "pick";
-  for (const [cls, text] of lines) {
-    const p = document.createElement("p");
-    p.className = cls;
-    p.textContent = text;
-    box.append(p);
-  }
-  if (button) box.append(button);
-  return box;
-}
-async function pickOnMap(latlng) {
-  pickRequest?.abort();
-  const ctrl = new AbortController();
-  pickRequest = ctrl;
-  swissMap.showPopup(latlng, pickNode([["hint", "Ort wird bestimmt …"]]));
-  try {
-    const loc = await fetchLocationAt(latlng.lat, latlng.lng, { signal: ctrl.signal });
-    if (ctrl.signal.aborted) return;
-    if (!loc) {
-      swissMap.showPopup(latlng, pickNode([["hint", "Hier liegt kein Schweizer Ort (z. B. ein See oder das Ausland)."]]));
-      return;
-    }
-    const existing = store.findSameTown(loc);
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "btn-secondary pick-add";
-    b.textContent = existing ? "Anzeigen" : "+ Ort hinzufügen";
-    b.addEventListener("click", () => {
-      swissMap.closePopup();
-      addTown(loc);
-    });
-    swissMap.showPopup(latlng, pickNode([
-      ["pick-title", `${locationLabel(loc)} (${loc.canton})`],
-      ["hint", locationDetail(loc) + (existing ? " · bereits hinzugefügt" : "")],
-    ], b));
-  } catch (err) {
-    if (err.name === "AbortError") return;
-    swissMap.showPopup(latlng, pickNode([["hint", err.message]]));
-  } finally {
-    if (pickRequest === ctrl) pickRequest = null;
-  }
-}
-
-const settingsRoot = $("settings");
-const settings = createSettingsPanel({ root: settingsRoot, store });
-
-// "Jahr" panel (shared settings): top right, movable, collapsible, remembered.
-const settingsPanel = makeFloatingPanel({
-  root: settingsRoot,
-  head: settingsRoot.querySelector(".panel-head"),
-  toggle: $("settings-toggle"),
-  body: $("settings-body"),
-  storage,
-  positionKey: "svp.settings-panel.v2",        // v2: default moved to the top right
-  collapsedKey: "svp.settings-collapsed.v1",
-  toggleLabel: "Arbeitstage",
-  defaultPosition: (rect, { narrow }) => (narrow
-    ? { left: PANEL_GAP, top: document.querySelector(".search-panel").getBoundingClientRect().bottom + PANEL_GAP }
-    : { left: window.innerWidth - PANEL_GAP - rect.width, top: PANEL_GAP }),
-});
-
-const holidayModal = createHolidayModal();
-
-townPanels = createTownPanels({
-  container: $("town-panels"),
-  storage,
-  searchPanel: document.querySelector(".search-panel"),
-  // Town panels open to the left of the "Jahr" panel (top right).
-  rightBoundary: () => (settingsRoot.hidden ? window.innerWidth : Math.round(settingsRoot.getBoundingClientRect().left)),
-  onRemove: (id) => store.removeLocation(id),
-  onPeriodClick: ({ location, key, from }) => openPeriod(location, key, from),
-  onHolidayClick: ({ location, day, holidays, from }) => holidayModal.open({
-    day, from, town: `${locationLabel(location)} (${location.canton})`, locationId: location.id,
-    holidays: holidays.map((h) => withWebInfo(location.id, h)),
-  }),
-});
-
 // --- holidays checked against the web search (GET /api/holidays) ------------------------------
 
 const holidayData = new Map();      // "location_id|year" → response (or an error stand-in)
 const holidayInflight = new Set();
 const dataKey = (id, year) => `${id}|${year}`;
+const getHolidayData = (id, year) => holidayData.get(dataKey(id, year)) ?? null;
 
 function holidayLists(state) {
-  return Object.fromEntries(state.locations.map((l) => [l.id, holidayData.get(dataKey(l.id, state.year))?.holidays ?? []]));
+  return Object.fromEntries(state.locations.map((l) => [l.id, getHolidayData(l.id, state.year)?.holidays ?? []]));
 }
 
 /** Adds confidence, sources and notes from the web check to a holiday of the calendar. */
 function withWebInfo(locationId, holiday) {
-  const data = holidayData.get(dataKey(locationId, store.get().year));
-  const match = data?.holidays?.find((h) => h.date === holiday.date && h.name === holiday.name);
+  const match = getHolidayData(locationId, store.get().year)?.holidays?.find((h) => h.date === holiday.date && h.name === holiday.name);
   return match ? { ...holiday, ...match, enabled: holiday.source_title === "von dir aktiviert" ? true : match.enabled } : holiday;
-}
-
-function renderHolidaySections(state) {
-  for (const loc of state.locations) {
-    townPanels.setHolidayData(loc.id, holidayData.get(dataKey(loc.id, state.year)) ?? null, {
-      isEnabled: (key) => store.isHolidayEnabled(loc.id, key),
-      onToggle: (key) => store.toggleHoliday(loc.id, key),
-      isSwitchedOff: (key) => store.isHolidaySwitchedOff(loc.id, key),
-      onToggleDisputed: (key) => store.toggleDisputedHoliday(loc.id, key),
-    });
-  }
 }
 
 function ensureHolidays(state) {
@@ -205,16 +90,195 @@ function ensureHolidays(state) {
       }))
       .finally(() => {
         holidayInflight.delete(key);
-        const now = store.get();
-        renderHolidaySections(now);
-        if (now.year === state.year) scheduleRecalc();     // enabled optional holidays now known
+        townModal.refresh();
+        if (store.get().year === state.year) scheduleRecalc();   // disputed/optional switches now known
         // a failed check is retried on the next change
         if (holidayData.get(key)?.failed) setTimeout(() => holidayData.delete(key), 0);
       });
   }
 }
 
+// --- modals -----------------------------------------------------------------------------------
+
+const townModal = createTownModal({
+  store,
+  getHolidayData,
+  onNext: () => store.wizardNext(),           // wizard step 2 → step 3
+});
+const openTown = (id, from = null) => townModal.open(id, { from, inWizard: store.get().onboarding === 2 });
+
+const prefsModal = createPrefsModal({ store });
+const helpModal = createHelpModal({ config: readAboutConfig($("about-config")?.textContent) });
+const holidayModal = createHolidayModal();
+
+const resetDialog = createDialog({ title: "Alles zurücksetzen?", className: "confirm-modal" });
+{
+  const cancel = el("button", "btn-secondary", "Abbrechen");
+  cancel.type = "button";
+  cancel.autofocus = true;
+  cancel.addEventListener("click", () => resetDialog.close("cancel"));
+  const confirm = el("button", "btn-danger", "Zurücksetzen");
+  confirm.type = "button";
+  confirm.addEventListener("click", () => {
+    resetDialog.close("confirm");
+    store.reset();
+  });
+  resetDialog.body.append(el("p", "", "Deine Orte, eigenen Daten und Einstellungen werden gelöscht. "
+    + "Danach beginnst du wieder bei Schritt 1."));
+  resetDialog.footer.append(cancel, confirm);
+  resetDialog.footer.hidden = false;
+}
+
+// --- choosing towns: wizard step 2, "+" search, map click --------------------------------------
+
+let modalTimer = null;
+function openTownSoon(id) {
+  clearTimeout(modalTimer);
+  modalTimer = setTimeout(() => {
+    if (store.has(id)) openTown(id);
+  }, TOWN_MODAL_DELAY_MS);
+}
+
+function chooseWorkLocation(loc) {
+  if (!store.setWorkLocation(loc)) return;
+  wizard.picked();
+  openTownSoon(loc.id);
+}
+
+const addSearch = $("add-search");
+const searchStatus = $("search-status");
+function setAddSearch(open) {
+  addSearch.hidden = !open;
+  $("btn-add").setAttribute("aria-expanded", String(open));
+  if (open) $("location-search").focus();
+}
+
+/** After onboarding: add a town (it inherits the global custom days) and open its modal. */
+function addTown(loc) {
+  const result = store.addLocation(loc);
+  if (result === "full") {
+    searchStatus.textContent = `Du kannst höchstens ${MAX_LOCATIONS} Orte vergleichen.`;
+    searchStatus.hidden = false;
+    return result;
+  }
+  setAddSearch(false);
+  if (result === "duplicate") {
+    const existing = store.findSameTown(loc);
+    townPanels.bringToFront(existing.id);
+    swissMap.fitLocations([existing]);
+    return result;
+  }
+  openTownSoon(loc.id);
+  return result;
+}
+
+createSearchBox({
+  input: $("location-search"),
+  list: $("location-results"),
+  status: searchStatus,
+  fetchLocations,
+  isSelected: (location) => store.findSameTown(location) !== null,
+  onSelect: addTown,
+});
+$("add-search-close").addEventListener("click", () => setAddSearch(false));
+addSearch.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && $("location-results").hidden) {
+    setAddSearch(false);
+    $("btn-add").focus();
+  }
+});
+
+// Pick a place by clicking the map (also in wizard step 2).
+let pickRequest = null;
+function pickNode(lines, button = null) {
+  const box = el("div", "pick");
+  for (const [cls, text] of lines) box.append(el("p", cls, text));
+  if (button) box.append(button);
+  return box;
+}
+async function pickOnMap(latlng) {
+  const step = store.get().onboarding;
+  if (step === 1 || step === 3) return;      // map click chooses the work place only in step 2
+  pickRequest?.abort();
+  const ctrl = new AbortController();
+  pickRequest = ctrl;
+  swissMap.showPopup(latlng, pickNode([["hint", "Ort wird bestimmt …"]]));
+  try {
+    const loc = await fetchLocationAt(latlng.lat, latlng.lng, { signal: ctrl.signal });
+    if (ctrl.signal.aborted) return;
+    if (!loc) {
+      swissMap.showPopup(latlng, pickNode([["hint", "Hier liegt kein Schweizer Ort (z. B. ein See oder das Ausland)."]]));
+      return;
+    }
+    const wizardMode = store.get().onboarding === 2;
+    const existing = store.findSameTown(loc);
+    const b = el("button", "btn-secondary pick-add",
+      wizardMode ? "Als Arbeitsort wählen" : existing ? "Anzeigen" : "+ Ort hinzufügen");
+    b.type = "button";
+    b.addEventListener("click", () => {
+      swissMap.closePopup();
+      if (store.get().onboarding === 2) chooseWorkLocation(loc);
+      else if (isDone()) addTown(loc);
+    });
+    swissMap.showPopup(latlng, pickNode([
+      ["pick-title", `${locationLabel(loc)} (${loc.canton})`],
+      ["hint", locationDetail(loc) + (existing && !wizardMode ? " · bereits hinzugefügt" : "")],
+    ], b));
+  } catch (err) {
+    if (err.name === "AbortError") return;
+    swissMap.showPopup(latlng, pickNode([["hint", err.message]]));
+  } finally {
+    if (pickRequest === ctrl) pickRequest = null;
+  }
+}
+
+const wizard = createWizard({
+  root: $("wizard"),
+  store,
+  fetchLocations,
+  onPickLocation: chooseWorkLocation,
+  onCheckHolidays: (from) => {
+    const loc = store.get().locations[0];
+    if (loc) openTown(loc.id, from);
+  },
+});
+
+// --- planner panel and top-right controls ------------------------------------------------------
+
+createPlannerPanel({ root: plannerRoot, store, onOpenTown: openTown });
+const plannerPanel = makeFloatingPanel({
+  root: plannerRoot,
+  head: plannerRoot.querySelector(".panel-head"),
+  toggle: $("planner-toggle"),
+  body: $("planner-body"),
+  storage,
+  positionKey: "svp.planner-panel.v1",
+  collapsedKey: "svp.planner-collapsed.v1",
+  toggleLabel: "Planer",
+  defaultPosition: () => ({ left: PANEL_GAP, top: PANEL_GAP }),
+});
+
+$("btn-add").addEventListener("click", () => setAddSearch(addSearch.hidden));
+$("btn-prefs").addEventListener("click", (e) => prefsModal.open(e.currentTarget));
+$("btn-help").addEventListener("click", (e) => helpModal.open(e.currentTarget));
+$("btn-reset").addEventListener("click", (e) => resetDialog.open(e.currentTarget));
+
 // --- calendars ------------------------------------------------------------------------------
+
+townPanels = createTownPanels({
+  container: $("town-panels"),
+  storage,
+  leftPanel: plannerRoot,
+  // below the top-right controls
+  topOffset: () => Math.round($("top-controls").getBoundingClientRect().bottom + PANEL_GAP),
+  onRemove: (id) => store.removeLocation(id),
+  onOpenTown: openTown,
+  onPeriodClick: ({ location, key, from }) => openPeriod(location, key, from),
+  onHolidayClick: ({ location, day, holidays, from }) => holidayModal.open({
+    day, from, town: `${locationLabel(location)} (${location.canton})`, locationId: location.id,
+    holidays: holidays.map((h) => withWebInfo(location.id, h)),
+  }),
+});
 
 let latest = null;          // last successful /api/optimize response
 let inflight = null;
@@ -222,8 +286,7 @@ const selected = new Map();       // location_id → key "start|end" of the sele
 
 function findPeriod(result, key) {
   if (!result || !key) return null;
-  return [...(result.summary?.plan ?? []), ...(result.summary?.best ? [result.summary.best] : []), ...result.candidates]
-    .find((c) => periodKey(c) === key) ?? null;
+  return (result.summary?.plan ?? []).find((c) => periodKey(c) === key) ?? null;
 }
 
 const periodModal = createPeriodModal({
@@ -233,16 +296,15 @@ const periodModal = createPeriodModal({
   },
 });
 
-/** Select a period (key) of a town, highlight it and open its details panel. */
+/** The ONE selection handler: list entries and turquoise days in the month detail call it. */
 function openPeriod(location, key, from = null) {
-  const result = latest?.per_location[location.id];
-  const period = findPeriod(result, key);
+  const loc = store.get().locations.find((l) => l.id === location.id) ?? location;
+  const period = findPeriod(latest?.per_location[loc.id], key);
   if (!period) return;
-  for (const other of [...selected.keys()]) if (other !== location.id) selected.delete(other);
-  selected.set(location.id, key);
+  for (const other of [...selected.keys()]) if (other !== loc.id) selected.delete(other);
+  selected.set(loc.id, key);
   renderCalendars();
-  periodModal.open({ period, locationId: location.id, from,
-    town: `${locationLabel(location)} (${location.canton})` });
+  periodModal.open({ period, locationId: loc.id, from, town: `${locationLabel(loc)} (${loc.canton})` });
 }
 
 function renderCalendars() {
@@ -251,28 +313,29 @@ function renderCalendars() {
   for (const loc of state.locations) {
     const result = latest.per_location[loc.id];
     if (!result) continue;
-    // keep a selection only while that exact period still exists
+    // keep a selection only while that exact period is still recommended
     const chosen = findPeriod(result, selected.get(loc.id));
-    if (!chosen) selected.delete(loc.id);
-    // a selected period outside the plan (e.g. the best one) is highlighted too
-    const plan = result.summary?.plan ?? [];
-    const shown = chosen && !plan.some((c) => periodKey(c) === periodKey(chosen)) ? [...plan, chosen] : plan;
+    if (!chosen) {
+      selected.delete(loc.id);
+      if (periodModal.current()?.locationId === loc.id) periodModal.closeFor(loc.id);
+    }
+    const key = chosen ? periodKey(chosen) : null;
     const warnings = (result.warnings ?? []).map((w) => w.message);
-    const h = result.holidays?.[0];
+    const h = result.holidays?.find((x) => x.type !== "custom");
     townPanels.setResult(loc.id, {
-      days: applyPlan(result.days, shown, chosen ? periodKey(chosen) : null),
+      days: applyPlan(result.days, result.summary?.plan ?? [], key),
       holidays: result.holidays ?? [],
       fromMonth: firstVisibleMonth(state.year),
       statusText: [String(state.year), ...warnings].join(" · "),
       sourceText: h ? `Quelle Feiertage: ${h.source_title} · Kanton ${loc.canton}` : "",
     });
-    townPanels.setPlan(loc.id, result.summary);
+    townPanels.setPlan(loc.id, result.summary, key);
   }
 }
 
 async function recalculate() {
   const state = store.get();
-  if (!state.locations.length) return;
+  if (!canOptimize(state)) return;           // never before onboarding step 3 is completed
   inflight?.abort();
   const ctrl = new AbortController();
   inflight = ctrl;
@@ -291,52 +354,60 @@ const scheduleRecalc = debounce(recalculate, RECALC_DEBOUNCE_MS);
 // --- wiring -------------------------------------------------------------------------------
 
 function renderChrome(state) {
-  const hasTowns = state.locations.length > 0;
-  searchInput.placeholder = hasTowns ? PLACEHOLDER_ADD : PLACEHOLDER_SEARCH;
-  searchLabel.textContent = hasTowns ? PLACEHOLDER_ADD : PLACEHOLDER_SEARCH;
-  if (hasTowns) settingsPanel.show();
-  else settingsPanel.hide();
-  settings.render(state);
+  const done = state.onboarding === DONE;
+  for (const id of ["btn-add", "btn-prefs", "btn-reset"]) $(id).hidden = !done;
+  if (!done) setAddSearch(false);
+  if (done) plannerPanel.show();
+  else plannerPanel.hide();
 }
 
-let openTimer = null;
+function renderPlanner(state) {
+  if (!canOptimize(state)) {
+    townPanels.sync([]);
+    townPanels.hide();
+    latest = null;
+    inflight?.abort();
+    return;
+  }
+  townPanels.show();
+  townPanels.sync(state.locations);
+  renderCalendars();
+}
+
 store.subscribe((state, change) => {
   if (change.type === "remove") {
-    // Removing a town closes the info panels that belong to it.
+    // Removing a town closes the panels that belong to it.
     holidayModal.closeFor(change.location.id);
     periodModal.closeFor(change.location.id);
+    townModal.closeFor(change.location.id);
     selected.delete(change.location.id);
   }
+  if (change.type === "reset") {
+    clearTimeout(modalTimer);
+    townModal.close();
+    prefsModal.close();
+    holidayModal.close();
+    periodModal.close();
+    selected.clear();
+    swissMap.closePopup();
+  }
   renderChrome(state);
-  townPanels.sync(state.locations);
   ensureHolidays(state);
-  renderHolidaySections(state);
-  if (change.type === "add" || change.type === "remove") {
+  if (["add", "remove", "reset"].includes(change.type)) {
     swissMap.setLocations(state.locations, locationLabel);
     swissMap.fitLocations(state.locations);
   }
-  if (!state.locations.length) {
-    clearTimeout(openTimer);
-    townPanels.hide();
-    latest = null;
-    return;
-  }
-  if (!townPanels.isShown()) {
-    clearTimeout(openTimer);
-    openTimer = setTimeout(() => townPanels.show(), PANELS_OPEN_DELAY_MS);
-  }
-  scheduleRecalc();
+  renderPlanner(state);
+  if (change.type !== "vacation_type") scheduleRecalc();     // the vacation type never affects the optimizer
 });
 
 // Restore a remembered session without the search → zoom → delay sequence.
 const initial = store.get();
 renderChrome(initial);
+ensureHolidays(initial);
 if (initial.locations.length) {
-  townPanels.show();
-  townPanels.sync(initial.locations);
-  ensureHolidays(initial);
-  renderHolidaySections(initial);
   swissMap.setLocations(initial.locations, locationLabel);
   swissMap.fitLocations(initial.locations);
-  recalculate();
 }
+renderPlanner(initial);
+recalculate();

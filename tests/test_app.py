@@ -41,23 +41,38 @@ def test_map_uses_swisstopo_only_with_attribution(client):
     assert "google" not in js.lower()
 
 
-def test_satellite_is_preselected_and_settings_start_collapsed(client):
+def test_satellite_is_preselected(client):
     html = client.get("/").get_data(as_text=True)
     assert 'data-layer="satellite" aria-pressed="true"' in html
     assert 'data-layer="map" aria-pressed="false"' in html
-    # Shared settings: own movable panel titled "Jahr", always expanded, shown once a town is selected
-    start = html.index('<section id="settings" class="glass panel settings-panel"')
-    settings = html[start:html.index("</section>", start)]
-    assert "hidden>" in settings[:120]
-    # always expanded: year, working days and half days aren't inside a collapsible block
-    assert "<details" not in settings[:settings.index('id="half-day-hint"')]
-    assert '>Jahr</h2>' in settings and 'class="year-badges"' in settings and "<select" not in settings
-    assert 'class="panel-head"' in settings
-    assert settings.index('id="planner-year"') < settings.index('id="working-days"') < settings.index('id="half-days"')
-    assert 'role="tooltip"' in settings and "halben Arbeitstag" in settings
-    assert "Legende" not in settings                     # legend only in the town panels
-    # Town panels (with legend above each calendar) are built in JS; no "+ Ort hinzufügen" button
-    assert 'id="town-panels"' in html and "add-location" not in html
+
+
+def test_page_layout_after_the_scope_change(client):
+    html = client.get("/").get_data(as_text=True)
+    # The old header is gone completely; the app is called Adam.
+    assert "Ferienplaner Schweiz" not in html and "<h1" not in html
+    assert "<title>Adam" in html
+    # Onboarding wizard container (steps built in wizard.js)
+    assert '<section id="wizard"' in html
+    # Top right, left to right: "+", ⚙, ?, Reset; with aria-labels and tooltips.
+    start = html.index('id="top-controls"')
+    controls = html[start:html.index("</nav>", start)]
+    ids = ["btn-add", "btn-prefs", "btn-help", "btn-reset"]
+    assert [controls.index(f'id="{i}"') for i in ids] == sorted(controls.index(f'id="{i}"') for i in ids)
+    for label in ("Ort hinzufügen", "Präferenzen", "Über Adam", "Alles zurücksetzen"):
+        assert re.search(rf'aria-label="{label}"\s+title="{label}"', controls), label
+    # "?" is always visible; "+", ⚙ and Reset only after onboarding (hidden at first).
+    help_tag = re.search(r'<button id="btn-help"[^>]*>', controls).group(0)
+    assert "hidden" not in help_tag
+    for i in ("btn-add", "btn-prefs", "btn-reset"):
+        assert re.search(rf'<button id="{i}"[^>]*hidden>', controls), i
+    # Planner panel: town chips and vacation type only; no preferences, no "+ Ort hinzufügen".
+    start = html.index('<section id="planner"')
+    planner = html[start:html.index("</section>", start)]
+    assert 'id="town-chips"' in planner and 'id="vacation-type"' in planner
+    for gone in ("working-days", "half-day", "planner-budget", "year-badges", "Ort hinzufügen"):
+        assert gone not in planner, gone
+    assert 'id="town-panels"' in html
 
 
 def test_unknown_api_route_returns_json_error(client):

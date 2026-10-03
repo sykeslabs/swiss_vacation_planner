@@ -10,6 +10,17 @@ const el = (tag, className, text) => {
   return node;
 };
 
+/**
+ * What a click on a day does. Year overview: a month box only zooms in, it never selects a
+ * period. Month detail: a holiday opens its background, a recommended day selects its period.
+ */
+export function cellAction(view, { holiday = false, plan = false } = {}) {
+  if (view !== "month") return "zoom";
+  if (holiday) return "holiday";
+  if (plan) return "period";
+  return null;
+}
+
 function dayTitle(day, category) {
   const parts = [formatDateWithWeekday(day.date), categoryLabel(category)];
   if (day.holiday_names.length) parts.push(day.holiday_names.join(", "));
@@ -54,8 +65,9 @@ export function renderMonth(month, { detail = false } = {}) {
     if (day.plan_key) {
       // Part of a recommended period: clicking opens the period details (both views).
       cell.dataset.plan = day.plan_key;
-      cell.title += " · Empfehlung: klicken für Details";
+      cell.title += " · Empfehlung";
       if (detail) {
+        cell.title += ": klicken für Details";
         cell.tabIndex = 0;
         cell.setAttribute("aria-haspopup", "dialog");
       }
@@ -133,14 +145,8 @@ export function createCalendarView(container, { onHolidayClick = null, onPeriodC
       box.dataset.month = keyOf(m);
       box.setAttribute("aria-label", `${monthTitle(m.year, m.month)} vergrössern`);
       box.append(renderMonth(m));
-      box.addEventListener("click", (e) => {
-        const planCell = e.target.closest?.("[data-plan]");
-        if (planCell && onPeriodClick) {
-          onPeriodClick(planCell.dataset.plan, planCell);
-          return;                    // a recommended day opens its period, not the zoom
-        }
-        openMonth(keyOf(m), box.getBoundingClientRect());
-      });
+      // cellAction("year") is always "zoom": selecting happens in the month detail or the list.
+      box.addEventListener("click", () => openMonth(keyOf(m), box.getBoundingClientRect()));
       return box;
     }));
   }
@@ -190,16 +196,11 @@ export function createCalendarView(container, { onHolidayClick = null, onPeriodC
   // Holidays open their background; other days of a recommended period open the period.
   function activate(e) {
     const hit = holidayFromEvent(e);
-    if (hit) {
-      onHolidayClick(hit.day, hit.cell);
-      return true;
-    }
     const planCell = e.target.closest?.("[data-plan]");
-    if (planCell && onPeriodClick) {
-      onPeriodClick(planCell.dataset.plan, planCell);
-      return true;
-    }
-    return false;
+    const action = cellAction("month", { holiday: Boolean(hit), plan: Boolean(planCell && onPeriodClick) });
+    if (action === "holiday") onHolidayClick(hit.day, hit.cell);
+    else if (action === "period") onPeriodClick(planCell.dataset.plan, planCell);
+    return action !== null;
   }
   detailBody.addEventListener("click", activate);
   detailBody.addEventListener("keydown", (e) => {

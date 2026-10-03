@@ -34,3 +34,11 @@ export function planSummary(summary) {
 export function holidayCountText(n) {
   return `${n} ${n === 1 ? "Feiertag" : "Feiertage"}`;
 }
+
+/** The recommended periods of a town, chronological, for the list below the calendar.
+ * `selectedKey` marks the period that is also highlighted in the calendar. */
+export function periodListItems(summary, selectedKey = null) {
+  return [...(summary?.plan ?? [])]
+    .sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end))
+    .map((c) => ({ key: periodKey(c), title: candidateTitle(c), split: yearSplit(c), selected: periodKey(c) === selectedKey }));
+}

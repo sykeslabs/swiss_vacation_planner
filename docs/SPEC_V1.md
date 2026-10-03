@@ -15,7 +15,9 @@ This is a Flask web app for planning Swiss vacations. The user picks one or more
 
 Optionally, the user can then pick a country on a world map and get 10 AI-generated travel ideas for that period from OpenRouter.
 
-**Flow:** search a location → map zooms in, planner opens → set vacation type and working days → view the calendar and candidate periods → pick a period (it gets highlighted and weather appears) → modal "Ferienangebote?" → world map → click a country → OpenRouter → 10 offer cards.
+The app is called **Adam**.
+
+**Flow (updated 2026-10-03):** onboarding wizard in three steps — **1 Jahr** (year badges) → **2 Arbeitsort** (search "Arbeitsort oder PLZ suchen" or click the map; after the choice the search hides, the map zooms in and ~1 s later the **town modal** opens for that town and year; its "Weiter" leads on) → **3 Präferenzen** (working days Mo–So, default Mo–Fr; required "Anzahl Ferientage", whole or half days; "Weiter" validates) → planner: one panel per town with the calendar and, below it, "So setzt du deine Ferientage clever ein" (the recommended periods) → pick a period in the list or on a turquoise day in the month detail (it gets highlighted and its details appear; weather from M6) → modal "Ferienangebote?" → world map → click a country → OpenRouter → 10 offer cards. The calendar and the optimizer don't run before step 3 is completed. The wizard holds no business logic; it only fills PlannerState.
 
 **Stack:** Python and Flask; HTML, CSS, and vanilla JS (unless the repo already uses a framework); Leaflet; deployed on Vercel.
 
@@ -25,12 +27,12 @@ Claude must confirm or raise each item in the M0 report.
 
 | # | Topic | Default in this spec | Why it matters |
 |---|---|---|---|
-| D1 **[DECISION]** | **Holiday source reliability.** You.com returns web search results or text, not structured holiday data. Turning that into normalized dates without an LLM means fragile parsing, and the optimizer then depends on non-deterministic input. | **Hybrid.** A deterministic reference calendar (Easter-based computation and/or the `holidays` package with Swiss cantons) gives the baseline. You.com retrieves and corroborates canton- and municipality-specific holidays with provenance. Disagreements are flagged, never auto-resolved. | This changes "You.com exclusively". The owner must approve it, or confirm You.com-only and accept the risk. |
+| D1 **[DECISION]** | **Holiday source reliability.** You.com returns web search results or text, not structured holiday data. Turning that into normalized dates without an LLM means fragile parsing, and the optimizer then depends on non-deterministic input. | **Hybrid.** A deterministic reference calendar (Easter-based computation and/or the `holidays` package with Swiss cantons) gives the baseline. You.com retrieves and corroborates canton- and municipality-specific holidays with provenance. Disagreements are flagged, never auto-resolved. **Update 2026-10-03:** a flagged (disputed) reference holiday and an optional (web-only) holiday count as **no holiday** until the user switches it on in the town modal; the switch is per location. | This changes "You.com exclusively". The owner must approve it, or confirm You.com-only and accept the risk. |
 | D2 **[DECISION]** | How You.com output is parsed (search snippets, or an AI/research endpoint that returns text) | Spike in M0: run 3 real queries, show raw output, propose a parser | Determines feasibility |
-| D3 | Vacation-day budget | Optional input "Ferientage pro Jahr" (default empty = no limit). The headline uses the best candidates within that budget. | The headline "Wie viele Ferientage holst du raus?" implies a budget |
+| D3 | Vacation-day budget | **Required** input "Anzahl Ferientage" in wizard step 3 (whole or half days, 0–366; no default, no "no limit"), changeable later in ⚙ Präferenzen. The plan uses only periods within that budget (updated 2026-10-03). | The headline "Wie viele Ferientage holst du raus?" implies a budget |
 | D4 | Candidate bounds | A candidate costs 1–10 vacation days, spans at most 21 calendar days, and must start and end next to a non-working day | Prevents a combinatorial explosion |
 | D5 | Efficiency | `days_free / vacation_days_required`. Periods costing 0 vacation days (long weekends) are listed separately as "Ohne Ferientag". | Formula was undefined |
-| D6 | Half-day semantics | A half-day date is a working day that costs 0.5 vacation days. Defaults are 24.12 and 31.12, editable in the UI. | The meaning was ambiguous |
+| D6 | Half-day semantics | A half-day date is a working day that costs 0.5 vacation days. 24.12 and 31.12 are **recurring** half days (month/day rules) that are on by default and apply to every year shown, including the boundary months. The user can switch them off and add own dates (whole day off or half day, once or "jährlich") in the town modal; these custom days are **global** (all towns, also towns added later). Half days and own dates are not part of the wizard steps (updated 2026-10-03). | The meaning was ambiguous |
 | D7 | Multiple locations | Holidays and optimization are calculated **per location**. The calendar shows one *active* location at a time (switch via chips). The candidate list can be filtered by location. | "Independently" was unclear in the UI |
 | D8 | Year-boundary periods | A period that spans 31.12/1.1 is charged to the year in which each vacation day falls. The UI shows the split. | Accounting across years |
 | D9 | Selectable years | Current year to current year + 2 | No year selector was specified |
@@ -78,9 +80,19 @@ Proposed next milestone:
 ```python
 Location(id, name, postcode, municipality, municipality_id, canton, latitude, longitude)
 
-PlannerState(year, locations: list[Location], working_days: set[Weekday],
-             half_days: dict[date, float], vacation_type: VacationType,
-             vacation_budget: float | None)
+PlannerState(onboarding: 1 | 2 | 3 | "done", year, locations: list[Location],
+             working_days: set[Weekday], vacation_budget: float,   # required (D3)
+             vacation_type: VacationType,
+             custom_days: list[CustomDay],                        # global, all locations (D6)
+             active_holidays: dict[location_id, set[holiday_key]]) # disputed/optional switched on (D1)
+
+CustomDay(id, name, kind: full | half, recurring: bool,
+          date | (month, day), active: bool, builtin: bool)   # builtin: 24.12 and 31.12
+
+holiday_key = "YYYY-MM-DD|Name"
+# Sent to POST /api/optimize: half_days (expanded custom half days of the calendar window),
+# custom_holidays (expanded custom whole days, global), extra_holidays (optional holidays switched
+# on, per location), disabled_holidays (disputed holidays NOT switched on, per location).
 
 VacationType = Enum: beach, city, hiking, skiing, wellness, nature, family,
                      road_trip, no_preference   # extensible, labels in a registry
@@ -118,7 +130,9 @@ tests/   docs/{SPEC,PLAN,DECISIONS}.md   vercel.json   requirements.txt   README
 GET  /api/locations?q=                       → Location[]
 GET  /api/holidays?year=&location_id=        → {holidays: Holiday[], warnings: []}
 POST /api/optimize   {year, locations, working_days:["MON",...], half_days:{"2027-12-24":0.5},
-                      vacation_budget}        → {per_location: {id: {days: DayInfo[], candidates: [], summary}}}
+                      vacation_budget, custom_holidays:[{date,name}],
+                      extra_holidays:{id:[{date,name,work_fraction}]}, disabled_holidays:{id:["YYYY-MM-DD|Name"]}}
+                                              → {per_location: {id: {days: DayInfo[], candidates: [], summary}}}
 GET  /api/weather?location_id=&start=&end=   → {averages, methodology, years_used, missing_years}
 POST /api/travel/offers {vacation_type, country, country_code, origin:"CH",
                       start_date, end_date, days_free, vacation_days_required} → {offers: [], meta}
@@ -140,8 +154,14 @@ POST /api/travel/offers {vacation_type, country, country_code, origin:"CH",
 ## 7. Frontend
 
 - **Map:** full-screen, always visible. Glass panels float above it (translucent, backdrop blur, subtle border, rounded corners, restrained type). swisstopo base map and SWISSIMAGE satellite. No Google.
-- **Planner panel:** location chips + "Ort hinzufügen", vacation type picker ("Was für Ferien suchst du?", changeable at any time), weekday toggles, half-day list, budget, year.
-- **Calendar:** 12 month boxes plus the boundary months. Clicking a box animates a zoom into month detail (CSS transform/FLIP) using the **same renderer**. A clear "← Jahresübersicht" goes back. Include a legend. Selected-period highlighting must work in both views.
+- **No page header** (the former "Ferienplaner Schweiz" title is gone).
+- **Onboarding wizard** (top left, see §1): steps Jahr → Arbeitsort → Präferenzen. Map click works in step 2 ("Als Arbeitsort wählen"). No half days and no "Datum hinzufügen" in the wizard steps themselves.
+- **Top-right controls**, left to right: **+** (Ort hinzufügen: location search; the new town gets its town modal and inherits the custom days, no wizard), **⚙** (Präferenzen: glass modal with Jahr, Arbeitstage, Anzahl Ferientage; a year change reloads the holidays of all towns), **?** ("Über Adam"), **Reset** (asks "Alles zurücksetzen?", then clears PlannerState and returns to step 1). Each has an aria-label and a tooltip. "+", ⚙ and Reset appear after onboarding; "?" is always there.
+- **Town modal** (opened in step 2, by a town chip, or by the town name in its panel): "Feiertage" (confirmed holidays) and one section "Optionale Feiertage und halbe Tage" with on/off switches — disputed and optional holidays of this town (default off, per location), 24.12/31.12 (default on), own dates (default on, global, deletable) — and "Datum hinzufügen" (date, name, "ganzer Feiertag"/"halber Tag", "jährlich"). Provenance and conflict notes appear only as an ⓘ tooltip (hover, focus, tap), generated from the data. Every change recalculates without a reload.
+- **Planner panel:** town chips (× removes, a click opens the town modal) and the vacation type picker ("Was für Ferien suchst du?", changeable at any time). No preference controls and no "+ Ort hinzufügen" here.
+- **Town panels:** one movable panel per town with the calendar and, below it, the collapsible "So setzt du deine Ferientage clever ein" (expanded by default): the recommended periods, chronological. A list entry and a turquoise day in the month detail call the same selection handler; the selected period is marked in the list and highlighted in the calendar.
+- **"Über Adam" (help modal):** what Adam is (steps, data sources, holiday caveat, weather is historical, offers are AI suggestions), Kontakt (mailto, optional website), Unterstützen ("Adam ist kostenlos. Wenn er dir hilft, freue ich mich über eine Spende." + donate button, new tab, `rel="noopener noreferrer"`). Values come only from the environment (`ADAM_CONTACT_EMAIL`, `ADAM_WEBSITE_URL` optional, `ADAM_DONATE_URL`, `ADAM_DONATE_LABEL` optional), injected into the page by the server; a missing value hides its element. Closes with ×, Esc, or a click outside; focus is trapped and returns to "?". No external API call.
+- **Calendar:** 12 month boxes plus the boundary months. Clicking a box only animates a zoom into month detail (CSS transform/FLIP) using the **same renderer** — it never selects a period. A clear "← Jahresübersicht" goes back. Include a legend. Selected-period highlighting must work in both views.
 - **Results:** headline "Wie viele Ferientage holst du {year} raus?", the best period, then "So setzt du deine Ferientage clever ein" with cards in the form `X Ferientage → Y Tage frei · Datum–Datum`.
 - **Period selected:** highlight it in the calendar, show the date range, cost, free days, the anchor holiday name, and the weather comparison table (Temperatur Ø/min/max, Niederschlag, Sonnenscheindauer per location, plus the label "Historischer Durchschnitt 20XX–20YY, keine Prognose" and the station or distance). Then show the modal "Interessierst du dich für konkrete Ferienangebote?" with **[Ja, Angebote anzeigen] [Nein]**.
 - **Travel:** a world map with clickable countries (hover and selected states). Nothing is called before a click. Offer cards show a flag, destination, type, duration, an estimated budget clearly labelled "Schätzung", why it fits, and Details. A banner reads "KI-generierte Reiseideen – keine bestätigten Preise oder Verfügbarkeiten". Navigation: change country, change type, back to the period.

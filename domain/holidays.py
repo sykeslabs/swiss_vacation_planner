@@ -68,6 +68,7 @@ def baseline_holidays(canton: str, years: list[int], retrieved_at: str) -> list[
 # --- merge with web results ---------------------------------------------------------------
 
 WEB_SOURCE = "Websuche (You.com)"
+USER_SOURCE = "Eigene Eingabe"
 MIN_PARTIAL_SHARE_PERCENT = 20.0   # "nur teilweise gültig" rows below this belong to other places
 SUNDAY = 7
 
@@ -137,7 +138,9 @@ def merge_holidays(baseline: list[Holiday], found: list[FoundHoliday], *, year: 
     for f in rows:
         by_date.setdefault(f.date, []).append(f)
 
-    municipality_rows = [f for f in rows if f.page_scope == "municipality"]
+    # Only a municipality page that classifies its rows can contradict a holiday; a page
+    # crawled without classes (all "unclassified") says nothing about what is NOT a holiday.
+    municipality_rows = [f for f in rows if f.page_scope == "municipality" and f.kind in ("legal", "half")]
     merged = []
     for h in in_year:
         day_rows = by_date.get(h.date, [])
@@ -154,8 +157,8 @@ def merge_holidays(baseline: list[Holiday], found: list[FoundHoliday], *, year: 
             doubts.append("Laut Websuche nur in Teilen der Region gültig"
                           + (f" ({share:g} % der Bevölkerung)." if share is not None else "."))
         if doubts:
-            # Flag only (owner decision 2026-10-02): stays on with medium confidence; the
-            # user may switch it off. Pages that list it on that day are still shown.
+            # Flagged, never auto-resolved (D1): the planner treats it as no holiday until the
+            # user switches it on (owner decision 2026-10-03). Pages listing that day are kept.
             merged.append(replace(h, conflict=" ".join(doubts), disputed=True,
                                   corroborated_by=tuple(sorted({f.source_url for f in same_day}))))
         elif same_day:

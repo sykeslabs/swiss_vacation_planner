@@ -1,0 +1,193 @@
+// Town modal: holidays of one town. "Feiertage" (confirmed) and one list
+// "Optionale Feiertage und halbe Tage" with switches (disputed/optional per town, custom
+// days global) and "Datum hinzufügen". Provenance only in ⓘ tooltips. textContent only.
+import { createDialog, el } from "./dialog.js";
+import { holidaySummary } from "./holiday-list.js";
+import { calendarWindow, locationLabel } from "./state.js";
+import { townHolidayModel } from "./town-holidays.js";
+
+let tipCounter = 0;
+
+/** ⓘ button with a tooltip (hover, keyboard focus, tap = focus). */
+function infoTip(text, label) {
+  const wrap = el("span", "info");
+  const id = `tip-${++tipCounter}`;
+  const btn = el("button", "info-btn", "i");
+  btn.type = "button";
+  btn.setAttribute("aria-label", `Herkunft: ${label}`);
+  btn.setAttribute("aria-describedby", id);
+  const tip = el("span", "info-tip tip-left", text);
+  tip.id = id;
+  tip.setAttribute("role", "tooltip");
+  wrap.append(btn, tip);
+  return wrap;
+}
+
+const ADD_MESSAGES = {
+  invalid: "Bitte gib ein gültiges Datum im angezeigten Zeitraum und einen Namen ein.",
+  duplicate: "Dieses Datum ist bereits eingetragen.",
+};
+
+export function createTownModal({ store, getHolidayData, onNext = () => {}, onClose = () => {} }) {
+  let locationId = null;
+  let wizard = false;
+  const dialog = createDialog({ className: "town-modal", onClose: (why) => {
+    const id = locationId;
+    locationId = null;
+    onClose({ locationId: id, why });
+  } });
+
+  const summary = el("p", "hint holiday-summary");
+  const warnings = el("div", "holiday-warnings");
+  const confirmedTitle = el("h3", "section-title", "Feiertage");
+  const confirmedList = el("ul", "holiday-rows");
+  const optionalTitle = el("h3", "section-title", "Optionale Feiertage und halbe Tage");
+  const optionalHint = el("p", "hint", "Gelten erst, wenn sie eingeschaltet sind. Eigene Daten gelten für alle Orte.");
+  const switchList = el("ul", "holiday-rows switch-rows");
+
+  // "Datum hinzufügen" (global custom day)
+  const form = el("form", "custom-add");
+  form.noValidate = true;
+  const formTitle = el("h4", "field-label", "Datum hinzufügen");
+  const dateInput = document.createElement("input");
+  dateInput.type = "date";
+  dateInput.className = "text-input";
+  dateInput.setAttribute("aria-label", "Datum");
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.maxLength = 60;
+  nameInput.placeholder = "Name, z. B. Betriebsferien";
+  nameInput.className = "text-input";
+  nameInput.setAttribute("aria-label", "Name");
+  const kindSelect = document.createElement("select");
+  kindSelect.className = "text-input";
+  kindSelect.setAttribute("aria-label", "Art");
+  for (const [value, text] of [["full", "ganzer Feiertag"], ["half", "halber Tag"]]) {
+    const o = el("option", "", text);
+    o.value = value;
+    kindSelect.append(o);
+  }
+  const recurringLabel = el("label", "check");
+  const recurring = document.createElement("input");
+  recurring.type = "checkbox";
+  recurringLabel.append(recurring, " jährlich");
+  const addBtn = el("button", "btn-secondary", "Hinzufügen");
+  addBtn.type = "submit";
+  const formHint = el("p", "hint field-error");
+  formHint.setAttribute("role", "alert");
+  formHint.hidden = true;
+  const formRow = el("div", "custom-add-row");
+  formRow.append(dateInput, kindSelect, recurringLabel);
+  const formRow2 = el("div", "custom-add-row");
+  formRow2.append(nameInput, addBtn);
+  form.append(formTitle, formRow, formRow2, formHint);
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const result = store.addCustomDay({ date: dateInput.value, name: nameInput.value, kind: kindSelect.value,
+      recurring: recurring.checked });
+    formHint.textContent = ADD_MESSAGES[result] ?? "";
+    formHint.hidden = result === "added";
+    if (result === "added") {
+      dateInput.value = "";
+      nameInput.value = "";
+      recurring.checked = false;
+    }
+  });
+
+  dialog.body.append(summary, warnings, confirmedTitle, confirmedList, optionalTitle, optionalHint, switchList, form);
+
+  const next = el("button", "btn-primary", "Weiter");
+  next.type = "button";
+  next.addEventListener("click", () => {
+    dialog.close("next");
+    onNext();
+  });
+  const done = el("button", "btn-secondary", "Fertig");
+  done.type = "button";
+  done.addEventListener("click", () => dialog.close("done"));
+  dialog.footer.append(done, next);
+  dialog.footer.hidden = false;
+
+  function row(item, { withSwitch }) {
+    const li = el("li", "holiday-row");
+    const label = el(withSwitch ? "label" : "span", "row-label", item.label);
+    if (withSwitch) {
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.className = "switch";
+      box.checked = item.active;
+      box.id = `sw-${item.kind}-${item.key}`.replace(/[^\w-]/g, "_");
+      label.htmlFor = box.id;
+      box.addEventListener("change", () => {
+        if (item.kind === "custom") store.toggleCustomDay(item.key);
+        else store.toggleLocationHoliday(locationId, item.key);
+      });
+      li.append(box);
+    }
+    li.append(label);
+    if (item.tag) li.append(el("span", "row-tag", item.tag));
+    else if (item.half) li.append(el("span", "row-tag", "halber Tag"));
+    li.append(infoTip(item.info, item.label));
+    if (item.removable) {
+      const rm = el("button", "chip-remove", "×");
+      rm.type = "button";
+      rm.setAttribute("aria-label", `${item.label} löschen`);
+      rm.title = "Löschen";
+      rm.addEventListener("click", () => store.removeCustomDay(item.key));
+      li.append(rm);
+    }
+    return li;
+  }
+
+  function render() {
+    const state = store.get();
+    const loc = state.locations.find((l) => l.id === locationId);
+    if (!loc) {
+      if (dialog.isOpen()) dialog.close("removed");
+      return;
+    }
+    const data = getHolidayData(loc.id, state.year);
+    dialog.setTitle(`${locationLabel(loc)} (${loc.canton}) · ${state.year}`);
+    summary.textContent = holidaySummary(data);
+    warnings.replaceChildren(...(data?.warnings ?? [])
+      .filter((w) => w.message !== summary.textContent)
+      .map((w) => el("p", "hint holiday-warning", `⚠ ${w.message}`)));
+    const model = townHolidayModel(data, state, (key) => store.isHolidayActive(loc.id, key));
+    confirmedList.replaceChildren(...(model.confirmed.length
+      ? model.confirmed.map((h) => row(h, { withSwitch: false }))
+      : [el("li", "muted", data ? "Keine bestätigten Feiertage gefunden." : "Feiertage werden geladen …")]));
+    // keep focus on a switch across the re-render
+    const focusedId = document.activeElement?.id;
+    switchList.replaceChildren(...model.switches.map((s) => row(s, { withSwitch: true })));
+    if (focusedId?.startsWith("sw-")) document.getElementById(focusedId)?.focus({ preventScroll: true });
+    const { start, end } = calendarWindow(state.year);
+    dateInput.min = start;
+    dateInput.max = end;
+    next.hidden = !wizard;
+    done.hidden = wizard;
+  }
+
+  store.subscribe(() => {
+    if (dialog.isOpen()) render();
+  });
+
+  return {
+    /** `wizard`: opened in onboarding step 2 → footer "Weiter" leads to step 3. */
+    open(id, { from = null, inWizard = false } = {}) {
+      locationId = id;
+      wizard = inWizard;
+      formHint.hidden = true;
+      render();
+      dialog.open(from);
+      if (wizard) next.focus({ preventScroll: true });
+    },
+    refresh() {
+      if (dialog.isOpen()) render();
+    },
+    close: () => dialog.close("close"),
+    closeFor(id) {
+      if (dialog.isOpen() && locationId === id) dialog.close("removed");
+    },
+    current: () => (dialog.isOpen() ? locationId : null),
+  };
+}
