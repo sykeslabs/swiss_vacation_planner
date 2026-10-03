@@ -21,6 +21,21 @@ export function cellAction(view, { holiday = false, plan = false } = {}) {
   return null;
 }
 
+/**
+ * Hover preview of a recommended period: marks the day cells of period `key` (year and
+ * month view alike, via data-plan) and unmarks all others; `key` null clears. Returns the
+ * number of marked cells. Works on anything with `dataset` and `classList`.
+ */
+export function markHover(cells, key) {
+  let n = 0;
+  for (const cell of cells) {
+    const on = key !== null && cell.dataset.plan === key;
+    cell.classList.toggle("is-hover", on);
+    if (on) n += 1;
+  }
+  return n;
+}
+
 function dayTitle(day, category) {
   const parts = [formatDateWithWeekday(day.date), categoryLabel(category)];
   if (day.holiday_names.length) parts.push(day.holiday_names.join(", "));

@@ -1,8 +1,8 @@
 // One movable panel per selected town: title bar (drag handle; the name opens the town
 // modal; collapse, remove), status, legend, the town's own calendar and below it the list
 // of recommended periods. Position and collapsed state are remembered per town.
-import { createCalendarView, renderLegend } from "./calendar-view.js";
-import { periodListItems, planSummary, townHeadline } from "./candidate-list.js";
+import { createCalendarView, markHover, renderLegend } from "./calendar-view.js";
+import { holidayCountText, periodListItems, planHeadline, planSummary } from "./candidate-list.js";
 import { monthTitle } from "./format.js";
 import { bringToFront as raise, makeDraggable } from "./draggable.js";
 import { defaultPosition, PANEL_GAP } from "./panel-layout.js";
@@ -17,6 +17,7 @@ export const COLLAPSED_KEY = "svp.panels-collapsed.v1";
 export function createTownPanels({
   container, storage = null, onRemove, onLayoutChange = () => {}, leftPanel = null, onHolidayClick = () => {},
   rightBoundary = () => window.innerWidth, onPeriodClick = () => {}, onOpenTown = () => {}, topOffset = () => PANEL_GAP,
+  onHolidayCountClick = () => {},
 }) {
   const panels = new Map();          // id → { el, calendar, status, drag, … }
   let positions = {};
@@ -96,17 +97,18 @@ export function createTownPanels({
     const title = document.createElement("h2");
     title.id = titleId;
     title.className = "town-title";
-    // The name opens the town modal (optional holidays, half days); dragging uses the rest of the bar.
-    const nameBtn = document.createElement("button");
-    nameBtn.type = "button";
-    nameBtn.className = "town-name";
-    nameBtn.textContent = `${locationLabel(loc)} (${loc.canton})`;
-    nameBtn.title = "Optionale Feiertage und halbe Tage";
-    nameBtn.setAttribute("aria-haspopup", "dialog");
-    nameBtn.addEventListener("click", () => onOpenTown(loc.id, nameBtn));
+    title.append(document.createTextNode(`${locationLabel(loc)} (${loc.canton})`));
+    // " · [9 Feiertage] · 15 Ferientage → 44 Tage frei": the holiday count opens the list of dates.
     const count = document.createElement("span");
-    count.className = "town-count";            // "· 9 Feiertage · 15 Ferientage → 44 Tage frei"
-    title.append(nameBtn, count);
+    count.className = "town-count";
+    const countBtn = document.createElement("button");
+    countBtn.type = "button";
+    countBtn.className = "town-name holiday-count";
+    countBtn.title = "Feiertage mit Datum anzeigen";
+    countBtn.setAttribute("aria-haspopup", "dialog");
+    countBtn.addEventListener("click", () => onHolidayCountClick(loc.id, countBtn));
+    const planText = document.createElement("span");
+    title.append(count);
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "chip-remove";
@@ -200,8 +202,8 @@ export function createTownPanels({
         onLayoutChange();
       },
     });
-    const entry = { el, status, drag, holidays: [], tipsBody, periodList, count, location: loc,
-      summary: null, selectedKey: null, month: null };
+    const entry = { el, status, drag, holidays: [], tipsBody, periodList, count, countBtn, planText, location: loc,
+      summary: null, selectedKey: null, month: null, hoverKey: null };
     entry.calendar = createCalendarView(calendarEl, {
       onHolidayClick: (day, cell) => onHolidayClick({
         location: loc, day, from: cell,
@@ -216,6 +218,12 @@ export function createTownPanels({
     });
     panels.set(loc.id, entry);
     bringToFront(loc.id);
+  }
+
+  /** Highlight a period's days in the calendar while its list entry is hovered or focused. */
+  function setHover(p, key) {
+    p.hoverKey = key;
+    markHover(p.el.querySelectorAll(".calendar [data-plan]"), key);
   }
 
   /** Period list below the calendar (filtered to the open month, if any). */
@@ -247,6 +255,10 @@ export function createTownPanels({
         btn.append(meta);
       }
       btn.addEventListener("click", () => onPeriodClick({ location: p.location, key: item.key, from: btn }));
+      btn.addEventListener("mouseenter", () => setHover(p, item.key));
+      btn.addEventListener("focus", () => setHover(p, item.key));
+      btn.addEventListener("mouseleave", () => setHover(p, null));
+      btn.addEventListener("blur", () => setHover(p, null));
       li.append(btn);
       return li;
     }));
@@ -286,6 +298,7 @@ export function createTownPanels({
       if (!p) return;
       p.holidays = holidays;
       const months = p.calendar.setDays(days, { fromMonth });
+      if (p.hoverKey) setHover(p, p.hoverKey);      // the calendar was re-rendered
       // Width follows the months shown (up to 7 per row), e.g. Oct–Jan → 4 columns.
       const cols = String(Math.max(1, Math.min(MONTHS_PER_ROW, months)));
       if (p.el.style.getPropertyValue("--month-cols") !== cols) {
@@ -308,7 +321,14 @@ export function createTownPanels({
       p.summary = summary;
       p.selectedKey = selectedKey;
       renderPeriods(p);
-      p.count.textContent = summary ? ` · ${townHeadline(summary)}` : "";
+      if (!summary) {
+        p.count.replaceChildren();
+      } else {
+        p.countBtn.textContent = holidayCountText(summary.holidays_total);
+        const plan = planHeadline(summary);
+        p.planText.textContent = plan ? ` · ${plan}` : "";
+        p.count.replaceChildren(" · ", p.countBtn, p.planText);
+      }
     },
     setStatus(id, text) {
       const p = panels.get(id);

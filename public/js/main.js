@@ -4,6 +4,7 @@ import { applyPlan, periodKey } from "./calendar-model.js";
 import { createDialog, el } from "./dialog.js";
 import { makeFloatingPanel } from "./floating-panel.js";
 import { createHelpModal } from "./help-modal.js";
+import { createHolidayDaysModal } from "./holiday-days-modal.js";
 import { createHolidayModal } from "./holiday-modal.js";
 import { createSwissMap } from "./map.js";
 import { createPeriodModal } from "./period-modal.js";
@@ -20,7 +21,6 @@ import { createTownPanels } from "./town-panels.js";
 import { debounce } from "./util.js";
 import { createWizard } from "./wizard.js";
 
-const TOWN_MODAL_DELAY_MS = 1000;   // "+": choose a town → map zooms → ~1 s → town modal
 const RECALC_DEBOUNCE_MS = 200;
 
 const $ = (id) => document.getElementById(id);
@@ -109,6 +109,7 @@ const openTown = (id, from = null) => {
 const prefsModal = createPrefsModal({ store });
 const helpModal = createHelpModal({ config: readAboutConfig($("about-config")?.textContent) });
 const holidayModal = createHolidayModal();
+const holidayDaysModal = createHolidayDaysModal();
 
 const resetDialog = createDialog({ title: "Alles zurücksetzen?", className: "confirm-modal" });
 {
@@ -130,14 +131,6 @@ const resetDialog = createDialog({ title: "Alles zurücksetzen?", className: "co
 
 // --- choosing towns: wizard step 2, "+" search, map click --------------------------------------
 
-let modalTimer = null;
-function openTownSoon(id) {
-  clearTimeout(modalTimer);
-  modalTimer = setTimeout(() => {
-    if (store.has(id)) openTown(id);
-  }, TOWN_MODAL_DELAY_MS);
-}
-
 function chooseWorkLocation(loc) {
   if (!store.setWorkLocation(loc)) return;
   wizard.picked();          // step 2 only zooms to the place; no modal here (owner request)
@@ -157,7 +150,8 @@ function setAddSearch(open) {
   if (open) $("location-search").focus();
 }
 
-/** After onboarding: add a town (it inherits the global custom days) and open its modal. */
+/** After onboarding: add a town (it inherits the global custom days). Its modal is not opened
+ * automatically; the town panel's button or the chip opens it (owner request). */
 function addTown(loc) {
   const result = store.addLocation(loc);
   if (result === "full") {
@@ -172,7 +166,6 @@ function addTown(loc) {
     swissMap.fitLocations([existing]);
     return result;
   }
-  openTownSoon(loc.id);
   return result;
 }
 
@@ -273,6 +266,14 @@ townPanels = createTownPanels({
   topOffset: () => Math.round($("top-controls").getBoundingClientRect().bottom + PANEL_GAP),
   onRemove: (id) => store.removeLocation(id),
   onOpenTown: openTown,
+  onHolidayCountClick: (id, from) => {
+    const loc = store.get().locations.find((l) => l.id === id);
+    const result = latest?.per_location[id];
+    if (loc && result) {
+      holidayDaysModal.open({ locationId: id, town: `${locationLabel(loc)} (${loc.canton})`,
+        year: latest.year, days: result.days, from });
+    }
+  },
   onPeriodClick: ({ location, key, from }) => openPeriod(location, key, from),
   onHolidayClick: ({ location, day, holidays, from }) => holidayModal.open({
     day, from, town: `${locationLabel(location)} (${location.canton})`, locationId: location.id,
@@ -378,17 +379,19 @@ store.subscribe((state, change) => {
     holidayModal.closeFor(change.location.id);
     periodModal.closeFor(change.location.id);
     townModal.closeFor(change.location.id);
+    holidayDaysModal.closeFor(change.location.id);
     selected.delete(change.location.id);
   }
   if (change.type === "reset") {
-    clearTimeout(modalTimer);
     townModal.close();
+    holidayDaysModal.close();
     prefsModal.close();
     holidayModal.close();
     periodModal.close();
     selected.clear();
     swissMap.closePopup();
   }
+  if (change.type === "config") holidayDaysModal.close();   // its dates may change
   renderChrome(state);
   ensureHolidays(state);
   if (["add", "remove", "reset"].includes(change.type)) {

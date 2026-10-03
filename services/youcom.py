@@ -65,6 +65,8 @@ def fetch_pages(query: str) -> list[dict]:
 # --- parsing ---------------------------------------------------------------------------------
 
 _ROW = re.compile(r"^\|\s*(\d{2})\.(\d{2})\.(\d{4})\s*\|(.*)\|\s*$")
+# Name-first tables (ferienwiki.ch, localcities.ch …): "| Sechseläuten | 20.04.2026 (Montag) |"
+_NAME_ROW = re.compile(r"^\|\s*([^|]*?[A-Za-zÄÖÜäöüéè]{3,}[^|]*?)\s*\|\s*(\d{1,2})\.(\d{1,2})\.(\d{4})(?:\s*\([^)|]*\))?\s*\|")
 _LINK = re.compile(r'\[([^\]]+)\]\((?:[^()\s]+)(?:\s+"([^"]*)")?\)')
 _SHARE = re.compile(r"^(<\s*)?(\d+(?:\.\d+)?)\s*%$")
 _CLASS_NUM = re.compile(r"^\[?([1-5])\]?")
@@ -147,6 +149,21 @@ def parse_row(line: str) -> tuple[date, str, str, float | None] | None:
     return day, " ".join(name.split()), kind or "unclassified", share
 
 
+def parse_name_row(line: str) -> tuple[date, str] | None:
+    """(date, name) of a name-first table row, or None. These tables carry no
+    classification, so their rows are always "unclassified"."""
+    m = _NAME_ROW.match(line.strip())
+    if not m:
+        return None
+    try:
+        day = date(int(m[4]), int(m[3]), int(m[2]))
+    except ValueError:
+        return None
+    link = _LINK.search(m[1])
+    name = " ".join((link[1] if link else m[1]).split())
+    return day, name
+
+
 def parse_pages(pages: list[dict], *, year: int, municipality: str, canton: str,
                 retrieved_at: str | None = None) -> list[FoundHoliday]:
     """FoundHoliday rows for `year` from pages about our canton/municipality.
@@ -162,11 +179,19 @@ def parse_pages(pages: list[dict], *, year: int, municipality: str, canton: str,
         for line in page["markdown"].splitlines():
             row = parse_row(line)
             if not row:
-                continue
+                named = parse_name_row(line)
+                if not named:
+                    continue
+                # No classification; "Gesetzliche Feiertage" titles on such pages also list
+                # customary days (Sechseläuten), so they are never promoted to "legal".
+                row = (named[0], named[1], "unclassified", None)
+                legal_row = False
+            else:
+                legal_row = legal_page
             day, name, kind, share = row
             if day.year != year or kind == "event":
                 continue
-            if kind == "unclassified" and legal_page:
+            if kind == "unclassified" and legal_row:
                 kind = "legal"       # "(Gesetzliche Feiertage)" pages list legal holidays only
             found = FoundHoliday(day, name, kind, share, page["url"], page["title"], retrieved_at, scope)
             # Rows of a municipality page are kept separately: they decide whether a

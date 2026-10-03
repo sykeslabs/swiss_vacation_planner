@@ -19,7 +19,8 @@ test("dayCategory derives every category from attributes", () => {
     [{ is_working_day: false, is_weekend: true, work_fraction: 0, is_free: true }, "weekend"],
     [{ is_working_day: false, work_fraction: 0, is_free: true }, "weekend"],           // e.g. Friday off in a Mon–Thu week
     [{ is_holiday: true, work_fraction: 0, is_free: true }, "holiday"],
-    [{ is_holiday: true, is_working_day: false, holiday_on_non_working_day: true, work_fraction: 0, is_free: true }, "holiday_off"],
+    [{ is_holiday: true, is_working_day: false, holiday_on_non_working_day: true, work_fraction: 0, is_free: true }, "holiday"],   // weekend holiday: red too
+    [{ is_holiday: true, is_working_day: false, holiday_on_non_working_day: true, work_fraction: 0, is_free: true, plan_key: "k" }, "holiday"],
     [{ is_vacation: true, work_fraction: 0, is_free: true, in_selected_period: true }, "vacation"],
     [{ is_working_day: false, work_fraction: 0, is_free: true, in_selected_period: true }, "free_run"],
     [{ is_holiday: true, work_fraction: 0.5 }, "half_day"],                            // partial holiday
@@ -29,7 +30,7 @@ test("dayCategory derives every category from attributes", () => {
 
 test("every category has a legend label", () => {
   assert.deepEqual(CATEGORIES.map((c) => c.key).sort(),
-    ["free_run", "half_day", "holiday", "holiday_off", "vacation", "weekend", "workday"]);
+    ["free_run", "half_day", "holiday", "vacation", "weekend", "workday"]);
   assert.ok(CATEGORIES.every((c) => c.label && !c.label.includes("ß")));
 });
 

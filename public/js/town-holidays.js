@@ -13,12 +13,20 @@ function hostOf(url) {
   }
 }
 
+const WEB_SOURCE = "Websuche (You.com)";
+/** Curated local customary day (Sechseläuten …), not a web-only find. */
+export const isCuratedLocal = (h) => h.type === "local" && h.source !== WEB_SOURCE && h.source_title !== "von dir aktiviert";
+
 /** Tooltip text (provenance, conflicts) for a holiday from GET /api/holidays. */
 export function holidayInfoText(h) {
   const parts = [];
   if (h.disputed) {
     parts.push("Laut kantonalem Referenzkalender ein Feiertag, die Websuche widerspricht.");
     if (h.conflict) parts.push(h.conflict);
+    parts.push("Zählt erst, wenn du ihn einschaltest.");
+  } else if (h.enabled === false && isCuratedLocal(h)) {
+    parts.push("Lokaler Brauch, kein gesetzlicher Feiertag.");
+    if (h.note) parts.push(h.note);
     parts.push("Zählt erst, wenn du ihn einschaltest.");
   } else if (h.enabled === false) {
     parts.push("Nur in der Websuche gefunden, nicht im kantonalen Referenzkalender.");
@@ -29,8 +37,8 @@ export function holidayInfoText(h) {
   } else {
     parts.push("Quelle: kantonaler Referenzkalender (nicht durch die Websuche bestätigt).");
   }
-  if (h.work_fraction > 0) parts.push("Halber Feiertag: am Vormittag wird gearbeitet.");
-  const hosts = [...new Set([...(h.corroborated_by ?? []), ...(h.enabled === false && h.source_url ? [h.source_url] : [])]
+  if (h.work_fraction > 0) parts.push("Halber Tag: am Vormittag wird gearbeitet.");
+  const hosts = [...new Set([...(h.corroborated_by ?? []), ...(h.enabled === false && h.source_url && !isCuratedLocal(h) ? [h.source_url] : [])]
     .map(hostOf).filter(Boolean))];
   if (hosts.length) parts.push(`Websuche: ${hosts.join(", ")}`);
   return parts.join(" ");
@@ -58,7 +66,8 @@ export function townHolidayModel(data, state, isActive) {
   const switches = [
     ...holidays.filter((h) => h.disputed || h.enabled === false).map((h) => ({
       kind: h.disputed ? "disputed" : "optional", key: h.key, sort: h.date,
-      label: `${formatDateWithWeekday(h.date)} – ${h.name}`, tag: h.disputed ? "umstritten" : "lokal",
+      label: `${formatDateWithWeekday(h.date)} – ${h.name}`,
+      tag: [h.disputed ? "umstritten" : "lokal", h.work_fraction > 0 ? "halber Tag" : null].filter(Boolean).join(" · "),
       active: isActive(h.key), info: holidayInfoText(h), removable: false,
     })),
     ...(state.customDays ?? []).map((d) => ({

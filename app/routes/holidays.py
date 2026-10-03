@@ -12,6 +12,7 @@ from flask import Blueprint, jsonify, request
 from app.errors import ApiError
 from app.validation import parse_holidays_query
 from domain.holidays import baseline_holidays, holiday_key, merge_holidays
+from domain.local_days import local_days_for, with_local_days
 from services import youcom
 from services.cache import TTLCache
 from services.http import UpstreamError
@@ -86,7 +87,11 @@ def holidays():
             warnings.append({"code": "holiday_conflict",
                              "message": f"Bei {len(conflicts)} Feiertag(en) widersprechen sich die Quellen."})
 
-    confirmed = sum(1 for h in merged if h.confidence == "high")
+    # Curated local customary days (optional, half days); deterministic, also without You.com.
+    merged = with_local_days(merged, local_days_for(q.municipality_id, q.canton, q.municipality, q.year,
+                                                    retrieved_at, found))
+
+    confirmed = sum(1 for h in merged if h.confidence == "high" and h.enabled)
     disputed = sum(1 for h in merged if h.disputed)
     optional = sum(1 for h in merged if not h.enabled)
     titles = {}

@@ -45,6 +45,9 @@ export function effectLabel(day) {
 
 /** How certain a holiday is, in plain German (provenance shown to the user). */
 export function confidenceLabel(holiday) {
+  if (holiday.type === "local" && holiday.source !== "Websuche (You.com)" && holiday.source_title !== "von dir aktiviert") {
+    return "Lokaler Brauch (kein gesetzlicher Feiertag); zählt nur, wenn du ihn einschaltest.";
+  }
   if (holiday.confidence === "high") return "Bestätigt: Referenzkalender und Websuche stimmen überein.";
   if (holiday.confidence === "low") {
     return holiday.enabled === false

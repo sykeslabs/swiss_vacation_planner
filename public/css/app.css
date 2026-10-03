@@ -24,8 +24,6 @@
   --cat-weekend-bg: rgba(110, 125, 145, 0.22);
   --cat-holiday-bg: #d52b1e;
   --cat-holiday-text: #ffffff;
-  --cat-holiday-off-bg: rgba(213, 43, 30, 0.18);
-  --cat-holiday-off-border: rgba(213, 43, 30, 0.75);
   --cat-vacation-bg: #11a8a0;            /* turquoise: recommended vacation days */
   --cat-vacation-text: #ffffff;
   --cat-free-run-bg: rgba(17, 168, 160, 0.25);
@@ -48,8 +46,6 @@
     --toggle-on-text: #1c2430;
     --cat-workday-bg: rgba(255, 255, 255, 0.07);
     --cat-weekend-bg: rgba(150, 165, 185, 0.22);
-    --cat-holiday-off-bg: rgba(240, 90, 80, 0.2);
-    --cat-holiday-off-border: rgba(240, 110, 100, 0.85);
     --cat-vacation-bg: #2cc5bc;
     --cat-free-run-bg: rgba(44, 197, 188, 0.28);
     --period-ring: #7ee8e1;
@@ -397,8 +393,17 @@ html, body {
 
 /* Planner panel: town chips and vacation type */
 .planner-panel { width: min(300px, calc(100vw - 2 * var(--gap))); }
-.add-btn { font-size: 1.1rem; font-weight: 600; }
-.add-btn[aria-expanded="true"] { background: var(--toggle-on-bg); color: var(--toggle-on-text); }
+/* "+" (Ort hinzufügen): filled, larger round button so it stands out in the title bar. */
+.add-btn {
+  width: 30px; height: 30px;
+  font-size: 1.35rem; font-weight: 600; line-height: 1;
+  color: var(--accent-text);
+  background: var(--accent);
+  box-shadow: 0 2px 8px rgba(213, 43, 30, 0.45);
+  margin-right: 4px;
+}
+.add-btn:hover { background: var(--accent); color: var(--accent-text); filter: brightness(1.1); }
+.add-btn[aria-expanded="true"] { background: var(--toggle-on-bg); color: var(--toggle-on-text); box-shadow: none; }
 .chips { list-style: none; margin: 4px 0 8px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
   display: inline-flex;
@@ -624,10 +629,11 @@ dialog.modal.is-movable.is-dragging .modal-head { cursor: grabbing; }
 .cat-half_day { background: var(--cat-half-day-bg); font-weight: 600; text-shadow: 0 0 2px var(--field-bg); }
 .cat-weekend { background: var(--cat-weekend-bg); color: var(--text-muted); }
 .cat-holiday { background: var(--cat-holiday-bg); color: var(--cat-holiday-text); font-weight: 600; }
-.cat-holiday_off { background: var(--cat-holiday-off-bg); box-shadow: inset 0 0 0 1px var(--cat-holiday-off-border); }
 .cat-vacation { background: var(--cat-vacation-bg); color: var(--cat-vacation-text); font-weight: 600; }
 .cat-free_run { background: var(--cat-free-run-bg); }
 .day.in-period { box-shadow: 0 0 0 2px var(--period-ring); }
+/* Hover preview from the period list: dashed ring, distinct from the selection ring. */
+.day.is-hover { outline: 2px dashed var(--period-ring); outline-offset: 1px; filter: brightness(1.12); }
 
 /* Month detail: same cells, more room and text */
 .month-view-body .month-title { font-size: 1rem; margin: 6px 0 8px; }

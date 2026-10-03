@@ -1,0 +1,30 @@
+{
+  "source": "Lokale Bräuche (kuratierte Liste)",
+  "note": "Local customary days that are not public holidays but where many employers give time off. Hand-maintained; dates come from the rules, never from this file. See domain/local_days.py.",
+  "days": [
+    {
+      "name": "Sechseläuten",
+      "municipality_ids": [261],
+      "rule": "sechselaeuten",
+      "work_fraction": 0.5,
+      "url": "https://de.wikipedia.org/wiki/Sechseläuten",
+      "note": "Kein gesetzlicher Feiertag. In der Stadt Zürich geben viele Arbeitgeber den Nachmittag frei."
+    },
+    {
+      "name": "Knabenschiessen",
+      "municipality_ids": [261],
+      "rule": "knabenschiessen",
+      "work_fraction": 0.5,
+      "url": "https://de.wikipedia.org/wiki/Knabenschiessen",
+      "note": "Kein gesetzlicher Feiertag. In der Stadt Zürich geben viele Arbeitgeber den Montagnachmittag frei."
+    },
+    {
+      "name": "Zibelemärit",
+      "municipality_ids": [351],
+      "rule": "zibelemaerit",
+      "work_fraction": 0.5,
+      "url": "https://de.wikipedia.org/wiki/Zibelemärit",
+      "note": "Kein gesetzlicher Feiertag. In der Stadt Bern geben viele Arbeitgeber den Nachmittag frei."
+    }
+  ]
+}

@@ -6,16 +6,15 @@ export const CATEGORIES = [
   { key: "half_day", label: "Halber Arbeitstag" },
   { key: "weekend", label: "Wochenende / arbeitsfrei" },
   { key: "holiday", label: "Feiertag" },
-  { key: "holiday_off", label: "Feiertag an freiem Tag" },
   { key: "vacation", label: "Ferientag" },
   { key: "free_run", label: "Frei am Stück" },
 ];
 
 export function dayCategory(day) {
   if (day.is_vacation) return "vacation";
-  if (day.is_holiday && day.work_fraction === 0) {
-    return day.holiday_on_non_working_day ? "holiday_off" : "holiday";
-  }
+  // A holiday is red also on a weekend / day off (owner request); the holiday details
+  // still say that it brings no extra day off.
+  if (day.is_holiday && (day.work_fraction === 0 || !day.is_working_day)) return "holiday";
   if (!day.is_working_day) return day.in_selected_period || day.plan_key ? "free_run" : "weekend";
   if (day.work_fraction > 0 && day.work_fraction < 1) return "half_day";
   return "workday";
@@ -73,4 +72,17 @@ export function formatDays(n) {
 /** "1 Ferientag", "½ Ferientag", "0 Ferientage", "4½ Ferientage" */
 export function vacationDaysLabel(n) {
   return `${formatDays(n)} ${n > 0 && n <= 1 ? "Ferientag" : "Ferientage"}`;
+}
+
+/** The public holidays of the planned year (the days counted as "N Feiertage"), with
+ * their names and whether they are half days or fall on a day off. */
+export function holidayDays(days) {
+  return (days ?? [])
+    .filter((d) => d.in_planned_year && d.is_holiday)
+    .map((d) => ({
+      date: d.date,
+      names: d.holiday_names.join(", "),
+      half: d.work_fraction > 0 && d.work_fraction < 1,
+      offDay: Boolean(d.holiday_on_non_working_day),
+    }));
 }

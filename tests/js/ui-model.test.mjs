@@ -6,8 +6,8 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { aboutLinks, readAboutConfig } from "../../public/js/about-view.js";
-import { applyPlan, periodKey } from "../../public/js/calendar-model.js";
-import { cellAction } from "../../public/js/calendar-view.js";
+import { applyPlan, holidayDays, periodKey } from "../../public/js/calendar-model.js";
+import { cellAction, markHover } from "../../public/js/calendar-view.js";
 import { overlapsMonth, periodListItems, townHeadline } from "../../public/js/candidate-list.js";
 import { createPlannerStore } from "../../public/js/state.js";
 import { holidayInfoText, townHolidayModel } from "../../public/js/town-holidays.js";
@@ -87,7 +87,7 @@ test("town modal while the holiday check is still loading shows the custom days"
 test("provenance and conflict notes are tooltip text generated from the data", () => {
   assert.match(holidayInfoText(KF), /stimmen überein.*feiertagskalender\.ch/);
   assert.match(holidayInfoText(MAE), /widerspricht.*Gemeinde Baden.*einschaltest/);
-  assert.match(holidayInfoText(SECHS), /Nur in der Websuche.*Nachmittag frei.*Halber Feiertag.*zuerich\.ch/);
+  assert.match(holidayInfoText(SECHS), /Nur in der Websuche.*Nachmittag frei.*Halber Tag.*zuerich\.ch/);
 });
 
 // --- calendar clicks and the period list ----------------------------------------------------------
@@ -144,10 +144,13 @@ test("help modal is static: no API module, no fetch, links open safely", () => {
   assert.doesNotMatch(src, /innerHTML/);
 });
 
-test("the town modal never opens in the wizard; town panels have a button for it", () => {
+test("the town modal never opens by itself (wizard or \"+\"); town panels have a button for it", () => {
   const main = readFileSync(new URL("../../public/js/main.js", import.meta.url), "utf8");
   const choose = main.slice(main.indexOf("function chooseWorkLocation"), main.indexOf("}", main.indexOf("function chooseWorkLocation")));
   assert.doesNotMatch(choose, /openTown/);                       // step 2: zoom only
+  const fromAdd = main.slice(main.indexOf("function addTown"));
+  const add = fromAdd.slice(0, fromAdd.search(/\r?\n\}\r?\n/));
+  assert.doesNotMatch(add, /openTown/);                          // "+": no modal either
   assert.match(main, /const openTown = \(id, from = null\) => \{\s*if \(isDone\(\)\)/);
   const modal = readFileSync(new URL("../../public/js/town-modal.js", import.meta.url), "utf8");
   assert.doesNotMatch(modal, /Weiter|wizard/i);
@@ -189,4 +192,54 @@ test("boundary months are not shaded (no 'outside' class, no legend entry)", () 
   const css = readFileSync(new URL("../../public/css/app.css", import.meta.url), "utf8");
   assert.doesNotMatch(view, /classList\.add\("outside"\)|Ausserhalb des Planjahres/);
   assert.doesNotMatch(css, /\.day\.outside/);
+});
+
+test("hovering a period in the list highlights its days in the calendar", () => {
+  const cell = (plan) => {
+    const classes = new Set();
+    return { dataset: plan ? { plan } : {}, classes,
+      classList: { toggle: (c, on) => (on ? classes.add(c) : classes.delete(c)) } };
+  };
+  const a = "2027-05-06|2027-05-09";
+  const cells = [cell(a), cell(a), cell("2027-05-14|2027-05-16"), cell(null)];
+  assert.equal(markHover(cells, a), 2);
+  assert.deepEqual(cells.map((c) => c.classes.has("is-hover")), [true, true, false, false]);
+  assert.equal(markHover(cells, null), 0);
+  assert.ok(cells.every((c) => !c.classes.has("is-hover")));
+  const panels = readFileSync(new URL("../../public/js/town-panels.js", import.meta.url), "utf8");
+  for (const ev of ["mouseenter", "mouseleave", "focus", "blur"]) assert.match(panels, new RegExp(`"${ev}"`));
+});
+
+test("holiday list behind 'N Feiertage': exactly the counted days of the planned year", () => {
+  const d = (date, extra = {}) => ({ date, in_planned_year: true, is_holiday: false, holiday_names: [],
+    work_fraction: 1, holiday_on_non_working_day: false, ...extra });
+  const days = [
+    d("2026-12-25", { in_planned_year: false, is_holiday: true, holiday_names: ["Weihnachten"], work_fraction: 0 }),
+    d("2027-01-01", { is_holiday: true, holiday_names: ["Neujahrstag"], work_fraction: 0 }),
+    d("2027-01-02", { is_holiday: true, holiday_names: ["Berchtoldstag"], work_fraction: 0, holiday_on_non_working_day: true }),
+    d("2027-01-04"),
+    d("2027-04-19", { is_holiday: true, holiday_names: ["Sechseläuten"], work_fraction: 0.5 }),
+  ];
+  assert.deepEqual(holidayDays(days), [
+    { date: "2027-01-01", names: "Neujahrstag", half: false, offDay: false },
+    { date: "2027-01-02", names: "Berchtoldstag", half: false, offDay: true },
+    { date: "2027-04-19", names: "Sechseläuten", half: true, offDay: false },
+  ]);
+  assert.deepEqual(holidayDays(undefined), []);
+});
+
+test("curated local half days: labelled as local custom, half day, off by default", () => {
+  const SECHS_CURATED = { key: "2026-04-20|Sechseläuten", date: "2026-04-20", name: "Sechseläuten", type: "local",
+    enabled: false, disputed: false, confidence: "high", work_fraction: 0.5, source: "Lokale Bräuche (kuratierte Liste)",
+    source_title: "Lokale Bräuche (kuratierte Liste)", source_url: "https://de.wikipedia.org/wiki/Sechseläuten",
+    corroborated_by: ["https://www.ferienwiki.ch/feiertage/ch/zuerich"],
+    note: "Kein gesetzlicher Feiertag. In der Stadt Zürich geben viele Arbeitgeber den Nachmittag frei." };
+  const store = onboarded();
+  const m = townHolidayModel({ location_id: "bfs-261", holidays: [SECHS_CURATED] }, store.get(),
+    (k) => store.isHolidayActive("bfs-261", k));
+  const row = m.switches.find((s) => s.key === SECHS_CURATED.key);
+  assert.equal(row.active, false);
+  assert.equal(row.tag, "lokal · halber Tag");
+  assert.match(row.info, /Lokaler Brauch.*Nachmittag frei.*einschaltest.*Halber Tag.*ferienwiki\.ch/);
+  assert.doesNotMatch(row.info, /wikipedia/);
 });

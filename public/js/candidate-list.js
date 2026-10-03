@@ -35,10 +35,15 @@ export function planSummary(summary) {
 export function townHeadline(summary) {
   if (!summary) return "";
   const parts = [holidayCountText(summary.holidays_total)];
-  if (summary.plan?.length) {
-    parts.push(`${vacationDaysLabel(summary.plan_vacation_days)} → ${summary.plan_days_free} Tage frei`);
-  }
+  const plan = planHeadline(summary);
+  if (plan) parts.push(plan);
   return parts.join(" · ");
+}
+
+/** "15 Ferientage → 44 Tage frei", or "" without a plan. */
+export function planHeadline(summary) {
+  return summary?.plan?.length
+    ? `${vacationDaysLabel(summary.plan_vacation_days)} → ${summary.plan_days_free} Tage frei` : "";
 }
 
 /** "1 Feiertag", "9 Feiertage" */
