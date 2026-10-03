@@ -39,6 +39,7 @@ class VacationCandidate:
     vacation_days_by_year: dict[int, float] = field(default_factory=dict)
     vacation_dates: tuple[date, ...] = ()
     holidays_in_run: tuple[str, ...] = ()   # every holiday in the free run (also on weekends)
+    half_days: int = 0                      # half working days in the block (cost ½ each, e.g. 31.12.)
 
     def to_dict(self) -> dict:
         return {
@@ -141,6 +142,7 @@ def find_candidates(days: list[DayInfo], *, location_id: str, year: int, today: 
                 vacation_days_by_year=by_year,
                 vacation_dates=tuple(d.date for d in vacation),
                 holidays_in_run=_holiday_names(days[left:right + 1]),
+                half_days=sum(1 for d in block if 0 < d.work_fraction < 1),
             )
             if key not in found or total < found[key].vacation_days_required:
                 found[key] = cand
@@ -219,61 +221,79 @@ def _anchored_plan(candidates: list[VacationCandidate], *, year: int,
 
 
 def _fill_budget(candidates: list[VacationCandidate], plan: list[VacationCandidate], *, year: int,
-                 left: float) -> list[VacationCandidate]:
-    """Step 2 (owner request 2026-10-03: use up the vacation days whenever possible): with the
-    budget that is left, the set of non-overlapping periods with the most free days in total.
-    Only periods that contain a holiday (also one on a weekend, e.g. Christmas on a Saturday)
-    and don't touch the plan; an ordinary week without any holiday is never added.
-    Exact: weighted interval scheduling with a knapsack over half days (deterministic)."""
+                 left: float) -> tuple[list[VacationCandidate], list[VacationCandidate]]:
+    """Step 2 (owner request 2026-10-03: use up the vacation days whenever possible): spend the
+    budget that is left so that the plan gets the most free days in total. Options:
+    - a new period that doesn't touch the plan, if it contains a day that saves vacation —
+      a holiday on a working day or a half working day (e.g. 31.12. when Christmas falls on a
+      weekend). A holiday on a weekend alone saves nothing (owner: 24.7.–1.8.2027 around
+      Sunday 1 August made no sense), so such an ordinary week is never added;
+    - extending a plan period to a longer one that contains it (e.g. the Auffahrt bridge to
+      a whole week), counted with the extra days and the extra cost.
+    Exact and deterministic: weighted interval scheduling with a knapsack over half days.
+    Returns (periods to add, plan periods they replace)."""
     units = int(round(left * 2))
     if units <= 0:
-        return []
-    pool = sorted((c for c in candidates
-                   if c.holidays_in_run and not any(_overlaps(c, p) for p in plan)
-                   and 0 < c.vacation_days_by_year.get(year, 0.0) <= left),
-                  key=lambda c: (c.end, c.start))
-    if not pool:
-        return []
-    cost = [int(round(c.vacation_days_by_year.get(year, 0.0) * 2)) for c in pool]
-    # prev[i]: number of pool items that end before item i starts (they can precede it)
+        return [], []
+    cost_of = lambda c: c.vacation_days_by_year.get(year, 0.0)   # noqa: E731
+    items = []                 # (candidate, gain in free days, cost in half days, replaced plan period)
+    for c in candidates:
+        touched = [p for p in plan if _overlaps(c, p)]
+        if not touched:
+            if (c.anchor_holidays or c.half_days) and 0 < cost_of(c) <= left:
+                items.append((c, c.days_free, int(round(cost_of(c) * 2)), None))
+        elif len(touched) == 1:
+            base = touched[0]
+            if c.start <= base.start and c.end >= base.end and (c.start, c.end) != (base.start, base.end):
+                extra = cost_of(c) - cost_of(base)
+                if 0 < extra <= left:
+                    items.append((c, c.days_free - base.days_free, int(round(extra * 2)), base))
+    if not items:
+        return [], []
+    items.sort(key=lambda it: (it[0].end, it[0].start))
     prev = []
-    for c in pool:
+    for c, *_ in items:
         k = 0
-        while k < len(pool) and pool[k].end < c.start:
+        while k < len(items) and items[k][0].end < c.start:
             k += 1
         prev.append(k)
-    # best[i][u]: (free days, -vacation used) with the first i items and at most u half days
-    n = len(pool)
+    # best[i][u]: (free days gained, -half days used) with the first i items and ≤ u half days
+    n = len(items)
     best = [[(0, 0)] * (units + 1) for _ in range(n + 1)]
-    for i, c in enumerate(pool, start=1):
+    for i, (c, gain, cost, _) in enumerate(items, start=1):
         row, before = best[i], best[i - 1]
         for u in range(units + 1):
             row[u] = before[u]
-            if cost[i - 1] <= u:
-                f, neg = best[prev[i - 1]][u - cost[i - 1]]
-                cand = (f + c.days_free, neg - cost[i - 1])
+            if cost <= u:
+                f, neg = best[prev[i - 1]][u - cost]
+                cand = (f + gain, neg - cost)
                 if cand > row[u]:
                     row[u] = cand
-    chosen, i, u = [], n, units
+    added, replaced, i, u = [], [], n, units
     while i > 0:
         if best[i][u] == best[i - 1][u]:
             i -= 1
             continue
-        chosen.append(pool[i - 1])
-        u -= cost[i - 1]
+        c, _, cost, base = items[i - 1]
+        added.append(c)
+        if base is not None:
+            replaced.append(base)
+        u -= cost
         i = prev[i - 1]
-    return chosen
+    return added, replaced
 
 
 def recommend_plan(candidates: list[VacationCandidate], *, year: int,
                    budget: float | None) -> list[VacationCandidate]:
     """The periods the optimizer recommends, chronological: step 1 periods anchored on a
-    holiday that falls on a working day; step 2 fills the rest of the budget with periods
-    around holidays (see _fill_budget). Without a budget only step 1 runs."""
+    holiday that falls on a working day; step 2 spends the rest of the budget on periods with
+    a holiday on a working day or a half working day, or on extending step-1 periods
+    (see _fill_budget). Without a budget only step 1 runs."""
     plan = _anchored_plan(candidates, year=year, budget=budget)
     if budget is not None:
         used = sum(c.vacation_days_by_year.get(year, 0.0) for c in plan)
-        plan += _fill_budget(candidates, plan, year=year, left=budget - used)
+        added, replaced = _fill_budget(candidates, plan, year=year, left=budget - used)
+        plan = [p for p in plan if p not in replaced] + added
     return sorted(plan, key=lambda c: c.start)
 
 

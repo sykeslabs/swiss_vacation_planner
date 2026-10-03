@@ -253,17 +253,18 @@ def _zh_days(half_days=None):
 
 @pytest.mark.parametrize("budget", [None, 10, 25, 40])
 def test_plan_never_contains_an_ordinary_week(budget):
-    """Every recommended period contains a holiday: step 1 one on a working day, step 2 (filling
-    the budget) at least one holiday, also on a weekend (owner request 2026-10-03)."""
+    """Every recommended period contains a day that saves vacation: a holiday on a working day
+    or a half working day (step 2, owner 2026-10-03). A weekend holiday alone is not enough."""
     plan = recommend_plan(zh_candidates(), year=YEAR, budget=budget)
     by_date = {d.date: d for d in _zh_days()}
     assert plan
     for c in plan:
-        d, any_holiday = c.start, False
+        d, saves = c.start, False
         while d <= c.end:
-            any_holiday |= by_date[d].is_holiday
+            day = by_date[d]
+            saves |= (day.is_holiday and day.is_working_day) or 0 < day.work_fraction < 1
             d += timedelta(days=1)
-        assert any_holiday, (c.start, c.end)
+        assert saves, (c.start, c.end)
     if budget is None:                                  # no budget: only step 1
         assert all(c.anchor_holidays for c in plan)
 
@@ -287,16 +288,24 @@ def test_left_budget_goes_to_christmas_on_a_weekend():
     assert used > sum(c.vacation_days_by_year.get(YEAR, 0.0) for c in step1)
     xmas = [c for c in plan if c.start <= date(2027, 12, 27) <= c.end]
     assert xmas and "Weihnachten" in xmas[0].holidays_in_run and not xmas[0].anchor_holidays
+    assert xmas[0].half_days >= 1                # qualifies through the half day 31.12.
     assert used >= 23                            # (almost) all of the budget is used (ZH 2027: 23½)
 
 
 def test_fill_prefers_the_most_free_days():
-    # one holiday on a Saturday; budget 5 left: a full week next to it beats single Fridays
-    sat = date(2027, 6, 12)
-    days = days_for([hol(sat, "Samstagsfeiertag")])
-    plan = recommend_plan(cands(days), year=YEAR, budget=5)
-    assert len(plan) == 1 and plan[0].days_free == 9 and plan[0].vacation_days_required == 5
-    assert plan[0].start <= sat <= plan[0].end
+    # a half working day on Friday 11.6.; budget 4.5: the week around it (4½ → 9 days)
+    days = days_for([], half_days={date(2027, 6, 11): 0.5})
+    plan = recommend_plan(cands(days), year=YEAR, budget=4.5)
+    assert len(plan) == 1 and plan[0].days_free == 9 and plan[0].vacation_days_required == 4.5
+    assert plan[0].start <= date(2027, 6, 11) <= plan[0].end
+
+
+def test_a_weekend_holiday_alone_is_not_recommended():
+    """Owner report: 24.7.–1.8.2027 (Nationalfeiertag on a Sunday) made no sense."""
+    sun = date(2027, 8, 1)
+    assert recommend_plan(cands(days_for([hol(sun, "Nationalfeiertag")])), year=YEAR, budget=25) == []
+    plan = recommend_plan(zh_candidates(), year=YEAR, budget=25)
+    assert not any(c.start <= sun <= c.end for c in plan)
 
 
 def test_fill_without_any_holiday_recommends_nothing():
@@ -309,3 +318,17 @@ def test_unused_budget_is_reported():
     s = summarize(days, cands(days), year=YEAR, budget=40)
     assert s["budget_left"] == 40 - s["plan_vacation_days"] and s["budget_left"] > 0
     assert summarize(days, cands(days), year=YEAR, budget=None)["budget_left"] is None
+
+
+def test_fill_may_extend_a_plan_period_instead_of_adding_an_ordinary_week():
+    """Only one holiday (Thursday): step 1 takes the Friday bridge (1 day → 4 days); with 5
+    days budget the rest extends that period to a longer one around the same holiday."""
+    thu = date(2027, 5, 6)
+    days = days_for([hol(thu, "Auffahrt")])
+    cs = cands(days)
+    one = recommend_plan(cs, year=YEAR, budget=1)
+    assert [(c.start, c.end) for c in one] == [(date(2027, 5, 6), date(2027, 5, 9))]
+    plan = recommend_plan(cs, year=YEAR, budget=5)
+    assert len(plan) == 1
+    assert plan[0].start <= thu <= plan[0].end and plan[0].days_free > 4
+    assert plan[0].vacation_days_by_year[YEAR] <= 5
