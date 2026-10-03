@@ -12,7 +12,7 @@ const STORAGE_VERSION = 2;
 const LOCATION_FIELDS = ["id", "name", "municipality", "municipality_id", "canton", "latitude", "longitude"];
 const KEY_RE = /^\d{4}-\d{2}-\d{2}\|.{1,100}$/;
 
-/** Onboarding steps: 1 Jahr → 2 Arbeitsort (+ town modal) → 3 Präferenzen → "done". */
+/** Onboarding steps: 1 Jahr → 2 Arbeitsort → 3 Präferenzen → "done". */
 export const STEPS = [1, 2, 3];
 export const DONE = "done";
 

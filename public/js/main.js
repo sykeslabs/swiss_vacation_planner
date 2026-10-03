@@ -20,7 +20,7 @@ import { createTownPanels } from "./town-panels.js";
 import { debounce } from "./util.js";
 import { createWizard } from "./wizard.js";
 
-const TOWN_MODAL_DELAY_MS = 1000;   // choose a town → map zooms → ~1 s → town modal
+const TOWN_MODAL_DELAY_MS = 1000;   // "+": choose a town → map zooms → ~1 s → town modal
 const RECALC_DEBOUNCE_MS = 200;
 
 const $ = (id) => document.getElementById(id);
@@ -100,12 +100,11 @@ function ensureHolidays(state) {
 
 // --- modals -----------------------------------------------------------------------------------
 
-const townModal = createTownModal({
-  store,
-  getHolidayData,
-  onNext: () => store.wizardNext(),           // wizard step 2 → step 3
-});
-const openTown = (id, from = null) => townModal.open(id, { from, inWizard: store.get().onboarding === 2 });
+// Optional holidays and half days of a town: opened from its panel or its chip (never in the wizard).
+const townModal = createTownModal({ store, getHolidayData });
+const openTown = (id, from = null) => {
+  if (isDone()) townModal.open(id, { from });
+};
 
 const prefsModal = createPrefsModal({ store });
 const helpModal = createHelpModal({ config: readAboutConfig($("about-config")?.textContent) });
@@ -141,8 +140,7 @@ function openTownSoon(id) {
 
 function chooseWorkLocation(loc) {
   if (!store.setWorkLocation(loc)) return;
-  wizard.picked();
-  openTownSoon(loc.id);
+  wizard.picked();          // step 2 only zooms to the place; no modal here (owner request)
 }
 
 const addSearch = $("add-search");
@@ -317,13 +315,11 @@ function renderCalendars() {
     }
     const key = chosen ? periodKey(chosen) : null;
     const warnings = (result.warnings ?? []).map((w) => w.message);
-    const h = result.holidays?.find((x) => x.type !== "custom");
     townPanels.setResult(loc.id, {
       days: applyPlan(result.days, result.summary?.plan ?? [], key),
       holidays: result.holidays ?? [],
       fromMonth: firstVisibleMonth(state.year),
       statusText: [String(state.year), ...warnings].join(" · "),
-      sourceText: h ? `Quelle Feiertage: ${h.source_title} · Kanton ${loc.canton}` : "",
     });
     townPanels.setPlan(loc.id, result.summary, key);
   }

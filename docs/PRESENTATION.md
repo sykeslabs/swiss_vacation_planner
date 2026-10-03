@@ -1,3 +1,5 @@
+# ADAM — Adaptive Days-off Allocation Manager
+
 I think we all have a common friend in AI:
 
 **Adam — the Adaptive Moment Estimation optimizer.**
@@ -10,7 +12,7 @@ But today, I want to introduce you to a **different Adam**.
 
 Instead of optimizing neural network parameters, **ADAM optimizes your holidays.**
 
-It looks at Swiss public holidays, weekends, your available vacation days and various constraints — and tries to answer one very important question:
+It looks at Swiss public holidays, weekends, your available vacation days, and various constraints — and tries to answer one very important question:
 
 > **How can you get the maximum amount of time off with the minimum number of vacation days?**
 

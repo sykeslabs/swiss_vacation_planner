@@ -30,15 +30,37 @@ export function planSummary(summary) {
   return `Empfehlung: ${periods} · ${vacationDaysLabel(summary.plan_vacation_days)} → ${summary.plan_days_free} Tage frei${left}`;
 }
 
+/** Title bar of a town panel: "9 Feiertage · 15 Ferientage → 44 Tage frei" (the plan part
+ * only when there is a recommended plan). */
+export function townHeadline(summary) {
+  if (!summary) return "";
+  const parts = [holidayCountText(summary.holidays_total)];
+  if (summary.plan?.length) {
+    parts.push(`${vacationDaysLabel(summary.plan_vacation_days)} → ${summary.plan_days_free} Tage frei`);
+  }
+  return parts.join(" · ");
+}
+
 /** "1 Feiertag", "9 Feiertage" */
 export function holidayCountText(n) {
   return `${n} ${n === 1 ? "Feiertag" : "Feiertage"}`;
 }
 
+/** True if the period has at least one day in month "YYYY-MM" (also when it starts in the
+ * month before or ends in the month after). */
+export function overlapsMonth(period, month) {
+  const [y, m] = month.split("-").map(Number);
+  const first = `${month}-01`;
+  const last = `${month}-${String(new Date(Date.UTC(y, m, 0)).getUTCDate()).padStart(2, "0")}`;
+  return period.start <= last && period.end >= first;
+}
+
 /** The recommended periods of a town, chronological, for the list below the calendar.
- * `selectedKey` marks the period that is also highlighted in the calendar. */
-export function periodListItems(summary, selectedKey = null) {
+ * `selectedKey` marks the period that is also highlighted in the calendar; with `month`
+ * ("YYYY-MM", the open month detail) only periods touching that month are listed. */
+export function periodListItems(summary, selectedKey = null, month = null) {
   return [...(summary?.plan ?? [])]
+    .filter((c) => !month || overlapsMonth(c, month))
     .sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end))
     .map((c) => ({ key: periodKey(c), title: candidateTitle(c), split: yearSplit(c), selected: periodKey(c) === selectedKey }));
 }

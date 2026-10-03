@@ -28,9 +28,8 @@ const ADD_MESSAGES = {
   duplicate: "Dieses Datum ist bereits eingetragen.",
 };
 
-export function createTownModal({ store, getHolidayData, onNext = () => {}, onClose = () => {} }) {
+export function createTownModal({ store, getHolidayData, onClose = () => {} }) {
   let locationId = null;
-  let wizard = false;
   const dialog = createDialog({ className: "town-modal", onClose: (why) => {
     const id = locationId;
     locationId = null;
@@ -94,16 +93,10 @@ export function createTownModal({ store, getHolidayData, onNext = () => {}, onCl
 
   dialog.body.append(summary, warnings, optionalTitle, optionalHint, switchList, form);
 
-  const next = el("button", "btn-primary", "Weiter");
-  next.type = "button";
-  next.addEventListener("click", () => {
-    dialog.close("next");
-    onNext();
-  });
-  const done = el("button", "btn-secondary", "Fertig");
+  const done = el("button", "btn-primary", "Fertig");
   done.type = "button";
   done.addEventListener("click", () => dialog.close("done"));
-  dialog.footer.append(done, next);
+  dialog.footer.append(done);
   dialog.footer.hidden = false;
 
   function row(item, { withSwitch }) {
@@ -157,8 +150,6 @@ export function createTownModal({ store, getHolidayData, onNext = () => {}, onCl
     const { start, end } = calendarWindow(state.year);
     dateInput.min = start;
     dateInput.max = end;
-    next.hidden = !wizard;
-    done.hidden = wizard;
   }
 
   store.subscribe(() => {
@@ -166,14 +157,11 @@ export function createTownModal({ store, getHolidayData, onNext = () => {}, onCl
   });
 
   return {
-    /** `wizard`: opened in onboarding step 2 → footer "Weiter" leads to step 3. */
-    open(id, { from = null, inWizard = false } = {}) {
+    open(id, { from = null } = {}) {
       locationId = id;
-      wizard = inWizard;
       formHint.hidden = true;
       render();
       dialog.open(from);
-      if (wizard) next.focus({ preventScroll: true });
     },
     refresh() {
       if (dialog.isOpen()) render();

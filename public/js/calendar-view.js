@@ -123,7 +123,7 @@ function flip(node, from, { reverse = false } = {}) {
  * Year overview (14 month boxes) with zoom into a month and back.
  * `container` gets fully managed content.
  */
-export function createCalendarView(container, { onHolidayClick = null, onPeriodClick = null } = {}) {
+export function createCalendarView(container, { onHolidayClick = null, onPeriodClick = null, onMonthChange = () => {} } = {}) {
   const yearView = el("div", "year-view");
   const detailView = el("div", "month-view");
   detailView.hidden = true;
@@ -159,6 +159,7 @@ export function createCalendarView(container, { onHolidayClick = null, onPeriodC
 
   function openMonth(key, fromRect) {
     openKey = key;
+    onMonthChange(key);
     renderDetail();
     yearView.hidden = true;
     detailView.hidden = false;
@@ -172,6 +173,7 @@ export function createCalendarView(container, { onHolidayClick = null, onPeriodC
   async function closeMonth({ animate = true } = {}) {
     const key = openKey;
     openKey = null;
+    if (key) onMonthChange(null);
     if (detailView.hidden) return;
     const detailRect = detailView.getBoundingClientRect();
     yearView.hidden = false;

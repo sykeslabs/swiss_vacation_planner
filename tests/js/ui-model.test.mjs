@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { aboutLinks, readAboutConfig } from "../../public/js/about-view.js";
 import { applyPlan, periodKey } from "../../public/js/calendar-model.js";
 import { cellAction } from "../../public/js/calendar-view.js";
-import { periodListItems } from "../../public/js/candidate-list.js";
+import { overlapsMonth, periodListItems, townHeadline } from "../../public/js/candidate-list.js";
 import { createPlannerStore } from "../../public/js/state.js";
 import { holidayInfoText, townHolidayModel } from "../../public/js/town-holidays.js";
 
@@ -142,4 +142,44 @@ test("help modal is static: no API module, no fetch, links open safely", () => {
   assert.match(src, /noopener noreferrer/);
   assert.match(src, /_blank/);
   assert.doesNotMatch(src, /innerHTML/);
+});
+
+test("the town modal never opens in the wizard; town panels have a button for it", () => {
+  const main = readFileSync(new URL("../../public/js/main.js", import.meta.url), "utf8");
+  const choose = main.slice(main.indexOf("function chooseWorkLocation"), main.indexOf("}", main.indexOf("function chooseWorkLocation")));
+  assert.doesNotMatch(choose, /openTown/);                       // step 2: zoom only
+  assert.match(main, /const openTown = \(id, from = null\) => \{\s*if \(isDone\(\)\)/);
+  const modal = readFileSync(new URL("../../public/js/town-modal.js", import.meta.url), "utf8");
+  assert.doesNotMatch(modal, /Weiter|wizard/i);
+  const panels = readFileSync(new URL("../../public/js/town-panels.js", import.meta.url), "utf8");
+  assert.match(panels, /optionsBtn\.textContent = "Optionale Feiertage und halbe Tage"/);
+  assert.match(panels, /optionsBtn\.addEventListener\("click", \(\) => onOpenTown\(loc\.id, optionsBtn\)\)/);
+});
+
+test("an open month filters the period list; periods from the month before/after that reach into it stay", () => {
+  const mk = (start, end) => ({ start, end, vacation_days_required: 1, days_free: 4, vacation_dates: [], vacation_days_by_year: {} });
+  const octNov = mk("2026-10-31", "2026-11-08");     // starts in October
+  const dec = mk("2026-12-05", "2026-12-08");
+  const newYear = mk("2026-12-25", "2027-01-03");    // ends in January
+  const summary = { plan: [dec, newYear, octNov] };
+  const keys = (month) => periodListItems(summary, null, month).map((i) => i.key);
+  assert.deepEqual(keys("2026-11"), [periodKey(octNov)]);
+  assert.deepEqual(keys("2026-10"), [periodKey(octNov)]);
+  assert.deepEqual(keys("2026-12"), [periodKey(dec), periodKey(newYear)]);
+  assert.deepEqual(keys("2027-01"), [periodKey(newYear)]);
+  assert.deepEqual(keys("2026-09"), []);
+  assert.deepEqual(keys(null), [periodKey(octNov), periodKey(dec), periodKey(newYear)]);   // year view: all
+  assert.equal(overlapsMonth(mk("2028-02-28", "2028-02-29"), "2028-02"), true);
+  assert.equal(overlapsMonth(mk("2027-03-01", "2027-03-02"), "2027-02"), false);
+  // the selection marker survives the filter
+  assert.deepEqual(periodListItems(summary, periodKey(dec), "2026-12").map((i) => i.selected), [true, false]);
+});
+
+test("town panel title: holidays and the plan in one line", () => {
+  assert.equal(townHeadline({ holidays_total: 9, plan: [{}, {}], plan_vacation_days: 15, plan_days_free: 44 }),
+    "9 Feiertage · 15 Ferientage → 44 Tage frei");
+  assert.equal(townHeadline({ holidays_total: 1, plan: [{}], plan_vacation_days: 0.5, plan_days_free: 3 }),
+    "1 Feiertag · ½ Ferientag → 3 Tage frei");
+  assert.equal(townHeadline({ holidays_total: 9, plan: [], plan_vacation_days: 0, plan_days_free: 0 }), "9 Feiertage");
+  assert.equal(townHeadline(null), "");
 });

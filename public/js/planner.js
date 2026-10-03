@@ -20,8 +20,8 @@ export function createPlannerPanel({ root, store, onOpenTown }) {
       const name = `${locationLabel(loc)} (${loc.canton})`;
       const open = el("button", "chip-label", name);
       open.type = "button";
-      open.title = "Feiertage dieses Orts anzeigen";
-      open.setAttribute("aria-label", `${name}: Feiertage anzeigen`);
+      open.title = "Optionale Feiertage und halbe Tage";
+      open.setAttribute("aria-label", `${name}: optionale Feiertage und halbe Tage`);
       open.addEventListener("click", () => onOpenTown(loc.id, open));
       const rm = el("button", "chip-remove", "×");
       rm.type = "button";
