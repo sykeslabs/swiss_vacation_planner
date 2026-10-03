@@ -300,6 +300,7 @@ test("turquoise days add up to the shown vacation days (half day 31.12. counts Â
   assert.equal(cost, 8.5);
   const css = readFileSync(new URL("../../public/css/app.css", import.meta.url), "utf8");
   assert.match(css, /\.cat-vacation_half \{/);
+  assert.match(css, /--cat-vacation-half-bg: linear-gradient\(135deg, var\(--cat-vacation-bg\) 50%, var\(--cat-holiday-bg\) 50%\)/);
 });
 
 test("town modal labels for periods", () => {
