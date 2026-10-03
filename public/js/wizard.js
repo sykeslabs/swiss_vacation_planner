@@ -20,7 +20,7 @@ function navButtons({ back = null, next }) {
   return { row, next: n };
 }
 
-export function createWizard({ root, store, fetchLocations, onPickLocation, onCheckHolidays }) {
+export function createWizard({ root, store, fetchLocations, onPickLocation }) {
   const progress = el("p", "wizard-progress");
   const title = el("h1", "wizard-title");
   title.id = "wizard-title";
@@ -69,9 +69,6 @@ export function createWizard({ root, store, fetchLocations, onPickLocation, onCh
   });
   const chosen = el("div", "wizard-chosen");
   const chosenName = el("p", "wizard-place");
-  const check = el("button", "btn-secondary", "Feiertage prüfen");
-  check.type = "button";
-  check.addEventListener("click", () => onCheckHolidays(check));
   const other = el("button", "btn-link", "Anderen Ort wählen");
   other.type = "button";
   other.addEventListener("click", () => {
@@ -80,7 +77,7 @@ export function createWizard({ root, store, fetchLocations, onPickLocation, onCh
     input.focus();
   });
   const chosenActions = el("div", "wizard-actions");
-  chosenActions.append(check, other);
+  chosenActions.append(other);
   chosen.append(chosenName, chosenActions);
   const error2 = el("p", "hint field-error");
   error2.setAttribute("role", "alert");

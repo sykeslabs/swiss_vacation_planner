@@ -43,21 +43,21 @@ test("wizard: steps in order Jahr → Arbeitsort → Präferenzen → planner", 
   assert.deepEqual(store.wizardNext(), { step: 3 });
   assert.equal(store.wizardBack(), 2);
   assert.deepEqual(store.wizardNext(), { step: 3 });
-  store.setBudget(25);
+  assert.equal(store.get().budget, 25);                        // prefilled
   assert.deepEqual(store.wizardNext(), { step: DONE });
 });
 
 test("wizard step 3 validation: no working days, missing vacation days", () => {
+  // missing / invalid vacation days (an empty field in step 3 is validated like this)
+  assert.match(validatePreferences({ workingDays: ["MON"], budget: Number.NaN }).budget, /Anzahl Ferientage/);
+  assert.match(validatePreferences({ workingDays: ["MON"], budget: null }).budget, /Anzahl Ferientage/);
   const store = createPlannerStore({ today: TODAY });
   store.wizardNext();
   store.setWorkLocation(ZH);
   store.wizardNext();
-  let r = store.wizardNext();
-  assert.equal(r.error, "preferences");
-  assert.match(r.errors.budget, /Anzahl Ferientage/);
+  let r;
   for (const d of ["MON", "TUE", "WED", "THU", "FRI"]) assert.equal(store.toggleWorkingDay(d), true);
   assert.deepEqual(store.get().workingDays, []);
-  store.setBudget(25);
   r = store.wizardNext();
   assert.match(r.errors.workingDays, /mindestens einen Arbeitstag/);
   assert.equal(r.errors.budget, undefined);
@@ -76,7 +76,8 @@ test("budget: whole or half days, required", () => {
   assert.ok(validatePreferences({ workingDays: ["MON"], budget: 12.3 }).budget);
   assert.ok(validatePreferences({ workingDays: ["MON"], budget: null }).budget);
   const store = createPlannerStore({ today: TODAY });
-  assert.equal(store.get().budget, null);
+  assert.equal(store.get().budget, 25);                       // prefilled in step 3
+  assert.equal(store.setBudget(""), false);                   // required: can't be emptied
   assert.equal(store.setBudget("abc"), false);
   assert.equal(store.setBudget("12.3"), false);
   assert.equal(store.setBudget("12,5"), true);
@@ -90,7 +91,7 @@ test("no optimizer before step 3 is completed", () => {
   store.wizardNext();
   store.setWorkLocation(ZH);
   store.wizardNext();
-  store.setBudget(25);
+  store.toggleWorkingDay("SAT");
   assert.ok(seen.every((ok) => ok === false));
   store.wizardNext();
   assert.equal(seen.at(-1), true);
@@ -121,6 +122,9 @@ test("reload resumes the wizard, but never past a step whose input is missing", 
   assert.ok(storage.data[STORAGE_KEY].includes('"v":2'));
   const broken = JSON.parse(storage.data[STORAGE_KEY]);
   broken.budget = null;
+  assert.equal(restoreState(JSON.stringify(broken), TODAY).budget, 25);   // falls back to the default
+  broken.workingDays = [];
+  broken.onboarding = 3;
   assert.equal(restoreState(JSON.stringify(broken), TODAY).onboarding, 3);
   broken.locations = [];
   assert.equal(restoreState(JSON.stringify(broken), TODAY).onboarding, 2);
@@ -128,11 +132,11 @@ test("reload resumes the wizard, but never past a step whose input is missing", 
 
 // --- defaults and basics --------------------------------------------------------------------
 
-test("defaults: Mon–Fri, current year, no budget, 24./31.12. as recurring half days", () => {
+test("defaults: Mon–Fri, current year, 25 vacation days, 24./31.12. as recurring half days", () => {
   const s = createPlannerStore({ today: TODAY }).get();
   assert.equal(s.year, 2026);
   assert.deepEqual(s.workingDays, ["MON", "TUE", "WED", "THU", "FRI"]);
-  assert.equal(s.budget, null);
+  assert.equal(s.budget, 25);
   assert.equal(s.vacationType, "no_preference");
   assert.deepEqual(s.customDays.map((d) => [d.month, d.day, d.kind, d.recurring, d.active]),
     [[12, 24, "half", true, true], [12, 31, "half", true, true]]);

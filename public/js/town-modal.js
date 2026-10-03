@@ -1,4 +1,4 @@
-// Town modal: holidays of one town. "Feiertage" (confirmed) and one list
+// Town modal: result of the holiday check for one town and one list
 // "Optionale Feiertage und halbe Tage" with switches (disputed/optional per town, custom
 // days global) and "Datum hinzufügen". Provenance only in ⓘ tooltips. textContent only.
 import { createDialog, el } from "./dialog.js";
@@ -39,8 +39,6 @@ export function createTownModal({ store, getHolidayData, onNext = () => {}, onCl
 
   const summary = el("p", "hint holiday-summary");
   const warnings = el("div", "holiday-warnings");
-  const confirmedTitle = el("h3", "section-title", "Feiertage");
-  const confirmedList = el("ul", "holiday-rows");
   const optionalTitle = el("h3", "section-title", "Optionale Feiertage und halbe Tage");
   const optionalHint = el("p", "hint", "Gelten erst, wenn sie eingeschaltet sind. Eigene Daten gelten für alle Orte.");
   const switchList = el("ul", "holiday-rows switch-rows");
@@ -94,7 +92,7 @@ export function createTownModal({ store, getHolidayData, onNext = () => {}, onCl
     }
   });
 
-  dialog.body.append(summary, warnings, confirmedTitle, confirmedList, optionalTitle, optionalHint, switchList, form);
+  dialog.body.append(summary, warnings, optionalTitle, optionalHint, switchList, form);
 
   const next = el("button", "btn-primary", "Weiter");
   next.type = "button";
@@ -125,8 +123,7 @@ export function createTownModal({ store, getHolidayData, onNext = () => {}, onCl
       li.append(box);
     }
     li.append(label);
-    if (item.tag) li.append(el("span", "row-tag", item.tag));
-    else if (item.half) li.append(el("span", "row-tag", "halber Tag"));
+    li.append(el("span", "row-tag", item.tag));
     li.append(infoTip(item.info, item.label));
     if (item.removable) {
       const rm = el("button", "chip-remove", "×");
@@ -153,9 +150,6 @@ export function createTownModal({ store, getHolidayData, onNext = () => {}, onCl
       .filter((w) => w.message !== summary.textContent)
       .map((w) => el("p", "hint holiday-warning", `⚠ ${w.message}`)));
     const model = townHolidayModel(data, state, (key) => store.isHolidayActive(loc.id, key));
-    confirmedList.replaceChildren(...(model.confirmed.length
-      ? model.confirmed.map((h) => row(h, { withSwitch: false }))
-      : [el("li", "muted", data ? "Keine bestätigten Feiertage gefunden." : "Feiertage werden geladen …")]));
     // keep focus on a switch across the re-render
     const focusedId = document.activeElement?.id;
     switchList.replaceChildren(...model.switches.map((s) => row(s, { withSwitch: true })));

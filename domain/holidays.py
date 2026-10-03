@@ -70,6 +70,7 @@ def baseline_holidays(canton: str, years: list[int], retrieved_at: str) -> list[
 WEB_SOURCE = "Websuche (You.com)"
 USER_SOURCE = "Eigene Eingabe"
 MIN_PARTIAL_SHARE_PERCENT = 20.0   # "nur teilweise gültig" rows below this belong to other places
+MAJORITY_SHARE_PERCENT = 50.0      # a canton/region row valid for less than this share is "only in parts"
 SUNDAY = 7
 
 # Different spellings of the same holiday (normalised keys).
@@ -145,14 +146,20 @@ def merge_holidays(baseline: list[Holiday], found: list[FoundHoliday], *, year: 
     for h in in_year:
         day_rows = by_date.get(h.date, [])
         same_day = [f for f in day_rows if f.kind in ("legal", "half", "unclassified")]
+        # A legal row of a canton/region page that applies to a minority of the population
+        # (e.g. "Mariä Empfängnis, 11.6 %" for Aargau) only confirms the holiday for parts of it.
+        minority = [f for f in day_rows if f.page_scope in ("canton", "region") and f.share_percent is not None
+                    and f.share_percent < MAJORITY_SHARE_PERCENT]
+        full_here = [f for f in same_day if f.kind != "unclassified" and f not in minority]
         same_name_elsewhere = [f for f in rows if f.kind in ("legal", "half")
                                and name_key(f.name) == name_key(h.name) and f.date != h.date]
         legal_here = [f for f in municipality_rows if f.date == h.date and f.kind in ("legal", "half")]
-        partial = [f for f in day_rows if f.kind == "partial" and f.page_scope != "municipality"]
+        partial = [f for f in day_rows if f.page_scope != "municipality"
+                   and (f.kind == "partial" or f in minority)]
         doubts = []
         if municipality_rows and not legal_here:
             doubts.append(f"Auf der Seite der Gemeinde {municipality} nicht als Feiertag aufgeführt.")
-        if partial and not legal_here and not [f for f in same_day if f.kind != "unclassified"]:
+        if partial and not legal_here and not full_here:
             share = max((f.share_percent for f in partial if f.share_percent is not None), default=None)
             doubts.append("Laut Websuche nur in Teilen der Region gültig"
                           + (f" ({share:g} % der Bevölkerung)." if share is not None else "."))

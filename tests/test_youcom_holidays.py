@@ -307,3 +307,15 @@ def test_municipality_page_without_classes_contradicts_nothing():
     for name in ("Neujahrstag", "Karfreitag", "Weihnachten", "Stephanstag"):
         assert not any("Gemeinde Baden" in (h.conflict or "") for h in [merged[name]]), name
     assert not merged["Weihnachten"].disputed
+
+
+def test_canton_row_for_a_minority_makes_the_holiday_disputed():
+    # Same live crawl: the Aargau page lists Mariä Empfängnis as legal, but only for 11.6 %
+    # of the population → disputed (off until the user switches it on). Stephanstag (88.4 %) stays.
+    data = json.loads((FIXTURES / "youcom_baden_ag_2026_unclassified.json").read_text(encoding="utf-8"))
+    found = youcom.parse_pages(data["pages"], year=2026, municipality="Baden", canton="AG", retrieved_at="t")
+    merged = by_name(merge_holidays(baseline_holidays("AG", [2026], "t"), found, year=2026, canton="AG",
+                                    municipality="Baden"))
+    mae = merged["Mariä Empfängnis"]
+    assert mae.disputed and "11.6 % der Bevölkerung" in mae.conflict
+    assert not merged["Stephanstag"].disputed and merged["Stephanstag"].confidence == "high"

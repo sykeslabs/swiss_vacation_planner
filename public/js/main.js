@@ -237,10 +237,6 @@ const wizard = createWizard({
   store,
   fetchLocations,
   onPickLocation: chooseWorkLocation,
-  onCheckHolidays: (from) => {
-    const loc = store.get().locations[0];
-    if (loc) openTown(loc.id, from);
-  },
 });
 
 // --- planner panel and top-right controls ------------------------------------------------------

@@ -6,6 +6,7 @@ import { parseIso, toIso } from "./format.js";
 export const WEEKDAY_CODES = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 export const DEFAULT_WORKING_DAYS = ["MON", "TUE", "WED", "THU", "FRI"];
 export const MAX_LOCATIONS = 10;
+export const DEFAULT_BUDGET = 25;           // prefilled in step 3 (owner request), still required
 export const STORAGE_KEY = "svp.planner.v2";      // v2: wizard + custom_days (v1 states are not migrated)
 const STORAGE_VERSION = 2;
 const LOCATION_FIELDS = ["id", "name", "municipality", "municipality_id", "canton", "latitude", "longitude"];
@@ -111,7 +112,7 @@ export function defaultState(today = new Date()) {
     onboarding: 1,
     year: selectableYears(today)[0],
     workingDays: [...DEFAULT_WORKING_DAYS],
-    budget: null,                       // required in step 3
+    budget: DEFAULT_BUDGET,             // required; prefilled with 25
     vacationType: "no_preference",
     locations: [],
     customDays: DEFAULT_CUSTOM_DAYS.map((d) => ({ ...d })),
@@ -172,7 +173,7 @@ export function restoreState(raw, today = new Date()) {
     }
   }
   const budget = typeof data.budget === "number" && data.budget >= 0 && data.budget <= 366
-    ? Math.round(data.budget * 2) / 2 : null;
+    ? Math.round(data.budget * 2) / 2 : base.budget;
   const restored = {
     onboarding: [1, 2, 3, DONE].includes(data.onboarding) ? data.onboarding : 1,
     year,

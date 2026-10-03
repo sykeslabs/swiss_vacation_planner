@@ -1,6 +1,6 @@
-// View model of the town modal's holiday sections (pure, unit-tested):
-// - "Feiertage": confirmed holidays of the town (reference calendar, not disputed);
-// - "Optionale Feiertage und halbe Tage": one list with on/off switches for disputed and
+// View model of the town modal's holiday list (pure, unit-tested). Public holidays that
+// count are not listed (they are visible in the calendar).
+// "Optionale Feiertage und halbe Tage": one list with on/off switches for disputed and
 //   optional holidays of THIS town plus the global custom days (24.12., 31.12., own dates).
 // Provenance and conflicts are not shown inline, only as ⓘ tooltip text built from the data.
 import { formatDateWithWeekday, MONTHS, toIso } from "./format.js";
@@ -51,14 +51,10 @@ function customInfo(d) {
 /**
  * `data` = GET /api/holidays response for this town and year (or null while loading),
  * `state` = PlannerState, `isActive(key)` = per-location switch.
- * Returns { confirmed: [...], switches: [...] } sorted by date.
+ * Returns { switches: [...] } sorted by date.
  */
 export function townHolidayModel(data, state, isActive) {
   const holidays = data?.holidays ?? [];
-  const confirmed = holidays
-    .filter((h) => h.enabled !== false && !h.disputed)
-    .map((h) => ({ key: h.key, date: h.date, label: `${formatDateWithWeekday(h.date)} – ${h.name}`,
-      half: h.work_fraction > 0, info: holidayInfoText(h) }));
   const switches = [
     ...holidays.filter((h) => h.disputed || h.enabled === false).map((h) => ({
       kind: h.disputed ? "disputed" : "optional", key: h.key, sort: h.date,
@@ -72,5 +68,5 @@ export function townHolidayModel(data, state, isActive) {
       active: d.active, info: customInfo(d), removable: !d.builtin,
     })),
   ].sort((a, b) => a.sort.localeCompare(b.sort) || a.label.localeCompare(b.label));
-  return { confirmed: confirmed.sort((a, b) => a.date.localeCompare(b.date)), switches };
+  return { switches };
 }

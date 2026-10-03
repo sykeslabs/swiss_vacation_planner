@@ -39,10 +39,11 @@ const DATA = { location_id: "bfs-261", holidays: [KF, MAE, SECHS], summary: { ch
 
 // --- town modal ---------------------------------------------------------------------------------
 
-test("town modal: confirmed holidays, one switch list with disputed, optional and custom days", () => {
+test("town modal: no public holidays (they are in the calendar), one switch list with disputed, optional and custom days", () => {
   const store = onboarded();
   const m = townHolidayModel(DATA, store.get(), (key) => store.isHolidayActive("bfs-261", key));
-  assert.deepEqual(m.confirmed.map((h) => h.key), [KF.key]);
+  assert.ok(!m.switches.some((s) => s.key === KF.key));       // confirmed Karfreitag isn't listed
+  assert.equal(m.confirmed, undefined);
   assert.deepEqual(m.switches.map((s) => [s.kind, s.active]), [
     ["optional", false],           // 20.4. Sechseläuten
     ["disputed", false],           // 8.12. Mariä Empfängnis: inactive by default
@@ -80,7 +81,6 @@ test("town modal: toggling a disputed holiday only changes its own town", () => 
 
 test("town modal while the holiday check is still loading shows the custom days", () => {
   const m = townHolidayModel(null, onboarded().get(), () => false);
-  assert.deepEqual(m.confirmed, []);
   assert.equal(m.switches.length, 2);
 });
 
