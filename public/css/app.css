@@ -457,6 +457,13 @@ dialog.modal {
   overflow: hidden;
 }
 dialog.modal::backdrop { background: rgba(15, 20, 30, 0.35); }
+/* Non-blocking window (holiday date list): above the panels, below later panels brought to front. */
+dialog.modal.is-modeless { z-index: 1100; }
+.row-link {
+  font: inherit; color: var(--text); background: none; border: 0; padding: 0; text-align: left;
+  cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px;
+}
+.row-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 dialog.town-modal { width: min(560px, calc(100vw - 2 * var(--gap))); }
 dialog.confirm-modal { width: min(380px, calc(100vw - 2 * var(--gap))); }
 .modal-frame { display: flex; flex-direction: column; max-height: inherit; }

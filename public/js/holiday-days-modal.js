@@ -1,11 +1,12 @@
 // "N Feiertage" of a town: the exact dates of the planned year's public holidays (the same
-// days the count and the calendar use). Movable modal; text only.
+// days the count and the calendar use). Movable, non-blocking window; a date opens its
+// details like in the month view. Text only.
 import { holidayDays } from "./calendar-model.js";
 import { createDialog, el } from "./dialog.js";
 import { formatDateWithWeekday } from "./format.js";
 
-export function createHolidayDaysModal() {
-  const dialog = createDialog({ className: "holiday-days-modal", movable: true });
+export function createHolidayDaysModal({ onHolidayClick = () => {} } = {}) {
+  const dialog = createDialog({ className: "holiday-days-modal", movable: true, modal: false });
   let ownerId = null;
   return {
     /** `days`: DayInfo list of the town (with the plan applied or not). */
@@ -17,7 +18,13 @@ export function createHolidayDaysModal() {
       list.append(...items.map((h) => {
         const li = el("li", "holiday-row");
         const tags = [h.half ? "halber Tag" : null, h.offDay ? "an einem freien Tag" : null].filter(Boolean).join(" · ");
-        li.append(el("span", "row-label", `${formatDateWithWeekday(h.date)} – ${h.names}`), el("span", "row-tag", tags));
+        const label = `${formatDateWithWeekday(h.date)} – ${h.names}`;
+        const open = el("button", "row-label row-link", label);
+        open.type = "button";
+        open.title = "Details zum Feiertag";
+        open.setAttribute("aria-haspopup", "dialog");
+        open.addEventListener("click", () => onHolidayClick({ locationId: ownerId, date: h.date, from: open }));
+        li.append(open, el("span", "row-tag", tags));
         return li;
       }));
       dialog.body.replaceChildren(

@@ -114,7 +114,19 @@ const helpModal = createHelpModal({
   onOpenTodos: (from) => todoModal.open(from),
 });
 const holidayModal = createHolidayModal();
-const holidayDaysModal = createHolidayDaysModal();
+// "N Feiertage" list; a date opens the same holiday details as a click in the month view.
+const holidayDaysModal = createHolidayDaysModal({
+  onHolidayClick: ({ locationId, date, from }) => {
+    const loc = store.get().locations.find((l) => l.id === locationId);
+    const result = latest?.per_location[locationId];
+    const day = result?.days.find((d) => d.date === date);
+    if (!loc || !day) return;
+    holidayModal.open({
+      day, from, town: `${locationLabel(loc)} (${loc.canton})`, locationId,
+      holidays: (result.holidays ?? []).filter((h) => h.date === date).map((h) => withWebInfo(locationId, h)),
+    });
+  },
+});
 
 const resetDialog = createDialog({ title: "Alles zurücksetzen?", className: "confirm-modal" });
 {

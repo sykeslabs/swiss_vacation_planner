@@ -343,3 +343,13 @@ test("hovering a period in the calendar highlights its list entry (and its days)
   assert.match(panels, /calendarEl\.addEventListener\("pointerover", previewFrom\)/);
   assert.match(panels, /markHover\(p\.periodList\.querySelectorAll\("\.candidate-btn"\), key, "period"\)/);
 });
+
+test("holiday date list: non-blocking, each date opens the holiday details", () => {
+  const modal = readFileSync(new URL("../../public/js/holiday-days-modal.js", import.meta.url), "utf8");
+  assert.match(modal, /movable: true, modal: false/);
+  assert.match(modal, /onHolidayClick\(\{ locationId: ownerId, date: h\.date, from: open \}\)/);
+  const main = readFileSync(new URL("../../public/js/main.js", import.meta.url), "utf8");
+  assert.match(main, /createHolidayDaysModal\(\{\s*onHolidayClick:/);
+  const dialog = readFileSync(new URL("../../public/js/dialog.js", import.meta.url), "utf8");
+  assert.match(dialog, /if \(modal\) root\.showModal\(\);\s*else root\.show\(\);/);
+});

@@ -14,6 +14,7 @@ export const TODOS = [
     items: [
       "Schulferien: Option «Ich habe Kinder» – Ferien nur während der Schulferien planen oder bewusst ausserhalb.",
       "Weitere lokale Bräuche mit freiem Nachmittag, z. B. Basler Fasnacht oder Escalade in Genf.",
+      "Mehrere Orte gemeinsam: bei mehr als einem Ort berücksichtigt der Optimierer alle Kalender zusammen und empfiehlt Perioden, die für alle passen.",
       "Top-3-Angebote: nach Wahl einer Periode sucht ein KI-Agent (über OpenRouter) die drei besten Ferienangebote, mit der Möglichkeit, direkt zu buchen.",
     ],
   },
