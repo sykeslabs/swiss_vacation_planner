@@ -118,7 +118,14 @@ test("list and month detail share one selection (same key → same highlight)", 
   assert.equal(highlighted[0].plan_key, key);
   assert.equal(highlighted[0].in_selected_period, true);
   assert.deepEqual(periodListItems(summary, key).map((i) => i.selected), [false, true]);
-  assert.match(items[0].title, /1 Ferientag → 4 Tage frei · 26\.–29\. März 2027/);
+  // two lines, no year split
+  assert.equal(items[0].cost, "1 Ferientag → 4 Tage frei");
+  assert.equal(items[0].range, "26.–29. März 2027");
+  assert.deepEqual(Object.keys(items[0]).sort(), ["cost", "key", "range", "selected"]);
+  const newYear = { start: "2026-12-25", end: "2027-01-10", vacation_days_required: 8.5, days_free: 17,
+    vacation_dates: [], vacation_days_by_year: { 2026: 3.5, 2027: 5 } };
+  const [ny] = periodListItems({ plan: [newYear] });
+  assert.deepEqual([ny.cost, ny.range], ["8½ Ferientage → 17 Tage frei", "25. Dezember 2026 – 10. Januar 2027"]);
 });
 
 // --- "Über Adam" ----------------------------------------------------------------------------------
@@ -242,4 +249,13 @@ test("curated local half days: labelled as local custom, half day, off by defaul
   assert.equal(row.tag, "lokal · halber Tag");
   assert.match(row.info, /Lokaler Brauch.*Nachmittag frei.*einschaltest.*Halber Tag.*ferienwiki\.ch/);
   assert.doesNotMatch(row.info, /wikipedia/);
+});
+
+test("holiday details: web-search links styled like the Wikipedia link, no 'Datum: …/Text: …' line", () => {
+  const src = readFileSync(new URL("../../public/js/holiday-modal.js", import.meta.url), "utf8");
+  assert.match(src, /el\("a", "holiday-link", `\$\{new URL\(url\)/);
+  assert.doesNotMatch(src, /Datum: \$\{|Text: \$\{/);
+  // separator between sources and the background text
+  assert.ok(src.indexOf('el("hr", "holiday-sep")') > src.indexOf('"holiday-sources"'));
+  assert.ok(src.indexOf('el("hr", "holiday-sep")') < src.indexOf('el("p", "holiday-text"'));
 });

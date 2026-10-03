@@ -278,6 +278,7 @@ html, body {
 .candidate-btn[aria-pressed="true"] { border-color: var(--period-ring); box-shadow: inset 0 0 0 1px var(--period-ring); }
 .candidate-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .candidate-title { font-size: 0.84rem; font-weight: 600; }
+.candidate-range { font-size: 0.8rem; color: var(--text-muted); }
 .candidate-meta { font-size: 0.74rem; color: var(--text-muted); }
 
 /* "Feiertage" section of a town panel */
@@ -666,6 +667,8 @@ dialog.modal.is-movable.is-dragging .modal-head { cursor: grabbing; }
 .holiday-facts { margin: 0 0 8px; padding-left: 18px; font-size: 0.82rem; color: var(--text-muted); }
 .holiday-text { margin: 0 0 6px; font-size: 0.88rem; line-height: 1.45; }
 .holiday-link { font-size: 0.82rem; color: var(--text); }
+.holiday-sources { margin: 0 0 6px; font-size: 0.82rem; color: var(--text-muted); }
+.holiday-sep { border: 0; border-top: 1px solid var(--glass-border); margin: 8px 0; }
 
 .day-note {
   margin-top: 4px;

@@ -67,5 +67,7 @@ export function periodListItems(summary, selectedKey = null, month = null) {
   return [...(summary?.plan ?? [])]
     .filter((c) => !month || overlapsMonth(c, month))
     .sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end))
-    .map((c) => ({ key: periodKey(c), title: candidateTitle(c), split: yearSplit(c), selected: periodKey(c) === selectedKey }));
+    // Two lines: "1 Ferientag → 4 Tage frei" / "6.–9. Mai 2027" (the year split is only in the details).
+    .map((c) => ({ key: periodKey(c), cost: `${vacationDaysLabel(c.vacation_days_required)} → ${c.days_free} Tage frei`,
+      range: formatRange(c.start, c.end), selected: periodKey(c) === selectedKey }));
 }

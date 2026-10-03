@@ -246,14 +246,12 @@ export function createTownPanels({
       btn.setAttribute("aria-haspopup", "dialog");
       const t = document.createElement("span");
       t.className = "candidate-title";
-      t.textContent = item.title;
-      btn.append(t);
-      if (item.split) {
-        const meta = document.createElement("span");
-        meta.className = "candidate-meta";
-        meta.textContent = item.split;
-        btn.append(meta);
-      }
+      t.textContent = item.cost;
+      const range = document.createElement("span");
+      range.className = "candidate-range";
+      range.textContent = item.range;
+      btn.setAttribute("aria-label", `${item.cost}, ${item.range}`);
+      btn.append(t, range);
       btn.addEventListener("click", () => onPeriodClick({ location: p.location, key: item.key, from: btn }));
       btn.addEventListener("mouseenter", () => setHover(p, item.key));
       btn.addEventListener("focus", () => setHover(p, item.key));

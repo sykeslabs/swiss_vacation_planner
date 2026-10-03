@@ -64,9 +64,10 @@ export function createHolidayModal({ parent = document.body } = {}) {
     const pages = [...new Set([...(holiday.corroborated_by ?? []),
       ...(holiday.source_url?.startsWith("https://") && holiday.confidence === "low" ? [holiday.source_url] : [])])];
     if (pages.length) {
-      const p = el("p", "source-note", "Websuche: ");
+      // Same look as "Mehr dazu auf Wikipedia ↗" (not the browser's blue link style).
+      const p = el("p", "holiday-sources", "Websuche: ");
       pages.forEach((url, i) => {
-        const a = el("a", "", new URL(url).hostname.replace(/^www\./, ""));
+        const a = el("a", "holiday-link", `${new URL(url).hostname.replace(/^www\./, "")} ↗`);
         a.href = url;
         a.target = "_blank";
         a.rel = "noopener noreferrer";
@@ -75,6 +76,8 @@ export function createHolidayModal({ parent = document.body } = {}) {
       });
       block.append(p);
     }
+    // Separator between the facts/sources and the background text (owner request).
+    block.append(el("hr", "holiday-sep"));
     const entry = lookupHoliday(info, holiday.name);
     block.append(el("p", "holiday-text", entry?.text
       ?? (info ? "Für diesen Feiertag ist noch kein Hintergrundtext hinterlegt."
@@ -95,10 +98,7 @@ export function createHolidayModal({ parent = document.body } = {}) {
       const info = await loadHolidayInfo();
       title.textContent = holidays.map((h) => h.name).join(" · ") || "Feiertag";
       const meta = el("p", "hint holiday-meta", `${formatDateWithWeekday(day.date)} · ${town}`);
-      const sources = [...new Set(holidays.map((h) => h.source_title || h.source))].join(", ");
-      const note = el("p", "source-note",
-        `Datum: ${sources || "Referenzkalender"}. Text: ${info?.source ?? "redaktionell"}.`);
-      body.replaceChildren(meta, ...holidays.map((h) => holidayBlock(h, day, info)), note);
+      body.replaceChildren(meta, ...holidays.map((h) => holidayBlock(h, day, info)));
       const wasHidden = root.hidden;
       root.hidden = false;
       if (wasHidden) {

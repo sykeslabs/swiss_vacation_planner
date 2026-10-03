@@ -136,3 +136,6 @@ One line per decision: date — decision — reason. Status: **accepted** (owner
 - 2026-10-03 — accepted — "N Feiertage durch die Websuche bestätigt" counts only holidays that count (optional local days excluded).
 - 2026-10-03 — accepted — Holidays on a weekend/day off are red like other holidays; removed the category "Feiertag an freiem Tag" — owner request.
 - 2026-10-03 — accepted — Town panel: the town name no longer opens the town modal; "N Feiertage" in the title bar opens a movable modal listing exactly the counted holidays of the planned year (from the same day model) — owner request. It closes when settings change.
+- 2026-10-03 — accepted — Period list entries in two lines ("1 Ferientag → 4 Tage frei" / "6.–9. Mai 2027"); the year split ("Davon … im 2027 …") is no longer shown in the list, only in the period details — owner request.
+- 2026-10-03 — accepted — Holiday details: web-search links ("Websuche: feiertagskalender.ch ↗") use the same style as "Mehr dazu auf Wikipedia ↗"; removed the line "Datum: <source>. Text: <source>." — owner request.
+- 2026-10-03 — accepted — Holiday details: a separator line between facts/web sources and the background text — owner request.
